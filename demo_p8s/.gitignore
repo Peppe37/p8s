@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+# .env  # uncomment for production
+
+# Database
+*.sqlite3
+*.db
+
+# IDE
+.vscode/
+.idea/
+
+# Build
+dist/
+build/
+*.egg-info/
+
+# Frontend
+node_modules/
+frontend/dist/

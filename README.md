@@ -65,13 +65,13 @@ In the same way, P8s:
 | Feature      | Description                                |
 | ------------ | ------------------------------------------ |
 | ⚡ Async Core | Built on FastAPI & Starlette               |
-| 🗄️ ORM      | SQLModel (SQLAlchemy + Pydantic)           |
-| 🔐 Auth      | Plug‑and‑play authentication & permissions |
-| 🧑‍💼 Admin  | Auto‑generated **React Admin Panel**       |
-| ⚛️ Frontend  | React + Vite, zero‑config                  |
-| 🤖 AI / LLM  | Native AI fields, RAG, vector search       |
-| 🧠 Types     | Python → TypeScript auto‑generation        |
-| 🛠️ CLI      | `p8s` command like Django’s `manage.py`    |
+| 🗄️ ORM        | SQLModel (SQLAlchemy + Pydantic)           |
+| 🔐 Auth       | Plug‑and‑play authentication & permissions |
+| 🧑‍💼 Admin      | Auto‑generated **React Admin Panel**       |
+| ⚛️ Frontend   | React + Vite, zero‑config                  |
+| 🤖 AI / LLM   | Native AI fields, RAG, vector search       |
+| 🧠 Types      | Python → TypeScript auto‑generation        |
+| 🛠️ CLI        | `p8s` command like Django’s `manage.py`    |
 
 ---
 
