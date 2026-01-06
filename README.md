@@ -1,247 +1,222 @@
-# 🔥 P8s (Prometheus)
+<p align="center">
+  <h1 align="center">🔥 P8s (Prometheus)</h1>
+  <p align="center">
+    <strong>Forge AI-native, full-stack applications with the fire of the gods.</strong>
+  </p>
+</p>
 
-> **Forge AI‑native, full‑stack applications with the fire of the gods.**
+<p align="center">
+  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10+-blue?style=flat-square" alt="Python 3.10+"></a>
+  <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/FastAPI-async-009688?style=flat-square" alt="FastAPI"></a>
+  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-Vite-61DAFB?style=flat-square" alt="React"></a>
+  <a href="#"><img src="https://img.shields.io/badge/AI-Native-orange?style=flat-square" alt="AI Native"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License"></a>
+</p>
 
-P8s (pronounced *"pates"*) is an **opinionated, batteries‑included framework** that fuses the **architecture and DX of Django** with the **performance and async nature of FastAPI**, plus **first‑class AI/LLM integration** and a **native React frontend**.
-
-It exists to solve a modern problem:
-
-> Django is complete but legacy.
-> FastAPI is fast but fragmented.
-> AI apps need structure, not glue code.
-
-**P8s brings order.**
-
----
-
-## 🚀 Badges
-
-![Python](https://img.shields.io/badge/python-3.10%2B-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-async-success)
-![React](https://img.shields.io/badge/React-Vite-61DAFB)
-![AI Native](https://img.shields.io/badge/AI-Native-orange)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Status](https://img.shields.io/badge/status-experimental-red)
+<p align="center">
+  <a href="docs/getting-started.md">Getting Started</a> •
+  <a href="docs/index.md">Documentation</a> •
+  <a href="#features">Features</a> •
+  <a href="#quick-start">Quick Start</a>
+</p>
 
 ---
 
-## 🧠 Philosophy
+## Why P8s?
 
-P8s is inspired by **Prometheus**, the titan who stole fire from the gods to give it to humanity.
+| Django              | FastAPI             | **P8s**                |
+| ------------------- | ------------------- | ---------------------- |
+| Complete but legacy | Fast but fragmented | **Best of both**       |
+| Sync-first          | Async-first         | **Async by default**   |
+| Admin included      | No admin            | **Django-style admin** |
+| No AI support       | No AI support       | **AI is a primitive**  |
 
-In the same way, P8s:
-
-* Takes **powerful primitives** (Async, ORM, Admin, React, AI)
-* Hides unnecessary complexity
-* Gives developers **immediate leverage**
-
-### Core principles
-
-* **Opinionated > Configurable**
-* **Convention over glue code**
-* **Async by default**
-* **AI is not a plugin — it’s a primitive**
-* **Backend and Frontend are one system**
+**P8s brings order to modern Python development.**
 
 ---
 
-## ✨ What P8s Is
+## ✨ Features
 
-✅ A **Django‑like framework** built on FastAPI
-✅ A **full‑stack monolith**, but modern
-✅ An **AI‑native platform**
-✅ A **React‑first backend**
+### ⚡ Async Backend
+- **FastAPI** under the hood
+- **SQLModel** ORM (SQLAlchemy + Pydantic)
+- **Automatic CRUD** for registered models
+- **UUID & Soft Deletes** by default
 
-## ❌ What P8s Is NOT
+### 🔐 Authentication
+- **JWT Authentication** out of the box
+- **User roles** (User, Superuser)
+- **Secure defaults** (bcrypt, protected routes)
 
-❌ A micro‑framework
-❌ Just another FastAPI boilerplate
-❌ A collection of loosely coupled libraries
+### 🤖 AI-Native
+- **AIField**: Auto-generate content from prompts
+- **VectorField**: Store embeddings for semantic search
+- **VectorSearch**: Query by similarity
+- Supports **OpenAI**, **Anthropic**, **Ollama**, and more
 
----
+### 🧑‍💼 Admin Panel
+- **Django-style** admin interface
+- **Dynamic CRUD** from your models
+- **Search, filter, paginate**
+- **No frontend code required**
 
-## 🧩 Features Overview
-
-| Feature      | Description                                |
-| ------------ | ------------------------------------------ |
-| ⚡ Async Core | Built on FastAPI & Starlette               |
-| 🗄️ ORM        | SQLModel (SQLAlchemy + Pydantic)           |
-| 🔐 Auth       | Plug‑and‑play authentication & permissions |
-| 🧑‍💼 Admin      | Auto‑generated **React Admin Panel**       |
-| ⚛️ Frontend   | React + Vite, zero‑config                  |
-| 🤖 AI / LLM   | Native AI fields, RAG, vector search       |
-| 🧠 Types      | Python → TypeScript auto‑generation        |
-| 🛠️ CLI        | `p8s` command like Django’s `manage.py`    |
-
----
-
-## 🏗️ Architecture
-
-P8s is a **single coherent system**, not a puzzle.
-
-```
-project/
-├── backend/
-│   ├── apps/          # Django‑style apps
-│   ├── models.py      # SQLModel + AI fields
-│   ├── main.py        # FastAPI entrypoint
-│   └── settings.py    # Centralized config
-│
-├── frontend/
-│   ├── src/
-│   │   ├── pages/     # Route‑based React pages
-│   │   └── components/
-│   └── vite.config.ts
-│
-├── p8s.py              # CLI orchestrator
-└── pyproject.toml
-```
+### 📦 CLI Tools
+- `p8s new project myapp` — Create projects
+- `p8s new app blog` — Add apps
+- `p8s dev` — Development server
+- `p8s createsuperuser` — Create admin users
 
 ---
 
-## 🔥 The P8s Stack
+## 🚀 Quick Start
 
-### Backend
-
-* **FastAPI** – async routing & OpenAPI
-* **SQLModel** – ORM + validation
-* **Alembic (wrapped)** – migrations
-* **Pydantic v2** – data core
-
-### Frontend
-
-* **React** – UI
-* **Vite** – instant dev server
-* **TanStack Query** – data fetching
-* **Zustand** – admin state
-
-### AI Layer
-
-* **LiteLLM** – provider‑agnostic LLM access
-* **Instructor** – structured AI outputs
-* **pgvector** – embeddings & RAG
-
----
-
-## 🤖 AI‑Native Models
-
-AI is a **first‑class citizen** in P8s.
-
-```python
-from p8s import models, AIField
-
-class Product(models.Model):
-    name: str
-    description: str
-
-    seo_description: str = AIField(
-        prompt="Generate an SEO description for: {description}"
-    )
-```
-
-### What happens?
-
-* Field is **generated automatically**
-* Cached
-* Regenerated on change
-* Provider‑agnostic
-
----
-
-## ⚛️ React Integration (Django‑like)
-
-P8s treats React like Django templates — but modern.
-
-### Zero‑config
+### Installation
 
 ```bash
-p8s new app
-p8s dev
+git clone https://github.com/Peppe37/p8s.git
+cd p8s
+pip install -e ".[all]"
 ```
 
-Runs:
-
-* FastAPI (Uvicorn)
-* React (Vite)
-* TypeScript type sync
-* Proxy & HMR
-
-No CORS. No manual wiring.
-
----
-
-## 🧑‍💼 React Admin Panel
-
-Just like Django Admin — but **React**.
-
-* Auto‑generated from models
-* Permissions aware
-* Extensible with custom components
-
-```python
-class Product(models.Model):
-    class Admin:
-        list_display = ["name", "price"]
-        search = ["name"]
-```
-
----
-
-## 🛠️ CLI (The Sacred Fire)
+### Create a Project
 
 ```bash
 p8s new project myapp
-p8s new app blog
-p8s migrate
-p8s dev
-p8s admin
+cd myapp
 ```
 
-One command. One mental model.
-
----
-
-## 🧬 Type Safety End‑to‑End
-
-* SQLModel → Pydantic
-* Pydantic → TypeScript
-* Backend and frontend **never drift**
-
-If Python changes, React breaks **at compile time**.
-
----
-
-## 📦 Modular but Opinionated
-
-P8s is monolithic **by default**, modular **by design**.
+### Run Development Server
 
 ```bash
-pip install p8s
-pip install p8s-ai
-pip install p8s-admin
+p8s dev
+```
+
+```
+🔥 P8s (Prometheus)
+━━━━━━━━━━━━━━━━━━━
+Starting development server...
+  Backend:  http://localhost:8000
+  Frontend: http://localhost:5173
+
+[backend] INFO: Uvicorn running on http://localhost:8000
+[frontend] VITE ready in 456ms
+```
+
+### Access Your App
+
+| URL                            | Description |
+| ------------------------------ | ----------- |
+| `http://localhost:8000`        | Backend API |
+| `http://localhost:8000/admin/` | Admin panel |
+| `http://localhost:5173`        | Frontend    |
+
+---
+
+## 💻 Code Example
+
+```python
+from p8s import Model
+from p8s.ai import AIField, VectorField
+from p8s.admin import register_model
+from sqlmodel import Field
+
+@register_model
+class Product(Model, table=True):
+    name: str = Field(index=True)
+    description: str
+
+    # AI-generated SEO description
+    seo_description: str | None = AIField(
+        prompt="Generate SEO description for {name}: {description}",
+        source_fields=["name", "description"],
+    )
+
+    # Vector embedding for similarity search
+    embedding: list[float] | None = VectorField(
+        source_field="description"
+    )
+
+    class Admin:
+        list_display = ["name", "created_at"]
+        search_fields = ["name"]
 ```
 
 ---
 
-## 🧪 Status
+## 🏗️ Project Structure
 
-⚠️ **Experimental**
+```
+myapp/
+├── backend/
+│   ├── main.py          # FastAPI entry point
+│   ├── models.py        # Database models
+│   ├── settings.py      # Configuration (AppSettings)
+│   └── apps/            # Your apps
+│       └── products/
+│           ├── models.py
+│           └── router.py
+├── frontend/            # React + Vite
+│   ├── src/
+│   └── vite.config.ts
+└── .env                 # Environment variables
+```
 
-* APIs may change
-* Not production‑ready (yet)
-* Looking for early contributors
+---
+
+## 📚 Documentation
+
+| Topic                                      | Description                  |
+| ------------------------------------------ | ---------------------------- |
+| [Getting Started](docs/getting-started.md) | Create your first project    |
+| [CLI Reference](docs/cli.md)               | All available commands       |
+| [Models & Database](docs/models.md)        | SQLModel ORM usage           |
+| [Authentication](docs/authentication.md)   | JWT and user management      |
+| [Admin Panel](docs/admin.md)               | Django-style admin           |
+| [AI Features](docs/ai.md)                  | AIField, VectorField, search |
+| [Configuration](docs/configuration.md)     | Environment and settings     |
+| [Deployment](docs/deployment.md)           | Docker, Railway, Fly.io      |
+
+---
+
+## 🛣️ Roadmap
+
+### ✅ Completed
+- [x] Django-style settings discovery (`P8S_SETTINGS_MODULE`)
+- [x] Admin panel with login page
+- [x] Protected docs (admin-only)
+- [x] CLI with colored log tags
+- [x] JWT authentication
+- [x] SQLModel integration
+
+### 🚧 In Progress
+- [ ] Full test coverage
+- [ ] Alembic migrations integration
+- [ ] Frontend auth hooks
+
+### 📋 Planned
+- [ ] WebSocket support
+- [ ] Background tasks (Celery/ARQ)
+- [ ] File uploads
+- [ ] Multi-tenancy
+- [ ] GraphQL support
+- [ ] PyPI release
 
 ---
 
 ## 🤝 Contributing
 
-P8s is built for developers who:
+Contributions are welcome! Please read the contributing guidelines before submitting a PR.
 
-* Love structure
-* Hate boilerplate
-* Believe AI apps deserve real frameworks
+```bash
+# Run tests
+pytest tests/
 
-PRs, RFCs and discussions are welcome.
+# Lint
+ruff check src/
+
+# Format
+ruff format src/
+```
 
 ---
 
@@ -251,9 +226,6 @@ MIT — steal the fire, responsibly 🔥
 
 ---
 
-## 🏛️ Final Words
-
-> *Where Django brought order to the web,
-> P8s brings order to AI‑native applications.*
-
-🔥 **Welcome to Prometheus.**
+<p align="center">
+  <sub>Built with ❤️ by the Prometheus team</sub>
+</p>

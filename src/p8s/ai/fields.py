@@ -167,9 +167,11 @@ def VectorField(
     Note:
         Requires pgvector extension for PostgreSQL.
     """
+    from sqlalchemy import JSON, Column
     return Field(
         default=None,
         description=description or f"Vector embedding from {source_field}",
+        sa_column=Column(JSON),
         json_schema_extra={
             "x-p8s-vector-field": True,
             "x-p8s-vector-source": source_field,

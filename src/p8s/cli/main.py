@@ -39,6 +39,21 @@ Forge AI-native applications with the fire of the gods.
     console.print(Panel(banner, border_style="red"))
 
 
+def ensure_settings_module():
+    """
+    Ensure P8S_SETTINGS_MODULE is set for project settings discovery.
+    
+    This enables Django-style settings loading where projects can define
+    their own AppSettings class that extends Settings.
+    """
+    import os
+    
+    if "P8S_SETTINGS_MODULE" not in os.environ:
+        settings_file = Path.cwd() / "backend" / "settings.py"
+        if settings_file.exists():
+            os.environ["P8S_SETTINGS_MODULE"] = "backend.settings"
+
+
 # ============================================================================
 # NEW command group
 # ============================================================================
@@ -226,6 +241,7 @@ frontend/dist/
   "devDependencies": {{
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "@types/node": "^20.0.0",
     "@vitejs/plugin-react": "^4.2.0",
     "typescript": "^5.3.0",
     "vite": "^5.0.0"
@@ -244,11 +260,12 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: `http://localhost:${process.env.P8S_DEV_PORT || '8000'}`,
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
       },
       '/admin': {
-        target: 'http://localhost:8000',
+        target: `http://localhost:${process.env.P8S_DEV_PORT || '8000'}`,
         changeOrigin: true,
       },
     },
@@ -521,8 +538,9 @@ def dev(
         p8s dev --port 3000
         p8s dev --no-frontend
     """
-    import asyncio
-    import signal
+    import os
+    import threading
+    import select
 
     print_banner()
 
@@ -533,29 +551,89 @@ def dev(
     console.print()
 
     processes = []
+    
+    def stream_output(proc, prefix: str, color: str):
+        """Stream process output with colored prefix."""
+        try:
+            for line in iter(proc.stdout.readline, b''):
+                if line:
+                    text = line.decode('utf-8', errors='replace').rstrip()
+                    console.print(f"[{color}][{prefix}][/{color}] {text}")
+        except Exception:
+            pass
+    
+    def stream_stderr(proc, prefix: str, color: str):
+        """Stream process stderr with colored prefix."""
+        try:
+            for line in iter(proc.stderr.readline, b''):
+                if line:
+                    text = line.decode('utf-8', errors='replace').rstrip()
+                    console.print(f"[{color}][{prefix}][/{color}] {text}")
+        except Exception:
+            pass
 
     try:
         # Start backend
+        import p8s
+        framework_dir = Path(p8s.__file__).parent
+        
+        # Set up environment with settings module discovery
+        env = os.environ.copy()
+        
+        # Auto-discover settings module if not already set
+        if "P8S_SETTINGS_MODULE" not in env:
+            settings_file = Path.cwd() / "backend" / "settings.py"
+            if settings_file.exists():
+                env["P8S_SETTINGS_MODULE"] = "backend.settings"
+        
         backend_cmd = [
             sys.executable, "-m", "uvicorn",
             "backend.main:app",
             "--host", host,
             "--port", str(port),
             "--reload",
+            "--reload-dir", str(Path.cwd()),
+            "--reload-dir", str(framework_dir),
         ]
 
-        backend_proc = subprocess.Popen(backend_cmd)
+        backend_proc = subprocess.Popen(
+            backend_cmd, 
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )
         processes.append(backend_proc)
+        
+        # Start backend output streaming thread
+        backend_thread = threading.Thread(
+            target=stream_output, 
+            args=(backend_proc, "backend", "cyan"),
+            daemon=True
+        )
+        backend_thread.start()
 
         # Start frontend if enabled
         if frontend and Path("frontend").exists():
+            env["P8S_DEV_PORT"] = str(port)
+
             frontend_cmd = ["npm", "run", "dev"]
 
             frontend_proc = subprocess.Popen(
                 frontend_cmd,
                 cwd="frontend",
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
             )
             processes.append(frontend_proc)
+            
+            # Start frontend output streaming thread
+            frontend_thread = threading.Thread(
+                target=stream_output,
+                args=(frontend_proc, "frontend", "magenta"),
+                daemon=True
+            )
+            frontend_thread.start()
 
         # Wait for processes
         for proc in processes:
@@ -761,6 +839,72 @@ def version():
 
     console.print(f"P8s version [bold]{__version__}[/bold]")
 
+
+# ============================================================================
+# CREATESUPERUSER command
+# ============================================================================
+
+@app.command()
+def createsuperuser(
+    email: str = typer.Option(..., prompt=True),
+    password: str = typer.Option(..., prompt=True, hide_input=True, confirmation_prompt=True),
+    username: str = typer.Option(None, "--username", "-u"),
+):
+    """
+    Create a superuser with admin privileges.
+    
+    Example:
+        p8s createsuperuser
+        p8s createsuperuser --email admin@example.com --username admin
+    """
+    import asyncio
+    
+    # Ensure settings module is loaded from project
+    ensure_settings_module()
+    
+    from p8s.core.settings import get_settings
+    from p8s.db.session import init_db, close_db, SessionManager
+    from p8s.auth.models import User, UserRole
+    from p8s.auth.security import get_password_hash
+    from sqlmodel import select
+
+    async def _create():
+        settings = get_settings()
+        await init_db(settings.database)
+
+        try:
+            async with SessionManager() as session:
+                # Check if user exists
+                query = select(User).where(User.email == email)
+                result = await session.execute(query)
+                existing = result.scalar_one_or_none()
+
+                if existing:
+                    console.print(f"[red]Error:[/red] User with email {email} already exists")
+                    raise typer.Exit(1)
+
+                # Create user
+                user = User(
+                    email=email,
+                    password_hash=get_password_hash(password),
+                    username=username,
+                    role=UserRole.SUPERUSER,
+                    is_active=True,
+                    is_verified=True,
+                )
+
+                session.add(user)
+                await session.commit()
+                await session.refresh(user)
+
+                console.print(f"[green]✓[/green] Superuser created created successfully!")
+                console.print(f"  ID: {user.id}")
+                console.print(f"  Email: {user.email}")
+                console.print(f"  Role: {user.role}")
+        finally:
+            await close_db()
+
+    asyncio.run(_create())
 
 # ============================================================================
 # Main entry

@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import (
 from sqlmodel import SQLModel
 
 from p8s.core.settings import DatabaseSettings
+from p8s.ai.processor import process_ai_fields, process_vector_fields
 
 # Global engine and session maker
 _engine: AsyncEngine | None = None
@@ -26,6 +27,30 @@ _session_context: ContextVar[AsyncSession | None] = ContextVar(
 )
 
 
+class P8sSession(AsyncSession):
+    """
+    Extended AsyncSession that handles AI field processing on commit.
+    """
+    async def commit(self) -> None:
+        """Commit the current transaction, processing AI fields first."""
+        # Process NEW objects
+        for instance in self.new:
+            if isinstance(instance, SQLModel):
+                await process_ai_fields(instance)
+                await process_vector_fields(instance)
+
+        # Process DIRTY (updated) objects
+        for instance in self.dirty:
+            if isinstance(instance, SQLModel):
+                # Note: This checks strictly if fields are missing or if forced.
+                # Ideally, we should check if source fields changed using SA history.
+                # For now, this ensures at least new fields (if cleared) are regenerated.
+                await process_ai_fields(instance)
+                await process_vector_fields(instance)
+        
+        await super().commit()
+
+
 async def init_db(settings: DatabaseSettings) -> None:
     """
     Initialize the database connection.
@@ -35,17 +60,35 @@ async def init_db(settings: DatabaseSettings) -> None:
     """
     global _engine, _session_maker
     
+    # Prepare engine arguments
+    connect_args = {}
+    engine_args = {
+        "echo": settings.echo,
+        "pool_size": settings.pool_size,
+        "max_overflow": settings.pool_overflow,
+        "pool_timeout": settings.pool_timeout,
+    }
+
+    # Handle SQLite specific limitations (no pool args supported with StatcPool usually, 
+    # but more importantly aiosqlite interface issues)
+    if "sqlite" in str(settings.url):
+        # Remove pool arguments for SQLite as they are not supported by the default pool or aiosqlite in some contexts
+        engine_args.pop("pool_size", None)
+        engine_args.pop("max_overflow", None)
+        engine_args.pop("pool_timeout", None)
+        
+        # Enable foreign keys for SQLite
+        connect_args["check_same_thread"] = False
+    
     _engine = create_async_engine(
         settings.url,
-        echo=settings.echo,
-        pool_size=settings.pool_size,
-        max_overflow=settings.pool_overflow,
-        pool_timeout=settings.pool_timeout,
+        connect_args=connect_args,
+        **engine_args,
     )
     
     _session_maker = async_sessionmaker(
         _engine,
-        class_=AsyncSession,
+        class_=P8sSession,  # Use custom session
         expire_on_commit=False,
         autoflush=False,
     )
@@ -90,17 +133,7 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
     """
     Get an async database session.
     
-    Use as a FastAPI dependency:
-    
-    ```python
-    from p8s import get_session
-    from sqlalchemy.ext.asyncio import AsyncSession
-    
-    @app.get("/items")
-    async def get_items(session: AsyncSession = Depends(get_session)):
-        result = await session.execute(select(Item))
-        return result.scalars().all()
-    ```
+    Use as a FastAPI dependency.
     
     Yields:
         AsyncSession: Database session.
@@ -139,13 +172,6 @@ def get_engine() -> AsyncEngine:
 class SessionManager:
     """
     Context manager for manual session handling.
-    
-    Example:
-        ```python
-        async with SessionManager() as session:
-            item = Item(name="test")
-            session.add(item)
-        ```
     """
     
     def __init__(self) -> None:

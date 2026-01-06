@@ -59,18 +59,33 @@ class P8sApp(FastAPI):
         # Use provided lifespan or create default
         app_lifespan = lifespan or self._default_lifespan
         
+        # Disable default docs - we'll add protected versions
         super().__init__(
             title=title or self.p8s_settings.app_name,
             description=description,
             version=version,
             debug=self.p8s_settings.debug,
             lifespan=app_lifespan,
+            docs_url=None,  # Disable default docs
+            redoc_url=None,  # Disable default redoc
+            openapi_url=None,  # Disable default openapi.json
             **kwargs,
         )
         
         self._setup_cors()
         self._setup_exception_handlers()
         self._setup_static_files()
+        self._setup_protected_docs()  # Add protected docs
+        
+        # Mount admin panel if enabled
+        if self.p8s_settings.admin.enabled:
+            self._mount_admin()
+        
+        # Mount auth router
+        self._mount_auth()
+            
+        # Discover and register apps
+        self._discover_apps()
     
     @asynccontextmanager
     async def _default_lifespan(
@@ -90,12 +105,8 @@ class P8sApp(FastAPI):
         # Initialize database
         await init_db(self.p8s_settings.database)
         
-        # Mount admin panel if enabled
-        if self.p8s_settings.admin.enabled:
-            await self._mount_admin()
-        
-        # Discover and register apps
-        await self._discover_apps()
+        # Initialize database
+        await init_db(self.p8s_settings.database)
     
     async def _on_shutdown(self) -> None:
         """Application shutdown tasks."""
@@ -136,7 +147,45 @@ class P8sApp(FastAPI):
         if media_dir.exists():
             self.mount("/media", StaticFiles(directory=str(media_dir)), name="media")
     
-    async def _mount_admin(self) -> None:
+    def _setup_protected_docs(self) -> None:
+        """
+        Setup OpenAPI docs protected by admin authentication.
+        
+        Only authenticated admin users can access:
+        - /docs (Swagger UI)
+        - /redoc (ReDoc)
+        - /openapi.json (OpenAPI schema)
+        """
+        from fastapi import Depends
+        from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+        from fastapi.responses import JSONResponse
+        from p8s.auth.dependencies import require_admin
+        from p8s.auth.models import User
+        
+        # Store openapi schema
+        @self.get("/openapi.json", include_in_schema=False)
+        async def get_openapi_schema(user: User = Depends(require_admin)):
+            """Get OpenAPI schema (admin only)."""
+            return JSONResponse(self.openapi())
+        
+        @self.get("/docs", include_in_schema=False)
+        async def get_docs(user: User = Depends(require_admin)):
+            """Get Swagger UI docs (admin only)."""
+            return get_swagger_ui_html(
+                openapi_url="/openapi.json",
+                title=f"{self.title} - Docs",
+            )
+        
+        @self.get("/redoc", include_in_schema=False)
+        async def get_redoc(user: User = Depends(require_admin)):
+            """Get ReDoc docs (admin only)."""
+            return get_redoc_html(
+                openapi_url="/openapi.json",
+                title=f"{self.title} - ReDoc",
+            )
+    
+    
+    def _mount_admin(self) -> None:
         """Mount the admin panel."""
         from p8s.admin.router import create_admin_router
         
@@ -147,7 +196,13 @@ class P8sApp(FastAPI):
             tags=["admin"],
         )
     
-    async def _discover_apps(self) -> None:
+    def _mount_auth(self) -> None:
+        """Mount the auth router."""
+        from p8s.auth.router import router as auth_router
+        
+        self.include_router(auth_router)
+    
+    def _discover_apps(self) -> None:
         """
         Discover and register installed apps.
         
