@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["backend"]
+
+[project]
+name = "p8s_test_site"
+version = "0.1.0"
+description = "A P8s application"
+requires-python = ">=3.10"
+dependencies = [
+    "p8s[admin]",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+]

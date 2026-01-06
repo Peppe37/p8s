@@ -5,12 +5,17 @@ These endpoints provide:
 - Model introspection
 - CRUD operations
 - Search and filtering
+
+Like Django: /admin/ serves the UI, /admin/api/ contains the REST endpoints.
 """
 
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from pathlib import Path
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from starlette.responses import FileResponse, HTMLResponse
 from sqlalchemy import select, func, or_, String
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -36,9 +41,34 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         Configured APIRouter.
     """
     router = APIRouter()
+    static_dir = Path(__file__).parent / "static"
     
-    @router.get("/")
-    async def admin_index(
+    # =========================================================================
+    # Static Files Serving - No auth required (frontend handles auth)
+    # =========================================================================
+    
+    @router.get("/", include_in_schema=False)
+    async def admin_root():
+        """Serve the admin UI entry point (like Django /admin/)."""
+        index_path = static_dir / "index.html"
+        if index_path.exists():
+            return FileResponse(index_path)
+        return HTMLResponse("<h1>Admin UI not built</h1><p>Running in headless mode.</p>", status_code=404)
+
+    @router.get("/assets/{path:path}", include_in_schema=False)
+    async def admin_assets(path: str):
+        """Serve static assets."""
+        file_path = static_dir / "assets" / path
+        if file_path.exists() and file_path.is_file():
+            return FileResponse(file_path)
+        return HTMLResponse("Not Found", status_code=404)
+    
+    # =========================================================================
+    # API Endpoints - All require admin auth
+    # =========================================================================
+    
+    @router.get("/api/config")
+    async def admin_config(
         user: User = Depends(require_admin),
     ) -> dict[str, Any]:
         """
@@ -95,11 +125,11 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         
         return get_model_metadata(model)
     
-    @router.get("/models/{model_name}/items")
+    @router.get("/{model_name}")
     async def list_items(
         model_name: str,
-        skip: int = Query(0, ge=0),
-        limit: int = Query(25, ge=1, le=1000),
+        page: int = Query(1, ge=1),
+        page_size: int = Query(25, ge=1, le=1000),
         search: str | None = None,
         order_by: str | None = None,
         session: AsyncSession = Depends(get_session),
@@ -110,8 +140,8 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         
         Args:
             model_name: Name of the model.
-            skip: Offset for pagination.
-            limit: Number of items per page.
+            page: Page number (1-indexed).
+            page_size: Number of items per page.
             search: Search query.
             order_by: Field to order by (prefix with - for desc).
         
@@ -122,6 +152,8 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         
         if not model:
             raise HTTPException(status_code=404, detail="Model not found")
+        
+        skip = (page - 1) * page_size
         
         query = select(model)
         count_query = select(func.count()).select_from(model)
@@ -162,7 +194,7 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         total = count_result.scalar() or 0
         
         # Apply pagination
-        query = query.offset(skip).limit(limit)
+        query = query.offset(skip).limit(page_size)
         
         # Execute query
         result = await session.execute(query)
@@ -171,11 +203,11 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         return {
             "items": [item.model_dump() for item in items],
             "total": total,
-            "skip": skip,
-            "limit": limit,
+            "page": page,
+            "page_size": page_size,
         }
     
-    @router.get("/models/{model_name}/items/{item_id}")
+    @router.get("/{model_name}/{item_id}")
     async def get_item(
         model_name: str,
         item_id: UUID,
@@ -207,7 +239,7 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         
         return item.model_dump()
     
-    @router.post("/models/{model_name}/items", status_code=201)
+    @router.post("/{model_name}", status_code=201)
     async def create_item(
         model_name: str,
         data: dict[str, Any],
@@ -245,7 +277,7 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
     
-    @router.patch("/models/{model_name}/items/{item_id}")
+    @router.patch("/{model_name}/{item_id}")
     async def update_item(
         model_name: str,
         item_id: UUID,
@@ -292,7 +324,7 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         
         return item.model_dump()
     
-    @router.delete("/models/{model_name}/items/{item_id}")
+    @router.delete("/{model_name}/{item_id}")
     async def delete_item(
         model_name: str,
         item_id: UUID,
@@ -334,4 +366,50 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         
         return {"message": "Item deleted successfully"}
     
+    @router.post("/{model_name}/bulk-delete")
+    async def bulk_delete(
+        model_name: str,
+        data: dict[str, Any],
+        session: AsyncSession = Depends(get_session),
+        user: User = Depends(require_admin),
+    ) -> dict[str, int]:
+        """
+        Bulk delete items.
+        
+        Args:
+            model_name: Name of the model.
+            data: Dictionary with 'ids' list.
+        
+        Returns:
+            Number of deleted items.
+        """
+        model = get_model(model_name)
+        
+        if not model:
+            raise HTTPException(status_code=404, detail="Model not found")
+        
+        ids = data.get("ids", [])
+        deleted = 0
+        
+        for item_id in ids:
+            try:
+                uuid_id = UUID(item_id) if isinstance(item_id, str) else item_id
+                result = await session.execute(
+                    select(model).where(model.id == uuid_id)
+                )
+                item = result.scalar_one_or_none()
+                if item:
+                    if hasattr(item, "soft_delete"):
+                        item.soft_delete()
+                        session.add(item)
+                    else:
+                        await session.delete(item)
+                    deleted += 1
+            except Exception:
+                pass
+        
+        await session.flush()
+        return {"deleted": deleted}
+    
     return router
+
