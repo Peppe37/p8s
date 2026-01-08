@@ -6,7 +6,7 @@ and DX of Django with the performance and async nature of FastAPI, plus first-cl
 AI/LLM integration and a native React frontend.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __author__ = "Giuseppe La Pietra"
 
 # Core exports
@@ -14,6 +14,13 @@ from p8s.core.application import P8sApp
 from p8s.core.settings import Settings, get_settings
 from p8s.db.base import Model
 from p8s.db.session import get_session
+from p8s.db.signals import Signal, receiver
+
+# Auth exports
+from p8s.auth.permissions import Permission, Group
+
+# Storage exports
+from p8s.storage import FileField, ImageField
 
 # AI exports (optional)
 try:
@@ -30,6 +37,15 @@ __all__ = [
     # Database
     "Model",
     "get_session",
+    # Signals
+    "Signal",
+    "receiver",
+    # Auth
+    "Permission",
+    "Group",
+    # Storage
+    "FileField",
+    "ImageField",
     # AI (optional)
     "AIField",
     "VectorField",
@@ -37,3 +53,4 @@ __all__ = [
 
 # Convenience alias
 models = type("ModelsModule", (), {"Model": Model})()
+

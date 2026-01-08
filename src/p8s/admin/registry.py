@@ -73,12 +73,22 @@ def get_model_metadata(model: type[SQLModel]) -> dict[str, Any]:
     # Get field information
     fields = []
     
+    # Import PydanticUndefined for comparison
+    from pydantic_core import PydanticUndefined
+    
     for field_name, field_info in model.model_fields.items():
+        # Handle default value - avoid PydanticUndefined serialization
+        default_value = field_info.default
+        if default_value is PydanticUndefined:
+            default_value = None
+        elif not isinstance(default_value, (str, int, float, bool, list, dict, type(None))):
+            default_value = str(default_value) if default_value is not None else None
+        
         field_data = {
             "name": field_name,
             "type": str(field_info.annotation),
             "required": field_info.is_required(),
-            "default": field_info.default if field_info.default is not None else None,
+            "default": default_value,
             "description": field_info.description,
         }
         
@@ -98,15 +108,43 @@ def get_model_metadata(model: type[SQLModel]) -> dict[str, Any]:
     admin_config = {}
     if hasattr(model, "Admin"):
         for attr in ["list_display", "search_fields", "list_filter", 
-                     "ordering", "readonly_fields", "exclude"]:
+                     "ordering", "readonly_fields", "exclude", "actions"]:
             if hasattr(model.Admin, attr):
                 admin_config[attr] = getattr(model.Admin, attr)
+    
+    # Get registered actions with metadata
+    from p8s.admin.actions import get_model_actions, DEFAULT_ACTIONS
+    
+    actions_list = []
+    model_actions = get_model_actions(model.__name__)
+    
+    # Add default actions
+    for action_name, func in DEFAULT_ACTIONS.items():
+        actions_list.append({
+            "name": action_name,
+            "description": getattr(func, "_action_description", action_name),
+            "confirm": getattr(func, "_action_confirm", False),
+        })
+    
+    # Add model-specific actions
+    for action_name, action_meta in model_actions.items():
+        actions_list.append({
+            "name": action_name,
+            "description": action_meta.get("description", action_name),
+            "confirm": action_meta.get("confirm", False),
+        })
+    
+    # Get inline configurations
+    from p8s.admin.inlines import get_model_inlines
+    inlines = get_model_inlines(model)
     
     return {
         "name": model.__name__,
         "table_name": getattr(model, "__tablename__", model.__name__.lower()),
         "fields": fields,
         "admin": admin_config,
+        "actions": actions_list,
+        "inlines": inlines,
     }
 
 

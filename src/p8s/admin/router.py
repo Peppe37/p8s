@@ -40,6 +40,10 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
     Returns:
         Configured APIRouter.
     """
+    # Auto-discover models from installed apps
+    from p8s.admin.registry import auto_discover_models
+    auto_discover_models()
+    
     router = APIRouter()
     static_dir = Path(__file__).parent / "static"
     
