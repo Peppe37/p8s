@@ -157,6 +157,10 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         If AI is enabled in settings and process_ai=True, AIFields
         will be automatically populated after creation.
         
+        Signals emitted:
+        - PRE_SAVE: Before the record is saved
+        - POST_SAVE: After the record is saved (with created=True)
+        
         Args:
             session: Database session.
             obj_in: Creation schema.
@@ -166,9 +170,14 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             The created record.
         """
         from p8s.core.settings import get_settings
+        from p8s.db.signals import Signal, send_async
         
         obj_data = obj_in.model_dump()
         db_obj = self.model(**obj_data)
+        
+        # Emit PRE_SAVE signal
+        await send_async(Signal.PRE_SAVE, sender=self.model, instance=db_obj, created=True)
+        
         session.add(db_obj)
         await session.flush()
         await session.refresh(db_obj)
@@ -191,6 +200,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                 import logging
                 logging.getLogger("p8s.crud").warning(f"AI processing failed: {e}")
         
+        # Emit POST_SAVE signal
+        await send_async(Signal.POST_SAVE, sender=self.model, instance=db_obj, created=True)
+        
         return db_obj
     
     async def update(
@@ -207,6 +219,10 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         If AI is enabled in settings and process_ai=True, AIFields
         will be regenerated when their source fields change.
         
+        Signals emitted:
+        - PRE_SAVE: Before the record is saved
+        - POST_SAVE: After the record is saved (with created=False)
+        
         Args:
             session: Database session.
             db_obj: Existing record.
@@ -217,6 +233,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             The updated record.
         """
         from p8s.core.settings import get_settings
+        from p8s.db.signals import Signal, send_async
         
         # Store original values to detect changes
         original_values = db_obj.model_dump()
@@ -229,6 +246,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         for field, value in update_data.items():
             if hasattr(db_obj, field):
                 setattr(db_obj, field, value)
+        
+        # Emit PRE_SAVE signal
+        await send_async(Signal.PRE_SAVE, sender=self.model, instance=db_obj, created=False)
         
         session.add(db_obj)
         await session.flush()
@@ -267,6 +287,9 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                 import logging
                 logging.getLogger("p8s.crud").warning(f"AI processing failed: {e}")
         
+        # Emit POST_SAVE signal
+        await send_async(Signal.POST_SAVE, sender=self.model, instance=db_obj, created=False)
+        
         return db_obj
     
     async def delete(
@@ -279,6 +302,10 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         Delete a record.
         
+        Signals emitted:
+        - PRE_DELETE: Before the record is deleted
+        - POST_DELETE: After the record is deleted
+        
         Args:
             session: Database session.
             id: Record ID.
@@ -287,9 +314,14 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         Returns:
             The deleted record or None.
         """
+        from p8s.db.signals import Signal, send_async
+        
         obj = await self.get(session, id)
         if not obj:
             return None
+        
+        # Emit PRE_DELETE signal
+        await send_async(Signal.PRE_DELETE, sender=self.model, instance=obj)
         
         if soft and hasattr(obj, "soft_delete"):
             obj.soft_delete()
@@ -298,6 +330,10 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             await session.delete(obj)
         
         await session.flush()
+        
+        # Emit POST_DELETE signal
+        await send_async(Signal.POST_DELETE, sender=self.model, instance=obj)
+        
         return obj
 
 

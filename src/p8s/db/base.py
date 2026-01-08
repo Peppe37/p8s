@@ -28,6 +28,7 @@ class AdminConfig:
                 list_display = ["name", "price"]
                 search_fields = ["name", "description"]
                 ordering = ["-created_at"]
+                actions = ["mark_active", "mark_inactive", "export_csv"]
         ```
     """
     
@@ -54,6 +55,12 @@ class AdminConfig:
     
     # Fieldsets for detail view
     fieldsets: list[tuple[str, dict[str, Any]]] = []
+    
+    # Admin actions (bulk operations)
+    actions: list[str] = []
+    
+    # Inline models for editing related objects
+    inlines: list[Any] = []
 
 
 class Model(SQLModel):
