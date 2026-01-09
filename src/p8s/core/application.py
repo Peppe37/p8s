@@ -61,11 +61,13 @@ class P8sApp(FastAPI):
         app_lifespan = lifespan or self._default_lifespan
         
         # Disable default docs - we'll add protected versions
+        # Note: We pass debug=False to disable Starlette's default error pages
+        # P8s has its own styled debug/error pages that respect p8s_settings.debug
         super().__init__(
             title=title or self.p8s_settings.app_name,
             description=description,
             version=version,
-            debug=self.p8s_settings.debug,
+            debug=False,  # Use P8s custom error pages instead of Starlette's
             lifespan=app_lifespan,
             docs_url=None,  # Disable default docs
             redoc_url=None,  # Disable default redoc
@@ -124,13 +126,40 @@ class P8sApp(FastAPI):
         )
     
     def _setup_exception_handlers(self) -> None:
-        """Setup custom exception handlers."""
+        """
+        Setup custom exception handlers.
+        
+        In DEBUG mode: Shows detailed Django-style error pages.
+        In PRODUCTION mode: Shows generic styled error pages.
+        
+        Users can override error templates by creating files in:
+        templates/errors/{status_code}.html
+        """
+        from pathlib import Path
+        from fastapi import HTTPException
+        from fastapi.exceptions import RequestValidationError
+        from starlette.exceptions import HTTPException as StarletteHTTPException
         from p8s.core.exceptions import (
             P8sException,
-            p8s_exception_handler,
+            create_exception_handlers,
         )
         
-        self.add_exception_handler(P8sException, p8s_exception_handler)
+        # Determine templates directory for user overrides
+        templates_dir = Path(self.p8s_settings.base_dir) / "templates"
+        
+        # Create handlers with current debug setting
+        handlers = create_exception_handlers(
+            debug=self.p8s_settings.debug,
+            templates_dir=templates_dir if templates_dir.exists() else None,
+        )
+        
+        # Register all handlers
+        for exc_type, handler in handlers.items():
+            self.add_exception_handler(exc_type, handler)
+        
+        # Also register for Starlette's HTTPException (used internally by FastAPI for 404s)
+        if HTTPException in handlers:
+            self.add_exception_handler(StarletteHTTPException, handlers[HTTPException])
     
     def _setup_static_files(self) -> None:
         """Mount static files directory."""
