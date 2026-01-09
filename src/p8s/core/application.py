@@ -191,20 +191,22 @@ class P8sApp(FastAPI):
     
     def _setup_protected_docs(self) -> None:
         """
-        Setup OpenAPI docs protected by admin authentication.
+        Setup OpenAPI docs.
         
-        Only authenticated admin users can access:
+        Docs are only available in debug mode for security:
         - /docs (Swagger UI)
         - /redoc (ReDoc)
         - /openapi.json (OpenAPI schema)
-        """
-        from fastapi import Depends
-        from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
-        from fastapi.responses import JSONResponse
-        from p8s.auth.dependencies import require_admin
-        from p8s.auth.models import User
         
-        # Store openapi schema
+        In production (DEBUG=False), these endpoints return 404.
+        """
+        from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+        from fastapi.responses import JSONResponse, PlainTextResponse
+        
+        # Only enable docs in debug mode
+        if not self.p8s_settings.debug:
+            return
+        
         @self.get("/openapi.json", include_in_schema=False)
         async def get_openapi_schema():
             """Get OpenAPI schema."""
