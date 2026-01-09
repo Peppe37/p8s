@@ -11,6 +11,7 @@ from typing import Any
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, HTMLResponse
 
 from p8s.core.settings import Settings, get_settings
 
@@ -75,7 +76,8 @@ class P8sApp(FastAPI):
         self._setup_cors()
         self._setup_exception_handlers()
         self._setup_static_files()
-        self._setup_protected_docs()  # Add protected docs
+        self._setup_favicon()
+        self._setup_protected_docs()
         
         # Mount admin panel if enabled
         if self.p8s_settings.admin.enabled:
@@ -101,9 +103,6 @@ class P8sApp(FastAPI):
     async def _on_startup(self) -> None:
         """Application startup tasks."""
         from p8s.db.session import init_db
-        
-        # Initialize database
-        await init_db(self.p8s_settings.database)
         
         # Initialize database
         await init_db(self.p8s_settings.database)
@@ -146,6 +145,49 @@ class P8sApp(FastAPI):
         
         if media_dir.exists():
             self.mount("/media", StaticFiles(directory=str(media_dir)), name="media")
+
+    def _setup_favicon(self) -> None:
+        """
+        Setup global favicon serving.
+        
+        Serves /p8s.svg and /favicon.ico.
+        Checks user static dir for overrides first.
+        """
+        from pathlib import Path
+        import p8s.admin
+
+        @self.get("/p8s.svg", include_in_schema=False)
+        async def favicon_svg():
+             # Check user override
+            user_static = Path(self.p8s_settings.base_dir) / self.p8s_settings.static_dir
+            if (user_static / "p8s.svg").exists():
+                 return FileResponse(user_static / "p8s.svg")
+            
+            # Default
+            admin_path = Path(p8s.admin.__file__).parent
+            
+            # Try built static first
+            default_icon = admin_path / "static" / "p8s.svg"
+            if default_icon.exists():
+                return FileResponse(default_icon)
+
+            # Fallback to source in dev
+            source_icon = admin_path / "ui" / "public" / "p8s.svg"
+            if source_icon.exists():
+                return FileResponse(source_icon)
+                
+            return HTMLResponse("Not Found", status_code=404)
+
+        @self.get("/favicon.ico", include_in_schema=False)
+        async def favicon_ico():
+            # Check user override for ico
+            user_static = Path(self.p8s_settings.base_dir) / self.p8s_settings.static_dir
+            if (user_static / "favicon.ico").exists():
+                 return FileResponse(user_static / "favicon.ico")
+            
+            # Fallback to SVG if only that exists (browsers handle this fine often, or user overrides p8s.svg)
+            # Or redirect to p8s.svg? Redirect is better
+            return await favicon_svg()
     
     def _setup_protected_docs(self) -> None:
         """
@@ -164,21 +206,22 @@ class P8sApp(FastAPI):
         
         # Store openapi schema
         @self.get("/openapi.json", include_in_schema=False)
-        async def get_openapi_schema(user: User = Depends(require_admin)):
-            """Get OpenAPI schema (admin only)."""
+        async def get_openapi_schema():
+            """Get OpenAPI schema."""
             return JSONResponse(self.openapi())
         
         @self.get("/docs", include_in_schema=False)
-        async def get_docs(user: User = Depends(require_admin)):
-            """Get Swagger UI docs (admin only)."""
+        async def get_docs():
+            """Get Swagger UI docs."""
             return get_swagger_ui_html(
                 openapi_url="/openapi.json",
                 title=f"{self.title} - Docs",
+                swagger_favicon_url="/p8s.svg",
             )
         
         @self.get("/redoc", include_in_schema=False)
-        async def get_redoc(user: User = Depends(require_admin)):
-            """Get ReDoc docs (admin only)."""
+        async def get_redoc():
+            """Get ReDoc docs."""
             return get_redoc_html(
                 openapi_url="/openapi.json",
                 title=f"{self.title} - ReDoc",

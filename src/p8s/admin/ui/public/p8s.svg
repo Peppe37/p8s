@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="modernFlameGradient" x1="10%" y1="100%" x2="90%" y2="0%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" /> <stop offset="35%" style="stop-color:#FF4500;stop-opacity:1" /> <stop offset="75%" style="stop-color:#B22222;stop-opacity:1" /> <stop offset="100%" style="stop-color:#4A0E0E;stop-opacity:1" /> </linearGradient>
+  </defs>
+
+  <path d="M50,95
+           C 30,95, 10,75, 15,50
+           C 18,35, 35,20, 50,5
+           C 65,20, 82,35, 85,50
+           C 90,75, 70,95, 50,95 Z
+           M 50,15
+           C 40,30, 25,45, 28,65
+           C 30,78, 40,85, 50,85
+           C 60,85, 70,78, 72,65
+           C 75,45, 60,30, 50,15 Z"
+        fill="url(#modernFlameGradient)" />
+
+  <path d="M50,30
+          C 42,38, 35,45, 35,55
+          C 35,63, 40,68, 45,70
+          C 48,71, 52,71, 55,70
+          C 60,68, 65,63, 65,55
+          C 65,45, 58,38, 50,30
+          M 50,78
+          C 45,78, 42,75, 42,70
+          C 42,67, 45,64, 50,64
+          C 55,64, 58,67, 58,70
+          C 58,75, 55,78, 50,78
+          M 50,45
+          C 55,45, 58,48, 58,53
+          C 58,58, 55,61, 50,61
+          C 45,61, 42,58, 42,53
+          C 42,48, 45,45, 50,45 Z"
+       fill="#FFFFFF"/>
+</svg>
