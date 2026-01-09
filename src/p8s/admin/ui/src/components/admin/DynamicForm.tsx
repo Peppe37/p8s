@@ -10,7 +10,7 @@ import type { FormField, FieldMeta } from '../../types/admin';
 interface DynamicFormProps {
     fields: FormField[];
     initialValues?: Record<string, unknown>;
-    onSubmit: (values: Record<string, unknown>) => Promise<void>;
+    onSubmit: (values: Record<string, unknown>, action: 'save' | 'save_continue' | 'save_add') => Promise<void>;
     onCancel?: () => void;
     submitLabel?: string;
     loading?: boolean;
@@ -27,6 +27,7 @@ export function DynamicForm({
     const [values, setValues] = useState<Record<string, unknown>>(initialValues);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [submitting, setSubmitting] = useState(false);
+    const [submitAction, setSubmitAction] = useState<'save' | 'save_continue' | 'save_add'>('save');
 
     useEffect(() => {
         setValues(initialValues);
@@ -85,7 +86,7 @@ export function DynamicForm({
 
         setSubmitting(true);
         try {
-            await onSubmit(values);
+            await onSubmit(values, submitAction);
         } catch (error) {
             // Handle submission error
             if (error instanceof Error) {
@@ -254,12 +255,18 @@ export function DynamicForm({
                         {errors[field.name] && (
                             <span className="field-error">{errors[field.name]}</span>
                         )}
+                        {field.description && (
+                            <div className="help-text">{field.description}</div>
+                        )}
                     </div>
                 ) : (
                     <div key={field.name} className="form-group checkbox-group">
                         {renderField(field)}
                         {errors[field.name] && (
                             <span className="field-error">{errors[field.name]}</span>
+                        )}
+                        {field.description && (
+                            <div className="help-text">{field.description}</div>
                         )}
                     </div>
                 )
@@ -283,6 +290,24 @@ export function DynamicForm({
                 >
                     {submitting ? 'Saving...' : submitLabel}
                 </button>
+                <button
+                    type="submit"
+                    className="btn btn-secondary"
+                    disabled={loading || submitting}
+                    onClick={() => setSubmitAction('save_continue')}
+                    title="Save and continue editing"
+                >
+                    Save & Continue
+                </button>
+                <button
+                    type="submit"
+                    className="btn btn-secondary"
+                    disabled={loading || submitting}
+                    onClick={() => setSubmitAction('save_add')}
+                    title="Save and add another"
+                >
+                    Save & Add Another
+                </button>
             </div>
         </form>
     );
@@ -298,7 +323,8 @@ export function fieldMetaToFormField(
 ): FormField {
     const baseField = {
         name,
-        label: name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        label: meta.label || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        description: meta.description,
         required: meta.required && !meta.nullable,
     };
 

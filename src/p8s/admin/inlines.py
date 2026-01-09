@@ -18,11 +18,11 @@ if TYPE_CHECKING:
 class InlineConfig:
     """
     Configuration for an inline model.
-    
+
     Example:
         ```python
         from p8s.admin.inlines import TabularInline
-        
+
         class OrderItemInline(TabularInline):
             model = OrderItem
             fk_field = "order_id"
@@ -30,38 +30,38 @@ class InlineConfig:
             extra = 1  # Number of empty forms to show
         ```
     """
-    
+
     # The related model class
     model: type["SQLModel"] | None = None
-    
+
     # Field name that references the parent model (FK field)
     fk_field: str = ""
-    
+
     # Fields to display/edit
     fields: list[str] = field(default_factory=list)
-    
+
     # Fields to exclude
     exclude: list[str] = field(default_factory=list)
-    
+
     # Read-only fields
     readonly_fields: list[str] = field(default_factory=list)
-    
+
     # Number of extra empty forms
     extra: int = 3
-    
+
     # Maximum number of forms
     max_num: int | None = None
-    
+
     # Minimum number of forms
     min_num: int = 0
-    
+
     # Can delete inline items
     can_delete: bool = True
-    
+
     # Verbose name
     verbose_name: str = ""
     verbose_name_plural: str = ""
-    
+
     # Ordering
     ordering: list[str] = field(default_factory=list)
 
@@ -69,9 +69,9 @@ class InlineConfig:
 class TabularInline(InlineConfig):
     """
     Inline displayed as a table.
-    
+
     Each related object is shown as a row in a table.
-    
+
     Example:
         ```python
         class OrderItemInline(TabularInline):
@@ -80,16 +80,16 @@ class TabularInline(InlineConfig):
             fields = ["product_name", "quantity", "price"]
         ```
     """
-    
+
     template: str = "tabular"
 
 
 class StackedInline(InlineConfig):
     """
     Inline displayed as stacked forms.
-    
+
     Each related object is shown as a separate form block.
-    
+
     Example:
         ```python
         class OrderItemInline(StackedInline):
@@ -98,24 +98,24 @@ class StackedInline(InlineConfig):
             fields = ["product_name", "quantity", "price", "notes"]
         ```
     """
-    
+
     template: str = "stacked"
 
 
 def get_inline_metadata(inline: InlineConfig) -> dict[str, Any]:
     """
     Extract metadata from an inline configuration.
-    
+
     Args:
         inline: InlineConfig instance.
-    
+
     Returns:
         Metadata dictionary for the frontend.
     """
     model = inline.model
     if not model:
         return {}
-    
+
     # Get field info from the model
     fields = []
     for field_name, field_info in model.model_fields.items():
@@ -125,14 +125,14 @@ def get_inline_metadata(inline: InlineConfig) -> dict[str, Any]:
         # Skip if in exclude list
         if field_name in inline.exclude:
             continue
-        
+
         fields.append({
             "name": field_name,
             "type": str(field_info.annotation),
             "required": field_info.is_required(),
             "readonly": field_name in inline.readonly_fields,
         })
-    
+
     return {
         "model": model.__name__,
         "fk_field": inline.fk_field,
@@ -151,15 +151,15 @@ def get_inline_metadata(inline: InlineConfig) -> dict[str, Any]:
 def get_model_inlines(model: type["SQLModel"]) -> list[dict[str, Any]]:
     """
     Get inline configurations for a model.
-    
+
     Args:
         model: The parent model class.
-    
+
     Returns:
         List of inline metadata dictionaries.
     """
     if not hasattr(model, "Admin"):
         return []
-    
+
     inlines = getattr(model.Admin, "inlines", [])
     return [get_inline_metadata(inline) for inline in inlines]

@@ -19,6 +19,7 @@ export interface AdminConfig {
     icon?: string;
     list_display: string[];
     search_fields: string[];
+    list_filter: string[]; // Added list_filter
     filterable_fields: string[];
     readonly_fields: string[];
     hidden_fields: string[];
@@ -34,10 +35,12 @@ export interface FieldMeta {
     nullable: boolean;
     default?: unknown;
     description?: string;
+    label?: string; // from verbose_name
     choices?: Array<{ value: string; label: string }>;
     relation?: {
         model: string;
         field: string;
+        local_field?: string;
     };
     ai_config?: {
         prompt: string;
@@ -51,6 +54,12 @@ export interface ModelSchema {
     table_name: string;
     admin: AdminConfig;
     fields: Record<string, FieldMeta>;
+    actions: Array<{
+        name: string;
+        description: string;
+        confirm: boolean;
+        confirm_message?: string;
+    }>;
 }
 
 // Paginated response
@@ -106,6 +115,7 @@ export interface TableColumn {
 export interface FormField {
     name: string;
     label: string;
+    description?: string; // Help text
     type: 'text' | 'number' | 'email' | 'password' | 'textarea' | 'select' | 'checkbox' | 'date' | 'datetime' | 'json' | 'readonly';
     required: boolean;
     placeholder?: string;

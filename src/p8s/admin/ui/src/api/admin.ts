@@ -69,7 +69,7 @@ export async function listRecords<T = Record<string, unknown>>(
     options: {
         page?: number;
         pageSize?: number;
-        filters?: Filter[];
+        filters?: Record<string, any>;
         sort?: Sort;
         search?: string;
     } = {}
@@ -83,8 +83,10 @@ export async function listRecords<T = Record<string, unknown>>(
         params.set('order_by', options.sort.direction === 'desc' ? `-${options.sort.field}` : options.sort.field);
     }
     if (options.filters) {
-        options.filters.forEach(f => {
-            params.set(`filter[${f.field}][${f.operator}]`, String(f.value));
+        Object.entries(options.filters).forEach(([key, value]) => {
+            if (value !== null && value !== undefined && value !== '') {
+                params.set(key, String(value));
+            }
         });
     }
 
@@ -223,6 +225,45 @@ export async function getDashboardStats(): Promise<{
 }> {
     const response = await fetch(`${API_BASE}/admin/dashboard`, {
         headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+}
+/**
+ * Get simple list of items for a model (for dropdowns)
+ */
+export async function getModelItems(
+    modelName: string,
+    params: { search?: string } = {}
+): Promise<Array<{ value: string; label: string }>> {
+    // Reuse listRecords but map to options
+    // Assuming backend supports filtering/search
+    // We request a resonable limit for dropdowns
+    const response = await listRecords(modelName, {
+        page: 1,
+        pageSize: 100,
+        search: params.search
+    });
+
+    // Map items to label/value
+    // We assume items have 'id' and 'name' or string representation
+    return response.items.map((item: any) => ({
+        value: item.id,
+        label: item.name || item.title || item.slug || item.email || item.username || item.id,
+    }));
+}
+
+/**
+ * Execute an admin action on selected items
+ */
+export async function executeAction(
+    modelName: string,
+    actionName: string,
+    ids: string[]
+): Promise<{ message?: string; affected?: number }> {
+    const response = await fetch(`${API_BASE}/admin/${modelName}/action`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ action: actionName, ids }),
     });
     return handleResponse(response);
 }
