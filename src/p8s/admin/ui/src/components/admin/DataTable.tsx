@@ -125,11 +125,13 @@ export function DataTable<T extends { id: string }>({
                     <tr>
                         {selectable && (
                             <th className="checkbox-cell">
-                                <input
-                                    type="checkbox"
-                                    checked={selectedIds.length === data.length}
-                                    onChange={handleSelectAll}
-                                />
+                                <label className="checkbox-label" style={{ marginBottom: 0 }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedIds.length === data.length}
+                                        onChange={handleSelectAll}
+                                    />
+                                </label>
                             </th>
                         )}
                         {columns.map(col => (
@@ -166,12 +168,14 @@ export function DataTable<T extends { id: string }>({
                         >
                             {selectable && (
                                 <td className="checkbox-cell">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedIds.includes(row.id)}
-                                        onClick={(e) => handleSelectRow(row.id, e)}
-                                        onChange={() => { }}
-                                    />
+                                    <label className="checkbox-label" style={{ marginBottom: 0 }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIds.includes(row.id)}
+                                            onClick={(e) => handleSelectRow(row.id, e)}
+                                            onChange={() => { }}
+                                        />
+                                    </label>
                                 </td>
                             )}
                             {columns.map(col => (

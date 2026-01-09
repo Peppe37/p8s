@@ -12,8 +12,11 @@ interface DynamicFormProps {
     initialValues?: Record<string, unknown>;
     onSubmit: (values: Record<string, unknown>, action: 'save' | 'save_continue' | 'save_add') => Promise<void>;
     onCancel?: () => void;
+    onAddRelated?: (model: string, field: string) => void;
     submitLabel?: string;
+    cancelLabel?: string;
     loading?: boolean;
+    hideSaveOptions?: boolean;
 }
 
 export function DynamicForm({
@@ -21,8 +24,11 @@ export function DynamicForm({
     initialValues = {},
     onSubmit,
     onCancel,
+    onAddRelated,
     submitLabel = 'Save',
+    cancelLabel = 'Cancel',
     loading = false,
+    hideSaveOptions = false,
 }: DynamicFormProps) {
     const [values, setValues] = useState<Record<string, unknown>>(initialValues);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -224,6 +230,36 @@ export function DynamicForm({
                     />
                 );
 
+            case 'relation':
+                return (
+                    <div className="relation-field-wrapper" style={{ display: 'flex', gap: '8px' }}>
+                        <select
+                            {...baseProps}
+                            value={String(value ?? '')}
+                            onChange={(e) => handleChange(field.name, e.target.value)}
+                            style={{ flex: 1 }}
+                        >
+                            <option value="">Select {field.label}...</option>
+                            {field.options?.map(opt => (
+                                <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                </option>
+                            ))}
+                        </select>
+                        {onAddRelated && field.relation && (
+                            <button
+                                type="button"
+                                className="btn btn-icon"
+                                onClick={() => onAddRelated(field.relation!.model, field.name)}
+                                title="Add new item"
+                                style={{ padding: '0 10px', fontSize: '1.2rem', fontWeight: 'bold' }}
+                            >
+                                +
+                            </button>
+                        )}
+                    </div>
+                );
+
             default:
                 return (
                     <input
@@ -280,7 +316,7 @@ export function DynamicForm({
                         className="btn btn-secondary"
                         disabled={submitting}
                     >
-                        Cancel
+                        {cancelLabel}
                     </button>
                 )}
                 <button
@@ -290,24 +326,28 @@ export function DynamicForm({
                 >
                     {submitting ? 'Saving...' : submitLabel}
                 </button>
-                <button
-                    type="submit"
-                    className="btn btn-secondary"
-                    disabled={loading || submitting}
-                    onClick={() => setSubmitAction('save_continue')}
-                    title="Save and continue editing"
-                >
-                    Save & Continue
-                </button>
-                <button
-                    type="submit"
-                    className="btn btn-secondary"
-                    disabled={loading || submitting}
-                    onClick={() => setSubmitAction('save_add')}
-                    title="Save and add another"
-                >
-                    Save & Add Another
-                </button>
+                {!hideSaveOptions && (
+                    <>
+                        <button
+                            type="submit"
+                            className="btn btn-secondary"
+                            disabled={loading || submitting}
+                            onClick={() => setSubmitAction('save_continue')}
+                            title="Save and continue editing"
+                        >
+                            Save & Continue
+                        </button>
+                        <button
+                            type="submit"
+                            className="btn btn-secondary"
+                            disabled={loading || submitting}
+                            onClick={() => setSubmitAction('save_add')}
+                            title="Save and add another"
+                        >
+                            Save & Add Another
+                        </button>
+                    </>
+                )}
             </div>
         </form>
     );
@@ -353,6 +393,14 @@ export function fieldMetaToFormField(
                 ...baseField,
                 type: 'textarea' as const,
                 placeholder: 'AI-generated field (leave empty to auto-generate)',
+            };
+
+        case 'relation':
+            return {
+                ...baseField,
+                type: 'relation' as const,
+                options: meta.choices,
+                relation: meta.relation
             };
 
         default:
