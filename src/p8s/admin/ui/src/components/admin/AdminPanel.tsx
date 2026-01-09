@@ -34,6 +34,7 @@ export function AdminPanel({ }: AdminPanelProps) {
     const [loginUser, setLoginUser] = useState('');
     const [loginPass, setLoginPass] = useState('');
     const [loginError, setLoginError] = useState('');
+    const [p8sVersion, setP8sVersion] = useState<string>('');
 
     // Theme State
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -91,7 +92,14 @@ export function AdminPanel({ }: AdminPanelProps) {
         }
     }, [notification]);
 
-    // Initial load handled by auth effect
+    // Load version on mount (public endpoint)
+    useEffect(() => {
+        fetch('/admin/api/version')
+            .then(res => res.json())
+            .then(data => setP8sVersion(data.version || ''))
+            .catch(() => { });
+    }, []);
+
     // Initial load handled by auth effect
     useEffect(() => {
         if (isAuthenticated) {
@@ -558,7 +566,7 @@ export function AdminPanel({ }: AdminPanelProps) {
                     </button>
 
                     <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                        Powered by P8s Framework
+                        Powered by P8s Framework {p8sVersion && <span style={{ opacity: 0.7 }}>v{p8sVersion}</span>}
                     </div>
                 </form>
             </div>

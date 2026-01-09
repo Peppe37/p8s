@@ -68,6 +68,17 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         return HTMLResponse("Not Found", status_code=404)
 
     # =========================================================================
+    # Public Endpoints - No auth required
+    # =========================================================================
+
+    @router.get("/api/version")
+    @router.get("/version")
+    async def admin_version() -> dict[str, str]:
+        """Get P8s version (public endpoint for login page)."""
+        from p8s import __version__
+        return {"version": __version__}
+
+    # =========================================================================
     # API Endpoints - All require admin auth
     # =========================================================================
 
@@ -81,10 +92,12 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         Returns:
             Admin settings and available models.
         """
+        from p8s import __version__
         models = get_registered_models()
 
         return {
             "title": settings.title,
+            "version": __version__,
             "models": [
                 get_model_metadata(model)
                 for model in models.values()
