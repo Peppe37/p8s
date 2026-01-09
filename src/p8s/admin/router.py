@@ -288,6 +288,14 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
             for rel in relations_to_load:
                 query = query.options(selectinload(rel))
         
+        # Helper to get relation fields to exclude from dump
+        # This prevents implicit lazy loading during serialization which causes MissingGreenlet
+        metadata = get_model_metadata(model)
+        relation_fields = {
+            name for name, meta in metadata["fields"].items() 
+            if meta.get("type") == "relation"
+        }
+
         # Apply pagination
         query = query.offset(skip).limit(page_size)
 
@@ -295,26 +303,36 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         result = await session.execute(query)
         items = result.scalars().all()
         
-        # Serialize items, including relation string refs
+        # Serialize items
         final_items = []
         for item in items:
-            data = item.model_dump()
+            # Exclude relations from automatic dump to avoid lazy load
+            data = item.model_dump(exclude=relation_fields)
             
-            # Inject relation string representations
+            # Inject relation string refs manually (safe access if loaded)
             for rel_field in list_display:
                 if rel_field in metadata["fields"] and metadata["fields"][rel_field].get("type") == "relation":
-                    rel_val = getattr(item, rel_field, None)
-                    if rel_val:
-                        # Try __str__ or some reasonable default
-                        data[rel_field] = str(rel_val)
-                        
-                        # If the relation object has a 'name' or 'title', use that preference
-                        if hasattr(rel_val, "name"):
-                            data[rel_field] = rel_val.name
-                        elif hasattr(rel_val, "title"):
-                            data[rel_field] = rel_val.title
-                    else:
-                         data[rel_field] = None
+                    # Only access if we expect it to be loaded via selectinload above
+                    # But checking if loaded is hard in async.
+                    # Since we added it to relations_to_load, it SHOULD be loaded.
+                    # If it's NOT in list_display, we definitely shouldn't touch it.
+                    
+                    try:
+                        rel_val = getattr(item, rel_field, None)
+                        if rel_val:
+                            # Try __str__ or some reasonable default
+                            data[rel_field] = str(rel_val)
+                            
+                            # If the relation object has a 'name' or 'title', use that preference
+                            if hasattr(rel_val, "name"):
+                                data[rel_field] = rel_val.name
+                            elif hasattr(rel_val, "title"):
+                                data[rel_field] = rel_val.title
+                        else:
+                             data[rel_field] = None
+                    except Exception:
+                        # Fallback if somehow not loaded
+                        data[rel_field] = "Error loading"
 
             final_items.append(data)
 
@@ -342,20 +360,43 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         Returns:
             Item data.
         """
-        model = get_model(model_name)
-
         if not model:
             raise HTTPException(status_code=404, detail="Model not found")
 
-        result = await session.execute(
-            select(model).where(model.id == item_id)
-        )
+        # Prepare eager loading for all relationships
+        from sqlalchemy.orm import selectinload
+        query = select(model).where(model.id == item_id)
+        
+        metadata = get_model_metadata(model)
+        for name, meta in metadata["fields"].items():
+            if meta.get("type") == "relation":
+                if hasattr(model, name):
+                    query = query.options(selectinload(getattr(model, name)))
+
+        result = await session.execute(query)
         item = result.scalar_one_or_none()
 
         if not item:
             raise HTTPException(status_code=404, detail="Item not found")
 
-        return item.model_dump()
+        # Safe serialization
+        from sqlalchemy.inspection import inspect
+        mapper = inspect(model)
+        
+        serialized = {}
+        for column in mapper.columns:
+            val = getattr(item, column.key)
+            if isinstance(val, UUID):
+                val = str(val)
+            serialized[column.key] = val
+        
+        # Also include loaded relations IDs for frontend form
+        for name, meta in metadata["fields"].items():
+            if meta.get("type") == "relation":
+                # For many-to-one, the FK column is enough (handled above)
+                pass
+            
+        return serialized
 
     @router.post("/{model_name}", status_code=201)
     async def create_item(
@@ -391,7 +432,19 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
             session.add(item)
             await session.flush()
             await session.refresh(item)
-            return item.model_dump()
+            
+            # Safe serialization
+            from sqlalchemy.inspection import inspect
+            mapper = inspect(model)
+            
+            serialized = {}
+            for column in mapper.columns:
+                val = getattr(item, column.key)
+                if isinstance(val, UUID):
+                    val = str(val)
+                serialized[column.key] = val
+            
+            return serialized
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
 
@@ -419,9 +472,17 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         if not model:
             raise HTTPException(status_code=404, detail="Model not found")
 
-        result = await session.execute(
-            select(model).where(model.id == item_id)
-        )
+        # Prepare eager loading for all relationships
+        from sqlalchemy.orm import selectinload
+        query = select(model).where(model.id == item_id)
+        
+        metadata = get_model_metadata(model)
+        for name, meta in metadata["fields"].items():
+            if meta.get("type") == "relation":
+                if hasattr(model, name):
+                    query = query.options(selectinload(getattr(model, name)))
+
+        result = await session.execute(query)
         item = result.scalar_one_or_none()
 
         if not item:
@@ -432,15 +493,43 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         if hasattr(model, "Admin"):
             readonly.extend(getattr(model.Admin, "readonly_fields", []))
 
+        # Get relation field names to skip them during update
+        # (frontend should send category_id, not category)
+        relation_fields = {
+            name for name, meta in metadata["fields"].items() 
+            if meta.get("type") == "relation"
+        }
+        
         for key, value in data.items():
-            if key not in readonly and hasattr(item, key):
-                setattr(item, key, value)
+            if key in readonly:
+                continue
+            if key in relation_fields:
+                # Skip relation fields - use the FK field instead (e.g., category_id)
+                continue
+            if not hasattr(item, key):
+                continue
+            setattr(item, key, value)
 
         session.add(item)
         await session.flush()
         await session.refresh(item)
 
-        return item.model_dump()
+        # Safe serialization: Only include columns, ignore relationships
+        # model_dump() triggers lazy loads which fail in async
+        from sqlalchemy.inspection import inspect
+        mapper = inspect(model)
+        
+        serialized = {}
+        for column in mapper.columns:
+            val = getattr(item, column.key)
+            # Handle UUIDs and Dates
+            if isinstance(val, UUID):
+                val = str(val)
+            # Simple types (str, int, float, bool, None) pass through
+            # Complex types might need casting, but JSON response handles most
+            serialized[column.key] = val
+            
+        return serialized
 
     @router.delete("/{model_name}/{item_id}")
     async def delete_item(

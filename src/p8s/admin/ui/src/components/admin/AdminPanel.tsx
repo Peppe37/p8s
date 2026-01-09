@@ -25,6 +25,9 @@ interface RecordWithId {
     [key: string]: unknown;
 }
 
+// Stable empty object for initial values to prevent resets
+const EMPTY_VALUES = {};
+
 export function AdminPanel({ }: AdminPanelProps) {
     // Auth State
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!localStorage.getItem('p8s_token'));
@@ -66,11 +69,27 @@ export function AdminPanel({ }: AdminPanelProps) {
     const [actionLoading, setActionLoading] = useState(false);
     const [selectedAction, setSelectedAction] = useState('');
 
+    // Modal state for inline create
+    const [relatedModalOpen, setRelatedModalOpen] = useState(false);
+    const [relatedModelName, setRelatedModelName] = useState<string | null>(null);
+    const [relatedModelSchema, setRelatedModelSchema] = useState<ModelSchema | null>(null);
+
+
     // UI state
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const sidebarCollapsed = false;
     const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+    // Notification timer - Dismiss all messages after 5s
+    useEffect(() => {
+        if (notification) {
+            const timer = setTimeout(() => {
+                setNotification(null);
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [notification]);
 
     // Initial load handled by auth effect
     // Initial load handled by auth effect
@@ -267,34 +286,91 @@ export function AdminPanel({ }: AdminPanelProps) {
                 loadRecords();
             }
 
-        } catch (err) {
-            throw err;
+        } catch (err: any) {
+            console.error(err);
+            const msg = err.message || 'Failed to save record';
+            showNotification(msg, 'error');
+            // Do not re-throw, as we handled it via notification.
+            // Re-throwing causes DynamicForm to show a duplicate generic error banner.
         }
     };
 
     const handleAction = async () => {
-        if (!currentModel || !selectedAction || selectedIds.length === 0) return;
+        if (!selectedAction || selectedIds.length === 0) return;
 
-        const action = currentSchema?.actions.find(a => a.name === selectedAction);
-        if (action?.confirm) {
-            const msg = action.confirm_message || `Are you sure you want to run "${action.description}" on ${selectedIds.length} item(s)?`;
-            if (!window.confirm(msg)) return;
+        // Find action config
+        const actionConfig = currentSchema?.actions.find(a => a.name === selectedAction);
+
+        if (actionConfig?.confirm) {
+            if (!window.confirm(actionConfig.confirm_message || 'Are you sure you want to proceed?')) {
+                return;
+            }
         }
 
         setActionLoading(true);
         try {
-            const res = await adminApi.executeAction(currentModel, selectedAction, selectedIds);
-            showNotification(res.message || `Action executed on ${res.affected} items`, 'success');
+            await adminApi.executeAction(currentModel!, selectedAction, selectedIds);
+            showNotification('Action executed successfully', 'success');
+            loadRecords(); // Refresh data
             setSelectedIds([]);
-            setSelectedAction('');
-            loadRecords();
-        } catch (err: any) {
-            showNotification(err.message || 'Action failed', 'error');
+        } catch (err) {
+            setNotification({ message: 'Failed to execute action', type: 'error' });
         } finally {
             setActionLoading(false);
         }
     };
 
+    // --- Inline Creation Handlers ---
+
+    const handleAddRelated = async (modelName: string) => {
+        setRelatedModelName(modelName);
+        setRelatedModalOpen(true);
+
+        try {
+            // Find schema for related model
+            // Try to find in loaded models first to avoid API call if possible
+            let schema = models.find(m => m.name === modelName);
+            if (!schema) {
+                // Fetch if not found (though models should be loaded)
+                const res = await adminApi.getModelSchema(modelName);
+                schema = res;
+            }
+            setRelatedModelSchema(schema || null);
+        } catch (err) {
+            console.error("Failed to load related model schema", err);
+            setNotification({ message: `Failed to load schema for ${modelName}`, type: 'error' });
+            setRelatedModalOpen(false);
+        }
+    };
+
+    const handleRelatedSubmit = async (values: Record<string, unknown>) => {
+        if (!relatedModelName) return;
+
+        try {
+            // Create record
+            await adminApi.createRecord(relatedModelName, values);
+            setNotification({ message: `${relatedModelName} created successfully`, type: 'success' });
+            setRelatedModalOpen(false);
+
+            // Refresh parent schema/form to get new options
+            // We need to reload the CURRENT model schema to refresh choices for the field
+            if (currentModel) {
+                const updatedSchema = await adminApi.getModelSchema(currentModel);
+                setCurrentSchema(updatedSchema);
+                // We also need to update this model in the global list
+                setModels(prev => prev.map(m => m.name === currentModel ? updatedSchema : m));
+
+                // Ideally we'd select the new item, but for now just refreshing the list is a good start
+                // If the API returned the created ID, we could auto-select it.
+            }
+
+        } catch (err) {
+            console.error(err);
+            throw new Error("Failed to create related record");
+        }
+    };
+
+    // --- Render Helpers ---
     const handleDelete = async (ids: string[]) => {
         if (!currentModel || ids.length === 0) return;
 
@@ -337,7 +413,6 @@ export function AdminPanel({ }: AdminPanelProps) {
 
     const showNotification = (message: string, type: 'success' | 'error') => {
         setNotification({ message, type });
-        setTimeout(() => setNotification(null), 5000);
     };
 
     // Generate table columns from schema
@@ -410,7 +485,7 @@ export function AdminPanel({ }: AdminPanelProps) {
 
                 // Inject options for relations
                 if (meta.type === 'relation' && relationOptions[name]) {
-                    field.type = 'select';
+                    // field.type = 'select'; // Removed override to keep 'relation' type for DynamicForm
                     field.options = relationOptions[name];
 
                     // If this relation maps to a local field (FK), use that name for the form
@@ -524,8 +599,16 @@ export function AdminPanel({ }: AdminPanelProps) {
 
                 {/* Notification */}
                 {notification && (
-                    <div className={`notification ${notification.type}`}>
-                        {notification.message}
+                    <div className={`notification ${notification.type}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>{notification.message}</span>
+                        {notification.type === 'error' && (
+                            <button
+                                onClick={() => setNotification(null)}
+                                style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', marginLeft: '10px' }}
+                            >
+                                ✕
+                            </button>
+                        )}
                     </div>
                 )}
 
@@ -710,11 +793,40 @@ export function AdminPanel({ }: AdminPanelProps) {
                                 onCancel={handleBack}
                                 submitLabel={viewMode === 'create' ? 'Create' : 'Save Changes'}
                                 loading={loading}
+                                onAddRelated={handleAddRelated}
                             />
                         </div>
                     )
                 }
             </main>
+
+            {/* Modal for Inline Creation */}
+            {relatedModalOpen && relatedModelSchema && (
+                <div className="modal-overlay">
+                    <div className="modal-content" style={{ maxWidth: '600px', width: '100%' }}>
+                        <div className="modal-header">
+                            <h3>Add New {relatedModelSchema.admin.name}</h3>
+                            <button className="btn-close" onClick={() => setRelatedModalOpen(false)}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <DynamicForm
+                                fields={Object.entries(relatedModelSchema.fields)
+                                    .filter(([name, meta]) =>
+                                        !meta.api_readonly &&
+                                        !['id', 'created_at', 'updated_at', 'deleted_at'].includes(name)
+                                    )
+                                    .map(([name, meta]) => fieldMetaToFormField(name, meta, {}))}
+                                initialValues={EMPTY_VALUES}
+                                onSubmit={handleRelatedSubmit}
+                                onCancel={() => setRelatedModalOpen(false)}
+                                submitLabel="Save"
+                                cancelLabel="Close"
+                                hideSaveOptions={true}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -45,23 +45,33 @@ export function Sidebar({
                     {!collapsed && <span>Dashboard</span>}
                 </a>
 
-                <div className="nav-divider"></div>
-                {!collapsed && <div className="nav-label">Models</div>}
+                {Object.entries(
+                    models.reduce((acc, model) => {
+                        const app = model.app_label || 'Other';
+                        if (!acc[app]) acc[app] = [];
+                        acc[app].push(model);
+                        return acc;
+                    }, {} as Record<string, ModelSchema[]>)
+                ).sort(([a], [b]) => a.localeCompare(b)).map(([appName, appModels]) => (
+                    <div key={appName} className="nav-group">
+                        <div className="nav-divider"></div>
+                        {!collapsed && <div className="nav-label">{appName}</div>}
 
-                {models.map(model => (
-                    <a
-                        key={model.name}
-                        href="#"
-                        className={`nav-item ${currentModel === model.name ? 'active' : ''}`}
-                        onClick={(e) => { e.preventDefault(); onSelectModel(model.name); }}
-                        title={model.admin.name}
-                    >
-                        <span className="nav-icon">
-                            {/* In future we can map model icon from schema */}
-                            <Database size={18} />
-                        </span>
-                        {!collapsed && <span>{model.admin.plural_name}</span>}
-                    </a>
+                        {appModels.map(model => (
+                            <a
+                                key={model.name}
+                                href="#"
+                                className={`nav-item ${currentModel === model.name ? 'active' : ''}`}
+                                onClick={(e) => { e.preventDefault(); onSelectModel(model.name); }}
+                                title={model.admin.name}
+                            >
+                                <span className="nav-icon">
+                                    <Database size={18} />
+                                </span>
+                                {!collapsed && <span>{model.admin.plural_name}</span>}
+                            </a>
+                        ))}
+                    </div>
                 ))}
             </nav>
             {/* Footer with version or user info could go here */}

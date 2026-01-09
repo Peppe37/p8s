@@ -31,12 +31,14 @@ export interface AdminConfig {
 export interface FieldMeta {
     name: string;
     type: 'string' | 'number' | 'boolean' | 'date' | 'datetime' | 'json' | 'relation' | 'ai' | 'vector';
+    primary_key: boolean;
     required: boolean;
     nullable: boolean;
-    default?: unknown;
+    default?: any;
     description?: string;
     label?: string; // from verbose_name
     choices?: Array<{ value: string; label: string }>;
+    api_readonly?: boolean;
     relation?: {
         model: string;
         field: string;
@@ -51,6 +53,7 @@ export interface FieldMeta {
 // Model schema from admin API
 export interface ModelSchema {
     name: string;
+    app_label: string;
     table_name: string;
     admin: AdminConfig;
     fields: Record<string, FieldMeta>;
@@ -116,10 +119,15 @@ export interface FormField {
     name: string;
     label: string;
     description?: string; // Help text
-    type: 'text' | 'number' | 'email' | 'password' | 'textarea' | 'select' | 'checkbox' | 'date' | 'datetime' | 'json' | 'readonly';
+    type: 'text' | 'number' | 'email' | 'password' | 'textarea' | 'select' | 'checkbox' | 'date' | 'datetime' | 'json' | 'readonly' | 'relation';
     required: boolean;
     placeholder?: string;
     options?: Array<{ value: string; label: string }>;
+    relation?: {
+        model: string;
+        field: string;
+        local_field?: string;
+    };
     validation?: {
         min?: number;
         max?: number;

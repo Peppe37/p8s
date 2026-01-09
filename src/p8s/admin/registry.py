@@ -60,6 +60,44 @@ def get_model(name: str) -> type[SQLModel] | None:
     return _registered_models.get(name)
 
 
+def _get_app_label(model: type[SQLModel]) -> str:
+    """
+    Get the app label for a model.
+    
+    Tries to infer from module name:
+    - backend.apps.blog.models -> Blog
+    - p8s.auth.models -> Auth
+    - other.module -> Other
+    """
+    module = model.__module__
+    parts = module.split(".")
+    
+    # Check for backend.apps.X
+    if "apps" in parts:
+        try:
+            apps_index = parts.index("apps")
+            if apps_index + 1 < len(parts):
+                return parts[apps_index + 1].title()
+        except ValueError:
+            pass
+            
+    # Check for p8s.X
+    if parts[0] == "p8s" and len(parts) > 1:
+        # Special case for core/auth
+        if parts[1] == "auth":
+            return "Authentication"
+        return parts[1].title()
+        
+    # Fallback to module name if it's simple
+    if len(parts) > 1:
+        # exclude .models if present
+        if parts[-1] == "models":
+            return parts[-2].title()
+            
+    return "Core"
+
+
+
 def get_model_metadata(model: type[SQLModel]) -> dict[str, Any]:
     """
     Extract metadata from a model for the admin panel.
@@ -238,6 +276,7 @@ def get_model_metadata(model: type[SQLModel]) -> dict[str, Any]:
 
     return {
         "name": model.__name__,
+        "app_label": _get_app_label(model),
         "table_name": getattr(model, "__tablename__", model.__name__.lower()),
         "fields": fields,
         "admin": admin_config,
