@@ -18,38 +18,38 @@ def get_alembic_config(
 ) -> AlembicConfig:
     """
     Get Alembic configuration.
-    
+
     Args:
-        migrations_dir: Path to migrations directory. 
+        migrations_dir: Path to migrations directory.
                        Defaults to ./migrations in project root.
-    
+
     Returns:
         Configured AlembicConfig.
     """
     settings = get_settings()
-    
+
     if migrations_dir is None:
         migrations_dir = Path(settings.base_dir) / "migrations"
-    
+
     migrations_dir = Path(migrations_dir)
-    
+
     # Create Alembic config
     alembic_cfg = AlembicConfig()
-    
+
     # Set script location
     alembic_cfg.set_main_option("script_location", str(migrations_dir))
-    
+
     # Set database URL (convert async URL to sync for Alembic)
     db_url = settings.database.url
-    
+
     # Convert async drivers to sync for Alembic
     if "+aiosqlite" in db_url:
         db_url = db_url.replace("+aiosqlite", "")
     elif "+asyncpg" in db_url:
         db_url = db_url.replace("+asyncpg", "+psycopg2")
-    
+
     alembic_cfg.set_main_option("sqlalchemy.url", db_url)
-    
+
     return alembic_cfg
 
 
@@ -58,24 +58,24 @@ def init_migrations(
 ) -> None:
     """
     Initialize migrations directory.
-    
+
     Creates the migrations folder with Alembic configuration.
-    
+
     Args:
         migrations_dir: Path to migrations directory.
     """
     settings = get_settings()
-    
+
     if migrations_dir is None:
         migrations_dir = Path(settings.base_dir) / "migrations"
-    
+
     migrations_dir = Path(migrations_dir)
-    
+
     if migrations_dir.exists():
         raise FileExistsError(f"Migrations directory already exists: {migrations_dir}")
-    
+
     migrations_dir.mkdir(parents=True)
-    
+
     # Create alembic.ini content
     alembic_ini = f"""# P8s Migrations Configuration
 [alembic]
@@ -120,7 +120,7 @@ format = %(levelname)-5.5s [%(name)s] %(message)s
 datefmt = %H:%M:%S
 """
     (settings.base_dir / "alembic.ini").write_text(alembic_ini)
-    
+
     # Create env.py
     env_py = '''"""
 Alembic environment configuration for P8s.
@@ -132,8 +132,20 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
-# Import your models here to register them
-# from backend.models import *
+# Import P8s framework models (User, permissions, etc.)
+from p8s.auth.models import User
+from p8s.auth.permissions import UserPermission, UserGroup
+
+# Auto-discover models from installed apps
+from p8s.core.settings import get_settings
+import importlib
+
+settings = get_settings()
+for app_name in settings.installed_apps:
+    try:
+        importlib.import_module(f"{app_name}.models")
+    except ImportError:
+        pass
 
 # This is the Alembic Config object
 config = context.config
@@ -184,7 +196,7 @@ else:
     run_migrations_online()
 '''
     (migrations_dir / "env.py").write_text(env_py)
-    
+
     # Create script.py.mako template
     script_mako = '''"""${message}
 
@@ -215,7 +227,7 @@ def downgrade() -> None:
     ${downgrades if downgrades else "pass"}
 '''
     (migrations_dir / "script.py.mako").write_text(script_mako)
-    
+
     # Create versions directory
     (migrations_dir / "versions").mkdir()
     (migrations_dir / "versions" / "__init__.py").write_text("")
@@ -228,26 +240,26 @@ def create_migration(
 ) -> str:
     """
     Create a new migration.
-    
+
     Args:
         message: Migration message/description.
         autogenerate: Auto-detect model changes.
         migrations_dir: Path to migrations directory.
-    
+
     Returns:
         Path to the new migration file.
     """
     alembic_cfg = get_alembic_config(migrations_dir)
-    
+
     if autogenerate:
         command.revision(alembic_cfg, message=message, autogenerate=True)
     else:
         command.revision(alembic_cfg, message=message)
-    
+
     # Get the latest revision file
     script_dir = ScriptDirectory.from_config(alembic_cfg)
     head = script_dir.get_current_head()
-    
+
     return head or ""
 
 
@@ -257,7 +269,7 @@ def run_migrations(
 ) -> None:
     """
     Run migrations up to a specific revision.
-    
+
     Args:
         revision: Target revision (default: "head" for latest).
         migrations_dir: Path to migrations directory.
@@ -272,7 +284,7 @@ def rollback_migration(
 ) -> None:
     """
     Rollback migrations.
-    
+
     Args:
         revision: Target revision (default: "-1" for previous).
         migrations_dir: Path to migrations directory.
@@ -286,16 +298,16 @@ def show_migrations(
 ) -> list[dict[str, Any]]:
     """
     Show migration history.
-    
+
     Args:
         migrations_dir: Path to migrations directory.
-    
+
     Returns:
         List of migration info dicts.
     """
     alembic_cfg = get_alembic_config(migrations_dir)
     script_dir = ScriptDirectory.from_config(alembic_cfg)
-    
+
     migrations = []
     for rev in script_dir.walk_revisions():
         migrations.append({
@@ -304,7 +316,7 @@ def show_migrations(
             "message": rev.doc,
             "path": rev.path,
         })
-    
+
     return migrations
 
 
@@ -313,14 +325,14 @@ def get_current_revision(
 ) -> str | None:
     """
     Get current database revision.
-    
+
     Args:
         migrations_dir: Path to migrations directory.
-    
+
     Returns:
         Current revision ID or None.
     """
     alembic_cfg = get_alembic_config(migrations_dir)
     script_dir = ScriptDirectory.from_config(alembic_cfg)
-    
+
     return script_dir.get_current_head()

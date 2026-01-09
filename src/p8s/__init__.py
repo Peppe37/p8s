@@ -22,6 +22,13 @@ from p8s.auth.permissions import Permission, Group
 # Storage exports
 from p8s.storage import FileField, ImageField
 
+# DB Fields
+from p8s.db.fields import (
+    CharField, TextField, BooleanField, IntegerField, FloatField, DecimalField,
+    DateField, DateTimeField, JSONField, EmailField, URLField,
+    ForeignKey, ManyToManyField, OneToOneField
+)
+
 # AI exports (optional)
 try:
     from p8s.ai.fields import AIField, VectorField
@@ -46,6 +53,21 @@ __all__ = [
     # Storage
     "FileField",
     "ImageField",
+    # Fields
+    "CharField",
+    "TextField",
+    "BooleanField", 
+    "IntegerField",
+    "FloatField",
+    "DecimalField",
+    "DateField",
+    "DateTimeField",
+    "JSONField",
+    "EmailField",
+    "URLField",
+    "ForeignKey",
+    "ManyToManyField",
+    "OneToOneField",
     # AI (optional)
     "AIField",
     "VectorField",

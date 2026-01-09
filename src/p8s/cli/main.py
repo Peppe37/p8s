@@ -173,6 +173,9 @@ dev = [
     "pytest",
     "pytest-asyncio",
 ]
+
+[tool.setuptools.packages.find]
+include = ["backend*"]
 '''
         (dest / "pyproject.toml").write_text(pyproject_content)
 

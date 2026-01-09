@@ -6,6 +6,7 @@ from p8s.admin.router import create_admin_router
 from p8s.admin.registry import register_model, get_registered_models
 from p8s.admin.actions import admin_action, register_action
 from p8s.admin.inlines import TabularInline, StackedInline
+from p8s.admin.site import site, ModelAdmin
 
 __all__ = [
     "create_admin_router",
@@ -15,5 +16,7 @@ __all__ = [
     "register_action",
     "TabularInline",
     "StackedInline",
+    "site",
+    "ModelAdmin",
 ]
 
