@@ -5,7 +5,8 @@
  */
 
 import type { ModelSchema } from '../../types/admin';
-import { LayoutGrid, Database, Zap } from 'lucide-react';
+import { LayoutGrid, Database } from 'lucide-react';
+import p8sLogo from '../../assets/p8s.svg';
 
 interface SidebarProps {
     models: ModelSchema[];
@@ -26,11 +27,11 @@ export function Sidebar({
             <div className="sidebar-header">
                 {!collapsed ? (
                     <div className="sidebar-logo">
-                        <span className="logo-icon"><Zap size={20} fill="currentColor" /></span>
+                        <span className="logo-icon"><img src={p8sLogo} alt="P8s Logo" style={{ height: '24px', width: '24px' }} /></span>
                         <span className="logo-text">P8s Admin</span>
                     </div>
                 ) : (
-                    <span className="logo-icon"><Zap size={20} fill="currentColor" /></span>
+                    <span className="logo-icon"><img src={p8sLogo} alt="P8s Logo" style={{ height: '24px', width: '24px' }} /></span>
                 )}
             </div>
 

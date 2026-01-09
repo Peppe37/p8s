@@ -238,6 +238,13 @@ body {
     font-size: 0.95rem;
 }
 
+
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .sidebar-nav {
     flex: 1;
     padding: 16px 8px;

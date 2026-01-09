@@ -11,6 +11,7 @@ import { DynamicForm, fieldMetaToFormField } from './DynamicForm';
 import * as adminApi from '../../api/admin';
 import type { ModelSchema, Sort, TableColumn, FormField } from '../../types/admin';
 import { Moon, Sun, LogOut, Database } from 'lucide-react';
+import p8sLogo from '../../assets/p8s.svg';
 
 // View modes
 type ViewMode = 'list' | 'create' | 'edit';
@@ -439,6 +440,7 @@ export function AdminPanel({ }: AdminPanelProps) {
             <div className="login-container">
                 <form onSubmit={handleLogin} className="login-box">
                     <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                        <img src={p8sLogo} alt="P8s Logo" style={{ width: '64px', height: '64px', marginBottom: '1rem' }} />
                         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>P8s Admin</h2>
                         <p style={{ marginTop: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Sign in to manage your application</p>
                     </div>
