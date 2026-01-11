@@ -7,7 +7,7 @@ Uses LiteLLM under the hood for unified API access.
 from functools import lru_cache
 from typing import Any
 
-from p8s.core.settings import get_settings, AISettings
+from p8s.core.settings import AISettings, get_settings
 
 
 class AIClient:
@@ -130,8 +130,7 @@ class AIClient:
 
         except ImportError:
             raise ImportError(
-                "LiteLLM is required for AI features. "
-                "Install with: pip install p8s[ai]"
+                "LiteLLM is required for AI features. Install with: pip install p8s[ai]"
             )
 
     async def generate_structured(
@@ -212,8 +211,7 @@ class AIClient:
 
         except ImportError:
             raise ImportError(
-                "LiteLLM is required for embeddings. "
-                "Install with: pip install p8s[ai]"
+                "LiteLLM is required for embeddings. Install with: pip install p8s[ai]"
             )
 
     async def embed_batch(
@@ -246,8 +244,7 @@ class AIClient:
 
         except ImportError:
             raise ImportError(
-                "LiteLLM is required for embeddings. "
-                "Install with: pip install p8s[ai]"
+                "LiteLLM is required for embeddings. Install with: pip install p8s[ai]"
             )
 
     async def stream(
@@ -299,8 +296,7 @@ class AIClient:
 
         except ImportError:
             raise ImportError(
-                "LiteLLM is required for AI features. "
-                "Install with: pip install p8s[ai]"
+                "LiteLLM is required for AI features. Install with: pip install p8s[ai]"
             )
 
 

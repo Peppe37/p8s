@@ -9,8 +9,8 @@ Provides:
 
 from p8s.cache.backends import (
     CacheBackend,
-    MemoryCache,
     FileCache,
+    MemoryCache,
 )
 from p8s.cache.decorators import cache_page, cache_result
 
@@ -21,30 +21,31 @@ _default_cache: CacheBackend | None = None
 def get_cache(backend: str | None = None) -> CacheBackend:
     """
     Get cache backend instance.
-    
+
     Args:
         backend: Backend type ("memory", "file", "redis") or None for default.
-    
+
     Returns:
         CacheBackend instance.
     """
     global _default_cache
-    
+
     if backend is None and _default_cache is not None:
         return _default_cache
-    
+
     if backend is None:
         try:
             from p8s.core.settings import get_settings
+
             settings = get_settings()
             cache_settings = getattr(settings, "cache", None)
             if cache_settings:
                 backend = getattr(cache_settings, "backend", "memory")
         except Exception:
             backend = "memory"
-    
+
     backend = backend or "memory"
-    
+
     if backend == "memory":
         cache = MemoryCache()
     elif backend == "file":
@@ -52,15 +53,16 @@ def get_cache(backend: str | None = None) -> CacheBackend:
     elif backend == "redis":
         try:
             from p8s.cache.redis_backend import RedisCache
+
             cache = RedisCache()
         except ImportError:
             raise ImportError("Redis cache requires 'redis' package: pip install redis")
     else:
         raise ValueError(f"Unknown cache backend: {backend}")
-    
+
     if _default_cache is None:
         _default_cache = cache
-    
+
     return cache
 
 

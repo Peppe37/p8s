@@ -7,8 +7,8 @@ Provides:
 - Inline configuration and registry
 """
 
-from typing import Any, TYPE_CHECKING
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from sqlmodel import SQLModel
@@ -126,12 +126,14 @@ def get_inline_metadata(inline: InlineConfig) -> dict[str, Any]:
         if field_name in inline.exclude:
             continue
 
-        fields.append({
-            "name": field_name,
-            "type": str(field_info.annotation),
-            "required": field_info.is_required(),
-            "readonly": field_name in inline.readonly_fields,
-        })
+        fields.append(
+            {
+                "name": field_name,
+                "type": str(field_info.annotation),
+                "required": field_info.is_required(),
+                "readonly": field_name in inline.readonly_fields,
+            }
+        )
 
     return {
         "model": model.__name__,

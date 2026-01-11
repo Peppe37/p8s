@@ -7,14 +7,12 @@ Provides:
 - FileBackend for testing (writes to files)
 """
 
+import logging
 import smtplib
 import ssl
 from abc import ABC, abstractmethod
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from pathlib import Path
-from typing import Any, TYPE_CHECKING
-import logging
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from p8s.email.message import EmailMessage
@@ -25,37 +23,37 @@ logger = logging.getLogger("p8s.email")
 class EmailBackend(ABC):
     """
     Abstract base class for email backends.
-    
+
     Subclass this to implement custom email backends.
     """
-    
+
     def __init__(self, fail_silently: bool = False, **kwargs: Any) -> None:
         """
         Initialize backend.
-        
+
         Args:
             fail_silently: If True, suppress exceptions.
             **kwargs: Backend-specific options.
         """
         self.fail_silently = fail_silently
-    
+
     @abstractmethod
     def send_messages(self, messages: list["EmailMessage"]) -> int:
         """
         Send one or more messages.
-        
+
         Args:
             messages: List of EmailMessage objects.
-        
+
         Returns:
             Number of successfully sent messages.
         """
         pass
-    
+
     def open(self) -> bool:
         """Open a connection (optional for some backends)."""
         return True
-    
+
     def close(self) -> None:
         """Close the connection."""
         pass
@@ -64,7 +62,7 @@ class EmailBackend(ABC):
 class SMTPBackend(EmailBackend):
     """
     SMTP email backend for sending real emails.
-    
+
     Example:
         ```python
         backend = SMTPBackend(
@@ -77,7 +75,7 @@ class SMTPBackend(EmailBackend):
         backend.send_messages([message])
         ```
     """
-    
+
     def __init__(
         self,
         host: str = "localhost",
@@ -92,7 +90,7 @@ class SMTPBackend(EmailBackend):
     ) -> None:
         """
         Initialize SMTP backend.
-        
+
         Args:
             host: SMTP server hostname.
             port: SMTP server port.
@@ -112,12 +110,12 @@ class SMTPBackend(EmailBackend):
         self.use_ssl = use_ssl
         self.timeout = timeout
         self.connection = None
-    
+
     def open(self) -> bool:
         """Open SMTP connection."""
         if self.connection:
             return False
-        
+
         try:
             if self.use_ssl:
                 context = ssl.create_default_context()
@@ -131,17 +129,17 @@ class SMTPBackend(EmailBackend):
                 if self.use_tls:
                     context = ssl.create_default_context()
                     self.connection.starttls(context=context)
-            
+
             if self.username and self.password:
                 self.connection.login(self.username, self.password)
-            
+
             return True
         except Exception as e:
             if not self.fail_silently:
                 raise
             logger.error(f"Failed to open SMTP connection: {e}")
             return False
-    
+
     def close(self) -> None:
         """Close SMTP connection."""
         if self.connection:
@@ -150,18 +148,18 @@ class SMTPBackend(EmailBackend):
             except Exception:
                 pass
             self.connection = None
-    
+
     def send_messages(self, messages: list["EmailMessage"]) -> int:
         """Send messages via SMTP."""
         if not messages:
             return 0
-        
+
         new_connection = self.open()
         if not self.connection:
             return 0
-        
+
         sent_count = 0
-        
+
         try:
             for message in messages:
                 try:
@@ -174,17 +172,17 @@ class SMTPBackend(EmailBackend):
         finally:
             if new_connection:
                 self.close()
-        
+
         return sent_count
-    
+
     def _send(self, message: "EmailMessage") -> None:
         """Send a single message."""
         msg = message.to_mime_message()
-        
+
         recipients = message.recipients()
         if not recipients:
             return
-        
+
         self.connection.sendmail(
             message.from_email,
             recipients,
@@ -195,10 +193,10 @@ class SMTPBackend(EmailBackend):
 class ConsoleBackend(EmailBackend):
     """
     Email backend that prints emails to console.
-    
+
     Useful for development and debugging.
     """
-    
+
     def send_messages(self, messages: list["EmailMessage"]) -> int:
         """Print messages to console."""
         for message in messages:
@@ -214,17 +212,17 @@ class ConsoleBackend(EmailBackend):
             print(message.body)
             print("=" * 60)
             print()
-        
+
         return len(messages)
 
 
 class FileBackend(EmailBackend):
     """
     Email backend that writes emails to files.
-    
+
     Useful for testing.
     """
-    
+
     def __init__(
         self,
         file_path: str | Path = "emails",
@@ -233,7 +231,7 @@ class FileBackend(EmailBackend):
     ) -> None:
         """
         Initialize file backend.
-        
+
         Args:
             file_path: Directory to write email files.
             fail_silently: Suppress exceptions.
@@ -241,15 +239,15 @@ class FileBackend(EmailBackend):
         super().__init__(fail_silently=fail_silently, **kwargs)
         self.file_path = Path(file_path)
         self.file_path.mkdir(parents=True, exist_ok=True)
-    
+
     def send_messages(self, messages: list["EmailMessage"]) -> int:
         """Write messages to files."""
         import time
-        
+
         for message in messages:
             filename = f"{int(time.time() * 1000)}_{message.subject[:20]}.eml"
             filepath = self.file_path / filename
-            
+
             try:
                 with open(filepath, "w") as f:
                     f.write(f"From: {message.from_email}\n")
@@ -261,5 +259,5 @@ class FileBackend(EmailBackend):
                 if not self.fail_silently:
                     raise
                 logger.error(f"Failed to write email file: {e}")
-        
+
         return len(messages)

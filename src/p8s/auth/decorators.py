@@ -5,8 +5,8 @@ These decorators provide a familiar Django-like API for protecting routes,
 while internally using FastAPI's dependency injection system.
 """
 
-from functools import wraps
-from typing import Any, Callable, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 from fastapi import HTTPException, status
 
@@ -93,13 +93,17 @@ def permission_required(*permissions: str) -> Callable[[T], T]:
             ...
         ```
     """
+
     def decorator(func: T) -> T:
         func._permissions_required = permissions
         return func
+
     return decorator
 
 
-def user_passes_test(test_func: Callable[[Any], bool], message: str = "Access denied") -> Callable[[T], T]:
+def user_passes_test(
+    test_func: Callable[[Any], bool], message: str = "Access denied"
+) -> Callable[[T], T]:
     """
     Decorator factory that checks if user passes a custom test.
 
@@ -118,14 +122,17 @@ def user_passes_test(test_func: Callable[[Any], bool], message: str = "Access de
             ...
         ```
     """
+
     def decorator(func: T) -> T:
         func._user_test = test_func
         func._user_test_message = message
         return func
+
     return decorator
 
 
 # Dependency wrappers for easier use
+
 
 def require_login():
     """
@@ -139,7 +146,9 @@ def require_login():
         ```
     """
     from fastapi import Depends
+
     from p8s.auth.dependencies import require_auth
+
     return Depends(require_auth)
 
 
@@ -155,6 +164,7 @@ def require_staff():
         ```
     """
     from fastapi import Depends
+
     from p8s.auth.dependencies import require_auth
     from p8s.auth.models import User
 
@@ -174,6 +184,7 @@ def require_superuser():
     Create a dependency that requires superuser status.
     """
     from fastapi import Depends
+
     from p8s.auth.dependencies import require_auth
     from p8s.auth.models import User
 
@@ -200,7 +211,9 @@ def require_perm(permission: str):
         ```
     """
     from fastapi import Depends
+
     from p8s.auth.dependencies import require_permission
+
     return Depends(require_permission(permission))
 
 
@@ -216,6 +229,7 @@ def require_perms(*permissions: str):
         ```
     """
     from fastapi import Depends
+
     from p8s.auth.dependencies import require_auth
     from p8s.auth.models import User
 

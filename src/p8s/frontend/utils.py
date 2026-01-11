@@ -2,8 +2,6 @@
 P8s Frontend Utilities.
 """
 
-from pathlib import Path
-
 
 def get_vite_config(
     backend_port: int = 8000,
@@ -11,15 +9,15 @@ def get_vite_config(
 ) -> str:
     """
     Generate Vite config with proxy to backend.
-    
+
     Args:
         backend_port: Backend server port.
         frontend_port: Frontend dev server port.
-    
+
     Returns:
         Vite config content as string.
     """
-    return f'''import {{ defineConfig }} from 'vite'
+    return f"""import {{ defineConfig }} from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({{
@@ -42,17 +40,17 @@ export default defineConfig({{
     }},
   }},
 }})
-'''
+"""
 
 
 def get_tsconfig() -> str:
     """
     Get default TypeScript config for P8s projects.
-    
+
     Returns:
         tsconfig.json content as string.
     """
-    return '''{
+    return """{
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
@@ -80,7 +78,7 @@ def get_tsconfig() -> str:
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
-'''
+"""
 
 
 def create_react_hook(
@@ -90,12 +88,12 @@ def create_react_hook(
 ) -> str:
     """
     Generate a React Query hook for an endpoint.
-    
+
     Args:
         endpoint: API endpoint path.
         method: HTTP method.
         name: Hook name (auto-generated if None).
-    
+
     Returns:
         React hook code as string.
     """
@@ -103,9 +101,9 @@ def create_react_hook(
         # Generate name from endpoint
         parts = endpoint.strip("/").split("/")
         name = "use" + "".join(p.title() for p in parts if not p.startswith("{"))
-    
+
     if method.upper() == "GET":
-        return f'''import {{ useQuery }} from '@tanstack/react-query';
+        return f"""import {{ useQuery }} from '@tanstack/react-query';
 
 export function {name}() {{
   return useQuery({{
@@ -117,9 +115,9 @@ export function {name}() {{
     }},
   }});
 }}
-'''
+"""
     else:
-        return f'''import {{ useMutation, useQueryClient }} from '@tanstack/react-query';
+        return f"""import {{ useMutation, useQueryClient }} from '@tanstack/react-query';
 
 export function {name}() {{
   const queryClient = useQueryClient();
@@ -139,4 +137,4 @@ export function {name}() {{
     }},
   }});
 }}
-'''
+"""

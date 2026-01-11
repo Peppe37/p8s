@@ -7,13 +7,14 @@ Provides:
 - Session-based message passing between requests
 """
 
+from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Any
-from dataclasses import dataclass, field
 
 
 class MessageLevel(IntEnum):
     """Message importance levels."""
+
     DEBUG = 10
     INFO = 20
     SUCCESS = 25
@@ -35,16 +36,17 @@ LEVEL_TAGS = {
 class Message:
     """
     A single message.
-    
+
     Attributes:
         level: Message level (IntEnum).
         message: The message text.
         extra_tags: Additional CSS class tags.
     """
+
     level: int
     message: str
     extra_tags: str = ""
-    
+
     @property
     def tags(self) -> str:
         """Get all tags as space-separated string."""
@@ -52,12 +54,12 @@ class Message:
         if self.extra_tags:
             return f"{level_tag} {self.extra_tags}".strip()
         return level_tag
-    
+
     @property
     def level_tag(self) -> str:
         """Get level tag only."""
         return LEVEL_TAGS.get(self.level, "")
-    
+
     def __str__(self) -> str:
         return self.message
 
@@ -66,31 +68,32 @@ class Message:
 class MessageStorage:
     """
     In-memory message storage.
-    
+
     For production, use session-backed storage.
     """
+
     messages: list[Message] = field(default_factory=list)
     level: int = MessageLevel.DEBUG
-    
+
     def add(self, level: int, message: str, extra_tags: str = "") -> None:
         """Add a message if it meets the minimum level."""
         if level >= self.level:
             self.messages.append(Message(level, message, extra_tags))
-    
+
     def get_messages(self, clear: bool = True) -> list[Message]:
         """Get all messages, optionally clearing them."""
         msgs = self.messages.copy()
         if clear:
             self.messages.clear()
         return msgs
-    
+
     def clear(self) -> None:
         """Clear all messages."""
         self.messages.clear()
-    
+
     def __len__(self) -> int:
         return len(self.messages)
-    
+
     def __iter__(self):
         return iter(self.get_messages())
 
@@ -115,11 +118,11 @@ def add_message(
 ) -> None:
     """
     Add a message to the storage.
-    
+
     Example:
         ```python
         from p8s.messages import add_message, MessageLevel
-        
+
         add_message(MessageLevel.SUCCESS, "Profile updated!")
         add_message(MessageLevel.ERROR, "Invalid form data")
         ```
@@ -131,11 +134,11 @@ def add_message(
 def get_messages(request_id: str = "default", clear: bool = True) -> list[Message]:
     """
     Get all messages for a request.
-    
+
     Example:
         ```python
         from p8s.messages import get_messages
-        
+
         for message in get_messages():
             print(f"[{message.level_tag}] {message}")
         ```
@@ -172,14 +175,15 @@ def error(message: str, extra_tags: str = "", request_id: str = "default") -> No
 
 # FastAPI integration
 
+
 def get_messages_for_response(request_id: str = "default") -> list[dict[str, Any]]:
     """
     Get messages as JSON-serializable dicts for API responses.
-    
+
     Example:
         ```python
         from p8s.messages import success, get_messages_for_response
-        
+
         @app.post("/profile")
         async def update_profile(data: ProfileUpdate):
             await save_profile(data)

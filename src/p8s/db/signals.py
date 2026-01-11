@@ -8,7 +8,7 @@ Example:
     ```python
     from p8s.db.signals import Signal, receiver
     from products.models import Product
-    
+
     @receiver(Signal.POST_SAVE, sender=Product)
     def on_product_created(sender, instance, created, **kwargs):
         if created:
@@ -17,10 +17,10 @@ Example:
 """
 
 import logging
-from enum import Enum
-from typing import Any, Callable, TypeVar
-from functools import wraps
 from collections import defaultdict
+from collections.abc import Callable
+from enum import Enum
+from typing import Any, TypeVar
 
 logger = logging.getLogger("p8s.signals")
 
@@ -29,18 +29,18 @@ T = TypeVar("T")
 
 class Signal(Enum):
     """Available signals for model lifecycle events."""
-    
+
     # Save signals
     PRE_SAVE = "pre_save"
     POST_SAVE = "post_save"
-    
+
     # Delete signals
     PRE_DELETE = "pre_delete"
     POST_DELETE = "post_delete"
-    
+
     # Init signals
     POST_INIT = "post_init"
-    
+
     # M2M signals (for future use)
     M2M_CHANGED = "m2m_changed"
 
@@ -55,11 +55,11 @@ _signal_handlers: dict[Signal, dict[type | None, list[Callable]]] = defaultdict(
 class SignalDispatcher:
     """
     Dispatcher for managing and sending signals.
-    
+
     This is the core engine that connects signals to handlers and
     dispatches events when signals are sent.
     """
-    
+
     @staticmethod
     def connect(
         signal: Signal,
@@ -69,23 +69,23 @@ class SignalDispatcher:
     ) -> None:
         """
         Connect a receiver function to a signal.
-        
+
         Args:
             signal: The signal to connect to.
             receiver: The function to call when signal is sent.
             sender: Optional model class to filter signals.
             dispatch_uid: Optional unique identifier to prevent duplicates.
-        
+
         Example:
             ```python
             def my_handler(sender, instance, **kwargs):
                 print(f"Saved: {instance}")
-            
+
             SignalDispatcher.connect(Signal.POST_SAVE, my_handler, sender=Product)
             ```
         """
         handlers = _signal_handlers[signal][sender]
-        
+
         # Check for duplicates using dispatch_uid
         if dispatch_uid:
             for h in handlers:
@@ -93,10 +93,10 @@ class SignalDispatcher:
                     logger.debug(f"Signal handler already connected: {dispatch_uid}")
                     return
             receiver._dispatch_uid = dispatch_uid
-        
+
         handlers.append(receiver)
         logger.debug(f"Connected {receiver.__name__} to {signal.value} for {sender}")
-    
+
     @staticmethod
     def disconnect(
         signal: Signal,
@@ -105,24 +105,24 @@ class SignalDispatcher:
     ) -> bool:
         """
         Disconnect a receiver from a signal.
-        
+
         Args:
             signal: The signal to disconnect from.
             receiver: The function to remove.
             sender: The sender class used when connecting.
-        
+
         Returns:
             True if handler was removed, False if not found.
         """
         handlers = _signal_handlers[signal][sender]
-        
+
         try:
             handlers.remove(receiver)
             logger.debug(f"Disconnected {receiver.__name__} from {signal.value}")
             return True
         except ValueError:
             return False
-    
+
     @staticmethod
     def send(
         signal: Signal,
@@ -131,15 +131,15 @@ class SignalDispatcher:
     ) -> list[tuple[Callable, Any]]:
         """
         Send a signal to all connected receivers.
-        
+
         Args:
             signal: The signal to send.
             sender: The class sending the signal.
             **kwargs: Additional arguments to pass to receivers.
-        
+
         Returns:
             List of (receiver, response) tuples.
-        
+
         Example:
             ```python
             SignalDispatcher.send(
@@ -151,13 +151,13 @@ class SignalDispatcher:
             ```
         """
         responses = []
-        
+
         # Get handlers for this specific sender
         handlers = _signal_handlers[signal][sender].copy()
-        
+
         # Also get handlers registered for all senders (sender=None)
         handlers.extend(_signal_handlers[signal][None].copy())
-        
+
         for handler in handlers:
             try:
                 response = handler(sender=sender, **kwargs)
@@ -168,9 +168,9 @@ class SignalDispatcher:
                     exc_info=True,
                 )
                 responses.append((handler, e))
-        
+
         return responses
-    
+
     @staticmethod
     async def send_async(
         signal: Signal,
@@ -179,24 +179,24 @@ class SignalDispatcher:
     ) -> list[tuple[Callable, Any]]:
         """
         Send a signal to all connected receivers (async version).
-        
+
         Awaits async handlers, calls sync handlers normally.
-        
+
         Args:
             signal: The signal to send.
             sender: The class sending the signal.
             **kwargs: Additional arguments to pass to receivers.
-        
+
         Returns:
             List of (receiver, response) tuples.
         """
         import asyncio
-        
+
         responses = []
-        
+
         handlers = _signal_handlers[signal][sender].copy()
         handlers.extend(_signal_handlers[signal][None].copy())
-        
+
         for handler in handlers:
             try:
                 if asyncio.iscoroutinefunction(handler):
@@ -210,7 +210,7 @@ class SignalDispatcher:
                     exc_info=True,
                 )
                 responses.append((handler, e))
-        
+
         return responses
 
 
@@ -221,37 +221,37 @@ def receiver(
 ) -> Callable[[T], T]:
     """
     Decorator to connect a function to a signal.
-    
+
     Args:
         signal: Signal or list of signals to connect to.
         sender: Optional model class to filter signals.
         dispatch_uid: Optional unique ID to prevent duplicate connections.
-    
+
     Returns:
         Decorator function.
-    
+
     Example:
         ```python
         from p8s.db.signals import Signal, receiver
         from products.models import Product
-        
+
         @receiver(Signal.POST_SAVE, sender=Product)
         def on_product_save(sender, instance, created, **kwargs):
             if created:
                 send_notification(f"New product: {instance.name}")
-        
+
         @receiver([Signal.POST_SAVE, Signal.POST_DELETE], sender=Product)
         def log_product_change(sender, instance, **kwargs):
             log_audit_trail(instance)
         ```
     """
     signals = signal if isinstance(signal, list) else [signal]
-    
+
     def decorator(func: T) -> T:
         for sig in signals:
             SignalDispatcher.connect(sig, func, sender, dispatch_uid)
         return func
-    
+
     return decorator
 
 
@@ -264,9 +264,9 @@ def connect(
 ) -> None:
     """
     Connect a receiver function to a signal.
-    
+
     This is a convenience wrapper around SignalDispatcher.connect.
-    
+
     Args:
         signal: The signal to connect to.
         receiver_func: The function to call when signal is sent.
@@ -283,12 +283,12 @@ def disconnect(
 ) -> bool:
     """
     Disconnect a receiver from a signal.
-    
+
     Args:
         signal: The signal to disconnect from.
         receiver_func: The function to remove.
         sender: The sender class used when connecting.
-    
+
     Returns:
         True if handler was removed, False if not found.
     """
@@ -298,12 +298,12 @@ def disconnect(
 def send(signal: Signal, sender: type, **kwargs: Any) -> list[tuple[Callable, Any]]:
     """
     Send a signal synchronously.
-    
+
     Args:
         signal: The signal to send.
         sender: The class sending the signal.
         **kwargs: Arguments to pass to handlers.
-    
+
     Returns:
         List of (handler, response) tuples.
     """
@@ -317,12 +317,12 @@ async def send_async(
 ) -> list[tuple[Callable, Any]]:
     """
     Send a signal asynchronously.
-    
+
     Args:
         signal: The signal to send.
         sender: The class sending the signal.
         **kwargs: Arguments to pass to handlers.
-    
+
     Returns:
         List of (handler, response) tuples.
     """

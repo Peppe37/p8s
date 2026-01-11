@@ -27,10 +27,10 @@ async def get_current_user(
 ) -> User | None:
     """
     Get the current authenticated user.
-    
+
     Returns None if no valid token is provided.
     Use this for optional authentication.
-    
+
     Example:
         ```python
         @app.get("/profile")
@@ -44,24 +44,22 @@ async def get_current_user(
     """
     if not credentials:
         return None
-    
+
     payload = decode_token(credentials.credentials)
-    
+
     if not payload:
         return None
-    
+
     if payload.get("type") != "access":
         return None
-    
+
     user_id = payload.get("sub")
-    
+
     if not user_id:
         return None
-    
+
     try:
-        result = await session.execute(
-            select(User).where(User.id == UUID(user_id))
-        )
+        result = await session.execute(select(User).where(User.id == UUID(user_id)))
         return result.scalar_one_or_none()
     except Exception:
         return None
@@ -76,9 +74,9 @@ async def require_auth(
 ) -> User:
     """
     Require authentication.
-    
+
     Raises 401 if no valid token is provided.
-    
+
     Example:
         ```python
         @app.get("/protected")
@@ -93,29 +91,27 @@ async def require_auth(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    
+
     if not credentials:
         raise credentials_exception
-    
+
     payload = decode_token(credentials.credentials)
-    
+
     if not payload or payload.get("type") != "access":
         raise credentials_exception
-    
+
     user_id = payload.get("sub")
-    
+
     if not user_id:
         raise credentials_exception
-    
+
     try:
-        result = await session.execute(
-            select(User).where(User.id == UUID(user_id))
-        )
+        result = await session.execute(select(User).where(User.id == UUID(user_id)))
         user = result.scalar_one_or_none()
-        
+
         if not user or not user.is_active:
             raise credentials_exception
-        
+
         return user
     except Exception:
         raise credentials_exception
@@ -124,7 +120,7 @@ async def require_auth(
 def require_role(*roles: UserRole):
     """
     Dependency factory to require specific roles.
-    
+
     Example:
         ```python
         @app.get("/admin")
@@ -134,6 +130,7 @@ def require_role(*roles: UserRole):
             return {"admin": True}
         ```
     """
+
     async def role_checker(
         user: User = Depends(require_auth),
     ) -> User:
@@ -143,14 +140,14 @@ def require_role(*roles: UserRole):
                 detail="Insufficient permissions",
             )
         return user
-    
+
     return role_checker
 
 
 def require_admin(user: User = Depends(require_auth)) -> User:
     """
     Require admin or superuser role.
-    
+
     Example:
         ```python
         @app.delete("/users/{id}")
@@ -173,7 +170,7 @@ def require_admin(user: User = Depends(require_auth)) -> User:
 def require_permission(permission: str):
     """
     Dependency factory to require specific permission.
-    
+
     Example:
         ```python
         @app.post("/publish")
@@ -183,6 +180,7 @@ def require_permission(permission: str):
             pass
         ```
     """
+
     async def permission_checker(
         user: User = Depends(require_auth),
     ) -> User:
@@ -192,7 +190,7 @@ def require_permission(permission: str):
                 detail=f"Permission required: {permission}",
             )
         return user
-    
+
     return permission_checker
 
 

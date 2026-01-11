@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from p8s.auth.dependencies import require_auth
 from p8s.auth.models import (
     LoginRequest,
     TokenResponse,
@@ -22,7 +23,6 @@ from p8s.auth.security import (
     get_password_hash,
     verify_password,
 )
-from p8s.auth.dependencies import require_auth, get_current_user
 from p8s.core.settings import get_settings
 from p8s.db.session import get_session
 
@@ -36,40 +36,38 @@ async def register(
 ) -> User:
     """
     Register a new user.
-    
+
     Args:
         user_in: User registration data.
         session: Database session.
-    
+
     Returns:
         Created user.
-    
+
     Raises:
         400: Email already registered.
     """
     # Check if email exists
-    result = await session.execute(
-        select(User).where(User.email == user_in.email)
-    )
-    
+    result = await session.execute(select(User).where(User.email == user_in.email))
+
     if result.scalar_one_or_none():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered",
         )
-    
+
     # Check if username exists (if provided)
     if user_in.username:
         result = await session.execute(
             select(User).where(User.username == user_in.username)
         )
-        
+
         if result.scalar_one_or_none():
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Username already taken",
             )
-    
+
     # Create user
     user = User(
         email=user_in.email,
@@ -78,11 +76,11 @@ async def register(
         first_name=user_in.first_name,
         last_name=user_in.last_name,
     )
-    
+
     session.add(user)
     await session.flush()
     await session.refresh(user)
-    
+
     return user
 
 
@@ -93,45 +91,43 @@ async def login(
 ) -> TokenResponse:
     """
     Login with email and password.
-    
+
     Args:
         login_data: Login credentials.
         session: Database session.
-    
+
     Returns:
         Access and refresh tokens.
-    
+
     Raises:
         401: Invalid credentials.
     """
     # Find user
-    result = await session.execute(
-        select(User).where(User.email == login_data.email)
-    )
+    result = await session.execute(select(User).where(User.email == login_data.email))
     user = result.scalar_one_or_none()
-    
+
     if not user or not verify_password(login_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
         )
-    
+
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Account is disabled",
         )
-    
+
     # Update last login
     user.last_login = datetime.utcnow()
     session.add(user)
-    
+
     # Create tokens
     settings = get_settings()
-    
+
     access_token = create_access_token({"sub": str(user.id)})
     refresh_token = create_refresh_token({"sub": str(user.id)})
-    
+
     return TokenResponse(
         access_token=access_token,
         refresh_token=refresh_token,
@@ -146,45 +142,43 @@ async def refresh_token(
 ) -> TokenResponse:
     """
     Refresh access token.
-    
+
     Args:
         refresh_token: Valid refresh token.
         session: Database session.
-    
+
     Returns:
         New access and refresh tokens.
-    
+
     Raises:
         401: Invalid refresh token.
     """
     payload = decode_token(refresh_token)
-    
+
     if not payload or payload.get("type") != "refresh":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid refresh token",
         )
-    
+
     user_id = payload.get("sub")
-    
+
     from uuid import UUID
-    
-    result = await session.execute(
-        select(User).where(User.id == UUID(user_id))
-    )
+
+    result = await session.execute(select(User).where(User.id == UUID(user_id)))
     user = result.scalar_one_or_none()
-    
+
     if not user or not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found or inactive",
         )
-    
+
     settings = get_settings()
-    
+
     new_access_token = create_access_token({"sub": str(user.id)})
     new_refresh_token = create_refresh_token({"sub": str(user.id)})
-    
+
     return TokenResponse(
         access_token=new_access_token,
         refresh_token=new_refresh_token,
@@ -198,10 +192,10 @@ async def get_me(
 ) -> User:
     """
     Get current user profile.
-    
+
     Args:
         user: Authenticated user.
-    
+
     Returns:
         User profile.
     """
@@ -214,10 +208,10 @@ async def logout(
 ) -> dict:
     """
     Logout current user.
-    
+
     Note: This is a client-side operation. The token should be
     deleted from client storage.
-    
+
     Returns:
         Success message.
     """
@@ -225,5 +219,5 @@ async def logout(
     # - Blacklist the token
     # - Clear server-side sessions
     # - Log the logout event
-    
+
     return {"message": "Successfully logged out"}

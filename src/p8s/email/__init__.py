@@ -9,10 +9,10 @@ Provides:
 """
 
 from p8s.email.backends import (
-    EmailBackend,
-    SMTPBackend,
     ConsoleBackend,
+    EmailBackend,
     FileBackend,
+    SMTPBackend,
 )
 from p8s.email.message import EmailMessage, EmailMultiAlternatives
 from p8s.email.utils import send_mail, send_mass_mail
