@@ -171,6 +171,161 @@ class MaintenanceModeMiddleware(Middleware):
         return await call_next(request)
 
 
+class CSRFMiddleware(Middleware):
+    """
+    Cross-Site Request Forgery protection middleware.
+    
+    Validates CSRF tokens for POST/PUT/PATCH/DELETE requests.
+    Token can be provided via:
+    - X-CSRF-Token header
+    - csrf_token form field
+    - _csrf cookie
+    
+    Exempt paths can be configured (e.g., API endpoints with their own auth).
+    
+    Example:
+        ```python
+        from p8s.middleware import CSRFMiddleware
+        
+        app.add_middleware(
+            MiddlewareWrapper,
+            middleware=CSRFMiddleware(
+                secret_key="your-secret-key",
+                exempt_paths=["/api/", "/webhooks/"],
+            )
+        )
+        ```
+    """
+    
+    def __init__(
+        self,
+        secret_key: str | None = None,
+        cookie_name: str = "_csrf",
+        header_name: str = "X-CSRF-Token",
+        form_field: str = "csrf_token",
+        exempt_paths: list[str] | None = None,
+        exempt_methods: list[str] | None = None,
+        secure: bool = True,
+        same_site: str = "strict",
+    ) -> None:
+        self.secret_key = secret_key
+        self.cookie_name = cookie_name
+        self.header_name = header_name
+        self.form_field = form_field
+        self.exempt_paths = exempt_paths or ["/api/"]  # API paths exempt by default
+        self.exempt_methods = exempt_methods or ["GET", "HEAD", "OPTIONS", "TRACE"]
+        self.secure = secure
+        self.same_site = same_site
+    
+    def _get_secret(self) -> str:
+        """Get secret key from settings if not provided."""
+        if self.secret_key:
+            return self.secret_key
+        
+        try:
+            from p8s.core.settings import get_settings
+            return get_settings().secret_key
+        except Exception:
+            return "fallback-csrf-secret"
+    
+    def generate_token(self) -> str:
+        """Generate a new CSRF token."""
+        import secrets
+        import hashlib
+        
+        random_bytes = secrets.token_bytes(32)
+        secret = self._get_secret().encode()
+        
+        token = hashlib.sha256(random_bytes + secret).hexdigest()
+        return token
+    
+    def validate_token(self, token: str, cookie_token: str) -> bool:
+        """Validate CSRF token against cookie."""
+        if not token or not cookie_token:
+            return False
+        
+        # Simple comparison for now
+        # In production, consider timing-safe comparison
+        import hmac
+        return hmac.compare_digest(token, cookie_token)
+    
+    def _is_exempt(self, request: Request) -> bool:
+        """Check if request is exempt from CSRF validation."""
+        # Check method
+        if request.method in self.exempt_methods:
+            return True
+        
+        # Check path
+        path = request.url.path
+        for exempt_path in self.exempt_paths:
+            if path.startswith(exempt_path):
+                return True
+        
+        return False
+    
+    async def process_request(self, request: Request, call_next) -> Response:
+        # Skip CSRF for exempt requests
+        if self._is_exempt(request):
+            return await call_next(request)
+        
+        # Get CSRF token from cookie
+        cookie_token = request.cookies.get(self.cookie_name)
+        
+        # Get CSRF token from request (header or form)
+        request_token = request.headers.get(self.header_name)
+        
+        if not request_token:
+            # Try to get from form data (for traditional form submissions)
+            content_type = request.headers.get("content-type", "")
+            if "form" in content_type:
+                try:
+                    form_data = await request.form()
+                    request_token = form_data.get(self.form_field)
+                except Exception:
+                    pass
+        
+        # Validate token
+        if cookie_token and not self.validate_token(request_token, cookie_token):
+            from starlette.responses import JSONResponse
+            return JSONResponse(
+                {"detail": "CSRF token invalid or missing"},
+                status_code=403,
+            )
+        
+        # Process request
+        response = await call_next(request)
+        
+        # Set CSRF cookie if not present
+        if not cookie_token:
+            new_token = self.generate_token()
+            response.set_cookie(
+                key=self.cookie_name,
+                value=new_token,
+                httponly=True,
+                secure=self.secure,
+                samesite=self.same_site,
+            )
+        
+        return response
+
+
+def get_csrf_token(request: Request) -> str:
+    """
+    Get the CSRF token from a request.
+    
+    Use this in templates to include the token in forms:
+    
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    
+    Args:
+        request: The current request.
+    
+    Returns:
+        CSRF token string.
+    """
+    return request.cookies.get("_csrf", "")
+
+
 def add_middleware(app: Any, middleware: Middleware) -> None:
     """
     Add a P8s middleware to a FastAPI app.
