@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v1.0.1 (2026-01-11)
+
+### Bug Fixes
+
+- Clean dist directory before build to avoid permission errors
+  ([`25f0044`](https://github.com/Peppe37/p8s/commit/25f0044887d4a3926acbf0baa9a005ed9c3eb4a4))
+
+
 ## v1.0.0 (2026-01-11)
 
 ### Bug Fixes
