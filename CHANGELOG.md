@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v1.0.3 (2026-01-11)
+
+### Bug Fixes
+
+- Use Trusted Publishing instead of API token for PyPI
+  ([`4cc50e3`](https://github.com/Peppe37/p8s/commit/4cc50e3ac3adb7a2e76f907a787bc4d432d4d157))
+
+
 ## v1.0.2 (2026-01-11)
 
 ### Bug Fixes
