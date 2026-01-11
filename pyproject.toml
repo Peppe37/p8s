@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "p8s"
-version = "0.1.0"
+version = "1.0.0"
 description = "🔥 Forge AI-native, full-stack applications with the fire of the gods"
 readme = "README.md"
 license = "MIT"
