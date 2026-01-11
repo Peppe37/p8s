@@ -2,7 +2,7 @@
 
 > **Status**: Active Development\
 > **Created**: 2026-01-07\
-> **Last Updated**: 2026-01-07
+> **Last Updated**: 2026-01-10
 
 ## Panoramica
 
@@ -20,116 +20,107 @@ Questo documento traccia lo sviluppo delle funzionalità necessarie per raggiung
 
 ### ✅ Già Implementate
 
-| Feature     | Django              | P8s               | File               |
-| ----------- | ------------------- | ----------------- | ------------------ |
-| ORM/Models  | Django ORM          | SQLModel          | `db/base.py`       |
-| UUID PKs    | Manuale             | Auto              | `db/base.py`       |
-| Timestamps  | Manuale             | Auto              | `db/base.py`       |
-| Soft Delete | Manuale             | Built-in          | `db/base.py`       |
-| Migrazioni  | manage.py           | p8s CLI + Alembic | `db/migrations.py` |
-| Admin Panel | Django Admin        | React Admin       | `admin/`           |
-| Auth/JWT    | django.contrib.auth | p8s.auth          | `auth/`            |
-| User Model  | AbstractUser        | User              | `auth/models.py`   |
-| Settings    | settings.py         | Pydantic          | `core/settings.py` |
-| CLI         | manage.py           | Typer             | `cli/main.py`      |
+| Feature     | Django              | P8s                              | File                  |
+| ----------- | ------------------- | -------------------------------- | --------------------- |
+| ORM/Models  | Django ORM          | SQLModel                         | `db/base.py`          |
+| UUID PKs    | Manuale             | Auto                             | `db/base.py`          |
+| Timestamps  | Manuale             | Auto                             | `db/base.py`          |
+| Soft Delete | Manuale             | Built-in (.active(), .deleted()) | `db/base.py`          |
+| Migrazioni  | manage.py           | p8s CLI + Alembic (auto-detect)  | `db/migrations.py`    |
+| Admin Panel | Django Admin        | React Admin                      | `admin/`              |
+| Auth/JWT    | django.contrib.auth | p8s.auth                         | `auth/`               |
+| User Model  | AbstractUser        | User                             | `auth/models.py`      |
+| Permissions | auth.Permission     | Permission/Group                 | `auth/permissions.py` |
+| Signals     | django.dispatch     | p8s.signals                      | `signals.py`          |
+| Email       | django.core.mail    | p8s.email                        | `email/`              |
+| Cache       | django.cache        | p8s.cache                        | `cache/`              |
+| Settings    | settings.py         | Pydantic                         | `core/settings.py`    |
+| CLI         | manage.py           | Typer                            | `cli/main.py`         |
+| Forms       | django.forms        | p8s.forms                        | `forms/`              |
+| CSRF        | CsrfViewMiddleware  | CSRFMiddleware                   | `middleware.py`       |
+| FileField   | django.db.models    | p8s.storage                      | `storage/`            |
+| Testing     | django.test         | p8s.testing                      | `testing.py`          |
 
-### ❌ Da Implementare
+### ✅ Implementato (Gennaio 2026)
 
-| Feature              | Priorità | Status  | Target                |
-| -------------------- | -------- | ------- | --------------------- |
-| Permissions/Groups   | 🔴 Alta   | Planned | `auth/permissions.py` |
-| Signals              | 🔴 Alta   | Planned | `db/signals.py`       |
-| FileField/ImageField | 🔴 Alta   | Planned | `storage/`            |
-| Admin Actions        | 🟡 Media  | Planned | `admin/`              |
-| Admin Inlines        | 🟡 Media  | Planned | `admin/`              |
-| Email Backend        | 🟡 Media  | Future  | `email/`              |
-| Cache Framework      | 🟡 Media  | Future  | `cache/`              |
+| Feature             | Descrizione         | Status |
+| ------------------- | ------------------- | ------ |
+| `p8s dbshell`       | Open database shell | ✅ Done |
+| `p8s check`         | System checks       | ✅ Done |
+| `p8s sendtestemail` | Email test          | ✅ Done |
+| `p8s dumpdata`      | Export fixtures     | ✅ Done |
+| `p8s loaddata`      | Import fixtures     | ✅ Done |
+| Forms module        | Pydantic forms      | ✅ Done |
+| ModelForm           | Auto-generated      | ✅ Done |
+| CSRF Middleware     | Form protection     | ✅ Done |
 
----
+### 🔄 In Progress / Future
 
-## Implementation Roadmap
-
-### Fase 1: Permissions & Groups (v0.3.0)
-
-Implementare sistema permessi Django-style:
-
-```python
-# Nuovi modelli
-Permission(codename, name, content_type)
-Group(name, permissions)
-
-# Estensioni User
-User.groups
-User.user_permissions
-User.has_perm(perm)
-User.has_perms(perms)
-```
-
-**Files**:
-- `src/p8s/auth/permissions.py` - Nuovi modelli
-- `src/p8s/auth/models.py` - Aggiornare User
-
-### Fase 2: Signals (v0.3.0)
-
-Sistema hooks per model lifecycle:
-
-```python
-from p8s.db.signals import Signal, receiver
-
-@receiver(Signal.POST_SAVE, sender=Product)
-def on_product_save(sender, instance, created):
-    ...
-```
-
-**Files**:
-- `src/p8s/db/signals.py` - Nuovo modulo
-
-### Fase 3: File Uploads (v0.4.0)
-
-Storage e campi file:
-
-```python
-from p8s.storage import FileField, ImageField
-
-class Document(Model, table=True):
-    file: str = FileField(upload_to="documents/")
-    thumbnail: str = ImageField(upload_to="thumbs/")
-```
-
-**Files**:
-- `src/p8s/storage/__init__.py`
-- `src/p8s/storage/base.py`
-- `src/p8s/storage/fields.py`
+| Feature            | Priorità | Status      | Note               |
+| ------------------ | -------- | ----------- | ------------------ |
+| Admin Actions bulk | 🟡 Media  | Implemented | `admin/actions.py` |
+| Admin Inlines      | 🟡 Media  | Future      | Nested models      |
+| i18n/l10n          | 🟢 Bassa  | Future      | Translations       |
+| Sessions           | 🟢 Bassa  | Future      | DB/Redis backend   |
+| Sitemap/RSS        | 🟢 Bassa  | Future      | SEO tools          |
 
 ---
 
-## Testing Strategy
+## Test Coverage
 
 ```bash
-# Verificare che le feature esistenti funzionino senza AI
-pytest tests/ -v -k "not ai"
+# Run all tests
+pytest tests/ -v
 
-# Test specifici per nuove feature
-pytest tests/test_permissions.py
-pytest tests/test_signals.py
-pytest tests/test_storage.py
+# Current status (Jan 2026)
+# 186 passed, 31 warnings
 ```
+
+| Test File           | Tests   | Status |
+| ------------------- | ------- | ------ |
+| test_admin.py       | 12      | ✅      |
+| test_auth.py        | 9       | ✅      |
+| test_forms.py       | 17      | ✅      |
+| test_middleware.py  | 13      | ✅      |
+| test_soft_delete.py | 13      | ✅      |
+| test_testing.py     | 16      | ✅      |
+| ...                 | ...     | ...    |
+| **Total**           | **186** | ✅      |
+
+---
+
+## P8s vs Django: Vantaggi Distintivi
+
+| Feature               | Django | P8s                    | Vantaggio |
+| --------------------- | ------ | ---------------------- | --------- |
+| AI Fields             | ❌      | ✅ AIField, VectorField | **P8s**   |
+| Vector Search         | ❌      | ✅ Built-in             | **P8s**   |
+| TypeScript Types      | ❌      | ✅ Auto-generated       | **P8s**   |
+| Async by Default      | ❌      | ✅ FastAPI/asyncio      | **P8s**   |
+| OpenAPI Schema        | ❌      | ✅ Automatic            | **P8s**   |
+| React Admin           | ❌      | ✅ Modern UI            | **P8s**   |
+| Full-stack Hot Reload | ❌      | ✅ Backend + Frontend   | **P8s**   |
 
 ---
 
 ## Changelog
 
-### v0.2.x (Current)
-- ✅ ORM completo
-- ✅ Migrazioni Alembic
-- ✅ Admin Panel
-- ✅ JWT Auth
+### v0.2.x (Current - Jan 2026)
+- ✅ ORM completo con soft delete avanzato
+- ✅ Migrazioni Alembic con auto-detect
+- ✅ Admin Panel React
+- ✅ JWT Auth con permissions/groups
 - ✅ AI Fields (opzionali)
+- ✅ Forms module (Pydantic-based)
+- ✅ CSRF Middleware
+- ✅ CLI completo (18+ comandi)
+- ✅ 186 tests
 
 ### v0.3.0 (Planned)
-- 🔲 Permissions/Groups
-- 🔲 Signals
+- 🔲 Admin Inlines
+- 🔲 i18n support
+- 🔲 Sessions backend
 
 ### v0.4.0 (Planned)
-- 🔲 FileField/ImageField
-- 🔲 Admin Actions
+- 🔲 Sitemap generator
+- 🔲 RSS feeds

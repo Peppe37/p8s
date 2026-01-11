@@ -41,30 +41,54 @@
 - **FastAPI** under the hood
 - **SQLModel** ORM (SQLAlchemy + Pydantic)
 - **Automatic CRUD** for registered models
-- **UUID & Soft Deletes** by default
+- **UUID & Soft Deletes** by default (`.active()`, `.deleted()`, `.all_with_deleted()`)
 
 ### 🔐 Authentication
 - **JWT Authentication** out of the box
-- **User roles** (User, Superuser)
+- **User roles** (User, Admin, Superuser)
+- **Permissions & Groups** (Django-style)
 - **Secure defaults** (bcrypt, protected routes)
 
 ### 🤖 AI-Native
 - **AIField**: Auto-generate content from prompts
 - **VectorField**: Store embeddings for semantic search
 - **VectorSearch**: Query by similarity
-- Supports **OpenAI**, **Anthropic**, **Ollama**, and more
+- Supports **OpenAI**, **Anthropic**, **Google**, **Ollama**, and more
 
 ### 🧑‍💼 Admin Panel
 - **Django-style** admin interface
 - **Dynamic CRUD** from your models
-- **Search, filter, paginate**
+- **Search, filter, paginate, bulk actions**
 - **No frontend code required**
 
-### 📦 CLI Tools
-- `p8s new project myapp` — Create projects
-- `p8s new app blog` — Add apps
-- `p8s dev` — Development server
-- `p8s createsuperuser` — Create admin users
+### 📝 Forms & Validation
+- **Pydantic-based** form validation
+- **ModelForm** auto-generated from models
+- **11 field types** with HTML rendering hints
+- **CSRF protection** middleware
+
+### 🗄️ Database & Migrations
+- **Auto-detected migrations** with Alembic
+- **Fixtures**: `dumpdata` / `loaddata`
+- **Database shell**: `dbshell`
+
+### 📦 CLI Tools (18+ commands)
+
+```bash
+p8s new project myapp    # Create project
+p8s new app blog         # Add app
+p8s dev                  # Development server (backend + frontend)
+p8s migrate              # Run migrations
+p8s makemigrations       # Auto-detect model changes
+p8s createsuperuser      # Create admin user
+p8s shell                # Interactive Python shell
+p8s check                # Validate configuration
+p8s dumpdata             # Export fixtures
+p8s loaddata             # Import fixtures
+p8s dbshell              # Database shell
+p8s sendtestemail        # Test email config
+p8s collectstatic        # Collect static files
+```
 
 ---
 
@@ -104,11 +128,12 @@ Starting development server...
 
 ### Access Your App
 
-| URL                            | Description |
-| ------------------------------ | ----------- |
-| `http://localhost:8000`        | Backend API |
-| `http://localhost:8000/admin/` | Admin panel |
-| `http://localhost:5173`        | Frontend    |
+| URL                            | Description  |
+| ------------------------------ | ------------ |
+| `http://localhost:8000`        | Backend API  |
+| `http://localhost:8000/admin/` | Admin panel  |
+| `http://localhost:8000/docs`   | OpenAPI docs |
+| `http://localhost:5173`        | Frontend     |
 
 ---
 
@@ -141,6 +166,21 @@ class Product(Model, table=True):
         search_fields = ["name"]
 ```
 
+### Forms Example
+
+```python
+from p8s.forms import Form, ModelForm, CharField, EmailField
+
+class ContactForm(Form):
+    name: str = CharField(max_length=100)
+    email: str = EmailField()
+    message: str
+
+form = ContactForm.from_data(request.form)
+if form.is_valid():
+    send_email(form.data)
+```
+
 ---
 
 ## 🏗️ Project Structure
@@ -150,14 +190,15 @@ myapp/
 ├── backend/
 │   ├── main.py          # FastAPI entry point
 │   ├── models.py        # Database models
-│   ├── settings.py      # Configuration (AppSettings)
+│   ├── settings.py      # Configuration (Pydantic Settings)
 │   └── apps/            # Your apps
 │       └── products/
 │           ├── models.py
-│           └── router.py
+│           ├── router.py
+│           └── schemas.py
 ├── frontend/            # React + Vite
-│   ├── src/
-│   └── vite.config.ts
+│   └── src/
+├── migrations/          # Alembic migrations
 └── .env                 # Environment variables
 ```
 
@@ -168,13 +209,26 @@ myapp/
 | Topic                                      | Description                  |
 | ------------------------------------------ | ---------------------------- |
 | [Getting Started](docs/getting-started.md) | Create your first project    |
-| [CLI Reference](docs/cli.md)               | All available commands       |
+| [CLI Reference](docs/cli.md)               | All 18+ commands             |
 | [Models & Database](docs/models.md)        | SQLModel ORM usage           |
+| [Migrations](docs/migrations.md)           | Auto-detected migrations     |
 | [Authentication](docs/authentication.md)   | JWT and user management      |
 | [Admin Panel](docs/admin.md)               | Django-style admin           |
+| [Forms](docs/forms.md)                     | Validation & ModelForm       |
+| [Middleware](docs/middleware.md)           | CSRF, security, timing       |
 | [AI Features](docs/ai.md)                  | AIField, VectorField, search |
+| [Testing](docs/testing.md)                 | Test utilities               |
 | [Configuration](docs/configuration.md)     | Environment and settings     |
 | [Deployment](docs/deployment.md)           | Docker, Railway, Fly.io      |
+
+---
+
+## 🧪 Test Coverage
+
+```bash
+pytest tests/ -v
+# 186 passed ✅
+```
 
 ---
 
@@ -182,21 +236,25 @@ myapp/
 
 ### ✅ Completed
 - [x] Django-style settings discovery (`P8S_SETTINGS_MODULE`)
-- [x] Admin panel with login page
-- [x] Protected docs (admin-only)
-- [x] CLI with colored log tags
-- [x] JWT authentication
-- [x] SQLModel integration
+- [x] Admin panel with login, CRUD, bulk actions
+- [x] JWT authentication with permissions/groups
+- [x] SQLModel integration with soft deletes
+- [x] **Alembic migrations** with auto-detection
+- [x] **Forms module** with ModelForm
+- [x] **CSRF middleware**
+- [x] **Fixtures** (dumpdata/loaddata)
+- [x] **Testing utilities**
+- [x] **186 tests passing**
 
 ### 🚧 In Progress
-- [ ] Full test coverage
-- [ ] Alembic migrations integration
+- [ ] Admin inlines (nested models)
 - [ ] Frontend auth hooks
+- [ ] TypeScript type generation
 
 ### 📋 Planned
 - [ ] WebSocket support
 - [ ] Background tasks (Celery/ARQ)
-- [ ] File uploads
+- [ ] i18n/l10n
 - [ ] Multi-tenancy
 - [ ] GraphQL support
 - [ ] PyPI release
