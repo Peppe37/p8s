@@ -10,24 +10,34 @@ __version__ = "0.2.0"
 __author__ = "Giuseppe La Pietra"
 
 # Core exports
+# Auth exports
+from p8s.auth.permissions import Group, Permission
 from p8s.core.application import P8sApp
 from p8s.core.settings import Settings, get_settings
 from p8s.db.base import Model
-from p8s.db.session import get_session
-from p8s.db.signals import Signal, receiver
-
-# Auth exports
-from p8s.auth.permissions import Permission, Group
-
-# Storage exports
-from p8s.storage import FileField, ImageField
 
 # DB Fields
 from p8s.db.fields import (
-    CharField, TextField, BooleanField, IntegerField, FloatField, DecimalField,
-    DateField, DateTimeField, JSONField, EmailField, URLField,
-    ForeignKey, ManyToManyField, OneToOneField
+    BooleanField,
+    CharField,
+    DateField,
+    DateTimeField,
+    DecimalField,
+    EmailField,
+    FloatField,
+    ForeignKey,
+    IntegerField,
+    JSONField,
+    ManyToManyField,
+    OneToOneField,
+    TextField,
+    URLField,
 )
+from p8s.db.session import get_session
+from p8s.db.signals import Signal, receiver
+
+# Storage exports
+from p8s.storage import FileField, ImageField
 
 # AI exports (optional)
 try:
@@ -56,7 +66,7 @@ __all__ = [
     # Fields
     "CharField",
     "TextField",
-    "BooleanField", 
+    "BooleanField",
     "IntegerField",
     "FloatField",
     "DecimalField",
@@ -75,4 +85,3 @@ __all__ = [
 
 # Convenience alias
 models = type("ModelsModule", (), {"Model": Model})()
-

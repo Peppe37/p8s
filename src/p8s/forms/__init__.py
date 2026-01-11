@@ -10,12 +10,12 @@ Provides:
 Example:
     from p8s.forms import Form, ModelForm
     from pydantic import EmailStr
-    
+
     class ContactForm(Form):
         name: str
         email: EmailStr
         message: str
-    
+
     class ProductForm(ModelForm):
         class Meta:
             model = Product
@@ -24,17 +24,17 @@ Example:
 
 from p8s.forms.base import Form, ModelForm
 from p8s.forms.fields import (
-    CharField,
-    EmailField,
-    IntegerField,
-    FloatField,
     BooleanField,
+    CharField,
+    ChoiceField,
     DateField,
     DateTimeField,
-    ChoiceField,
-    TextAreaField,
+    EmailField,
+    FloatField,
     HiddenField,
+    IntegerField,
     PasswordField,
+    TextAreaField,
 )
 
 __all__ = [

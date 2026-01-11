@@ -7,7 +7,7 @@ Provides Django-style file handling with:
 - Automatic file handling on CRUD operations
 """
 
-from p8s.storage.base import Storage, FileSystemStorage
+from p8s.storage.base import FileSystemStorage, Storage
 from p8s.storage.fields import FileField, ImageField
 
 __all__ = [

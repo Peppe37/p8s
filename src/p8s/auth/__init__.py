@@ -2,40 +2,40 @@
 P8s Auth Module - Authentication and authorization.
 """
 
-from p8s.auth.models import User, UserCreate, UserUpdate, UserRole
+from p8s.auth.decorators import (
+    login_required,
+    require_login,
+    require_perm,
+    require_perms,
+    require_staff,
+    require_superuser,
+    staff_member_required,
+    superuser_required,
+    user_passes_test,
+)
+from p8s.auth.dependencies import (
+    AdminUser,
+    AuthenticatedUser,
+    CurrentUser,
+    get_current_user,
+    require_admin,
+    require_auth,
+    require_permission,
+    require_role,
+)
+from p8s.auth.models import User, UserCreate, UserRole, UserUpdate
+from p8s.auth.permissions import (
+    Group,
+    Permission,
+    create_model_permissions,
+    get_permission_codename,
+    permission_required,
+)
 from p8s.auth.security import (
     create_access_token,
     create_refresh_token,
     get_password_hash,
     verify_password,
-)
-from p8s.auth.dependencies import (
-    get_current_user,
-    require_auth,
-    require_admin,
-    require_role,
-    require_permission,
-    CurrentUser,
-    AuthenticatedUser,
-    AdminUser,
-)
-from p8s.auth.permissions import (
-    Permission,
-    Group,
-    permission_required,
-    get_permission_codename,
-    create_model_permissions,
-)
-from p8s.auth.decorators import (
-    login_required,
-    staff_member_required,
-    superuser_required,
-    user_passes_test,
-    require_login,
-    require_staff,
-    require_superuser,
-    require_perm,
-    require_perms,
 )
 
 __all__ = [
@@ -58,4 +58,3 @@ __all__ = [
     "get_current_user",
     "require_auth",
 ]
-

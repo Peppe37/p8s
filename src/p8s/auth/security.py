@@ -22,10 +22,10 @@ def get_password_hash(password: str) -> str:
         Hashed password.
     """
     # BCrypt has a 72-byte limit for passwords
-    password_bytes = password.encode('utf-8')[:72]
+    password_bytes = password.encode("utf-8")[:72]
     salt = bcrypt.gensalt(rounds=12)
     hashed = bcrypt.hashpw(password_bytes, salt)
-    return hashed.decode('utf-8')
+    return hashed.decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -40,10 +40,9 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         True if password matches.
     """
     # Truncate to match hashing behavior
-    password_bytes = plain_password.encode('utf-8')[:72]
-    hashed_bytes = hashed_password.encode('utf-8')
+    password_bytes = plain_password.encode("utf-8")[:72]
+    hashed_bytes = hashed_password.encode("utf-8")
     return bcrypt.checkpw(password_bytes, hashed_bytes)
-
 
 
 def create_access_token(
@@ -71,10 +70,12 @@ def create_access_token(
             minutes=settings.auth.access_token_expire_minutes
         )
 
-    to_encode.update({
-        "exp": expire,
-        "type": "access",
-    })
+    to_encode.update(
+        {
+            "exp": expire,
+            "type": "access",
+        }
+    )
 
     return jwt.encode(
         to_encode,
@@ -108,10 +109,12 @@ def create_refresh_token(
             days=settings.auth.refresh_token_expire_days
         )
 
-    to_encode.update({
-        "exp": expire,
-        "type": "refresh",
-    })
+    to_encode.update(
+        {
+            "exp": expire,
+            "type": "refresh",
+        }
+    )
 
     return jwt.encode(
         to_encode,

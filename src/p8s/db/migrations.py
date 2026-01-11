@@ -2,7 +2,6 @@
 P8s Migrations - Alembic wrapper for easy migrations.
 """
 
-import os
 from pathlib import Path
 from typing import Any
 
@@ -310,12 +309,14 @@ def show_migrations(
 
     migrations = []
     for rev in script_dir.walk_revisions():
-        migrations.append({
-            "revision": rev.revision,
-            "down_revision": rev.down_revision,
-            "message": rev.doc,
-            "path": rev.path,
-        })
+        migrations.append(
+            {
+                "revision": rev.revision,
+                "down_revision": rev.down_revision,
+                "message": rev.doc,
+                "path": rev.path,
+            }
+        )
 
     return migrations
 

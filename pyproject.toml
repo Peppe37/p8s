@@ -101,6 +101,16 @@ Repository = "https://github.com/Peppe37/p8s"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/p8s"]
+exclude = [
+    "**/.git",
+    "**/node_modules",
+    "**/__pycache__",
+    "**/.pytest_cache",
+    "**/.mypy_cache",
+    "**/.ruff_cache",
+    "**/dist",
+    "**/.venv",
+]
 
 [tool.hatch.build.targets.sdist]
 include = [
@@ -108,10 +118,19 @@ include = [
     "/README.md",
     "/LICENSE",
 ]
+exclude = [
+    "**/.git",
+    "**/node_modules",
+    "**/__pycache__",
+    "**/.pytest_cache",
+    "**/dist",
+]
 
 [tool.ruff]
 target-version = "py310"
 line-length = 88
+
+[tool.ruff.lint]
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
@@ -122,11 +141,23 @@ select = [
     "UP",  # pyupgrade
 ]
 ignore = [
-    "E501",  # line too long (handled by black)
+    "E501",  # line too long (handled by formatter)
     "B008",  # do not perform function calls in argument defaults
+    "C901",  # function too complex (we have some complex functions)
+    "E741",  # ambiguous variable name (used in comprehensions)
+    "E721",  # type comparison (used in forms module)
+    "B027",  # empty method without abstract decorator
+    "B904",  # raise from (not always needed)
+    "B007",  # loop control variable not used
+    "B905",  # zip without strict parameter
+    "F841",  # local variable assigned but never used (some intentional)
+    "F401",  # imported but unused (intentional re-exports in __init__.py)
+    "W293",  # blank line contains whitespace (in HTML multiline strings)
+    "E711",  # comparison to None (used in SQLAlchemy WHERE clauses)
+    "B028",  # no stacklevel in warnings.warn
 ]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["p8s"]
 
 [tool.mypy]

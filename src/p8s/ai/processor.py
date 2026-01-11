@@ -7,7 +7,7 @@ No AI operations happen unless explicitly enabled.
 
 import hashlib
 import logging
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from p8s.core.settings import get_settings
 
@@ -91,7 +91,10 @@ def _get_cached(key: str) -> str | None:
 
     if key in _ai_cache:
         value, timestamp = _ai_cache[key]
-        if settings.ai.cache_ttl == 0 or (time.time() - timestamp) < settings.ai.cache_ttl:
+        if (
+            settings.ai.cache_ttl == 0
+            or (time.time() - timestamp) < settings.ai.cache_ttl
+        ):
             return value
         else:
             del _ai_cache[key]
@@ -153,7 +156,7 @@ async def generate_ai_content(
         cache_key = _cache_key(prompt, model, provider)
         cached = _get_cached(cache_key)
         if cached:
-            logger.debug(f"Cache hit for AI generation")
+            logger.debug("Cache hit for AI generation")
             return cached
 
     # Get API key
@@ -307,7 +310,7 @@ async def _generate_gemini(
             "generationConfig": {
                 "temperature": temperature,
                 "maxOutputTokens": max_tokens,
-            }
+            },
         }
 
         async with httpx.AsyncClient(timeout=60) as client:
@@ -343,7 +346,7 @@ async def _generate_ollama(
             "options": {
                 "temperature": temperature,
                 "num_predict": max_tokens,
-            }
+            },
         }
 
         async with httpx.AsyncClient(timeout=120) as client:
@@ -476,7 +479,9 @@ async def generate_embedding(
         elif settings.ai.embedding_provider == "ollama":
             return await _embed_ollama(text, model, settings)
         else:
-            logger.error(f"Unknown embedding provider: {settings.ai.embedding_provider}")
+            logger.error(
+                f"Unknown embedding provider: {settings.ai.embedding_provider}"
+            )
             return None
     except Exception as e:
         logger.error(f"Embedding generation failed: {e}")

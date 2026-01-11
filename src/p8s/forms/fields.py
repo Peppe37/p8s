@@ -8,17 +8,16 @@ Each field type provides:
 - Help text support
 """
 
-from typing import Any, Callable, TypeVar, Generic
 from dataclasses import dataclass, field
 from datetime import date, datetime
-from enum import Enum
+from typing import Any
 
 
 @dataclass
 class FieldInfo:
     """
     Field metadata for HTML rendering.
-    
+
     Attributes:
         input_type: HTML input type (text, email, number, etc.)
         widget: Custom widget name for special rendering
@@ -34,6 +33,7 @@ class FieldInfo:
         readonly: Whether field is readonly
         html_attrs: Additional HTML attributes
     """
+
     input_type: str = "text"
     widget: str | None = None
     placeholder: str | None = None
@@ -60,12 +60,12 @@ def CharField(
 ) -> Any:
     """
     A text field.
-    
+
     Example:
         name: str = CharField(max_length=100, placeholder="Your name")
     """
     from pydantic import Field as PydanticField
-    
+
     field_info = FieldInfo(
         input_type="text",
         max_length=max_length,
@@ -75,7 +75,7 @@ def CharField(
         required=required,
         **kwargs,
     )
-    
+
     return PydanticField(
         default=... if required else None,
         max_length=max_length,
@@ -93,12 +93,12 @@ def EmailField(
 ) -> Any:
     """
     An email field with validation.
-    
+
     Example:
         email: str = EmailField(placeholder="your@email.com")
     """
     from pydantic import Field as PydanticField
-    
+
     field_info = FieldInfo(
         input_type="email",
         placeholder=placeholder,
@@ -106,7 +106,7 @@ def EmailField(
         required=required,
         **kwargs,
     )
-    
+
     return PydanticField(
         default=... if required else None,
         json_schema_extra={"field_info": field_info},
@@ -124,12 +124,12 @@ def IntegerField(
 ) -> Any:
     """
     An integer field.
-    
+
     Example:
         age: int = IntegerField(min_value=0, max_value=150)
     """
     from pydantic import Field as PydanticField
-    
+
     field_info = FieldInfo(
         input_type="number",
         min_value=min_value,
@@ -139,7 +139,7 @@ def IntegerField(
         required=required,
         **kwargs,
     )
-    
+
     return PydanticField(
         default=... if required else None,
         ge=min_value,
@@ -160,12 +160,12 @@ def FloatField(
 ) -> Any:
     """
     A floating point field.
-    
+
     Example:
         price: float = FloatField(min_value=0, step=0.01)
     """
     from pydantic import Field as PydanticField
-    
+
     field_info = FieldInfo(
         input_type="number",
         min_value=min_value,
@@ -176,7 +176,7 @@ def FloatField(
         html_attrs={"step": str(step)},
         **kwargs,
     )
-    
+
     return PydanticField(
         default=... if required else None,
         ge=min_value,
@@ -193,19 +193,19 @@ def BooleanField(
 ) -> Any:
     """
     A boolean/checkbox field.
-    
+
     Example:
         active: bool = BooleanField(help_text="Is this item active?")
     """
     from pydantic import Field as PydanticField
-    
+
     field_info = FieldInfo(
         input_type="checkbox",
         help_text=help_text,
         required=required,
         **kwargs,
     )
-    
+
     return PydanticField(
         default=False,
         json_schema_extra={"field_info": field_info},
@@ -223,12 +223,12 @@ def DateField(
 ) -> Any:
     """
     A date field.
-    
+
     Example:
         birth_date: date = DateField()
     """
     from pydantic import Field as PydanticField
-    
+
     field_info = FieldInfo(
         input_type="date",
         min_value=min_value,
@@ -238,7 +238,7 @@ def DateField(
         required=required,
         **kwargs,
     )
-    
+
     return PydanticField(
         default=... if required else None,
         json_schema_extra={"field_info": field_info},
@@ -256,12 +256,12 @@ def DateTimeField(
 ) -> Any:
     """
     A datetime field.
-    
+
     Example:
         scheduled_at: datetime = DateTimeField()
     """
     from pydantic import Field as PydanticField
-    
+
     field_info = FieldInfo(
         input_type="datetime-local",
         min_value=min_value,
@@ -271,7 +271,7 @@ def DateTimeField(
         required=required,
         **kwargs,
     )
-    
+
     return PydanticField(
         default=... if required else None,
         json_schema_extra={"field_info": field_info},
@@ -288,7 +288,7 @@ def ChoiceField(
 ) -> Any:
     """
     A select/dropdown field.
-    
+
     Example:
         status: str = ChoiceField(choices=[
             ("draft", "Draft"),
@@ -297,7 +297,7 @@ def ChoiceField(
         ])
     """
     from pydantic import Field as PydanticField
-    
+
     field_info = FieldInfo(
         input_type="select",
         choices=choices,
@@ -306,7 +306,7 @@ def ChoiceField(
         required=required,
         **kwargs,
     )
-    
+
     return PydanticField(
         default=... if required else None,
         json_schema_extra={"field_info": field_info},
@@ -325,12 +325,12 @@ def TextAreaField(
 ) -> Any:
     """
     A multiline text area field.
-    
+
     Example:
         description: str = TextAreaField(rows=10, placeholder="Enter description...")
     """
     from pydantic import Field as PydanticField
-    
+
     field_info = FieldInfo(
         input_type="textarea",
         widget="textarea",
@@ -342,7 +342,7 @@ def TextAreaField(
         html_attrs={"rows": rows},
         **kwargs,
     )
-    
+
     return PydanticField(
         default=... if required else None,
         max_length=max_length,
@@ -358,18 +358,18 @@ def HiddenField(
 ) -> Any:
     """
     A hidden field.
-    
+
     Example:
         csrf_token: str = HiddenField()
     """
     from pydantic import Field as PydanticField
-    
+
     field_info = FieldInfo(
         input_type="hidden",
         required=False,
         **kwargs,
     )
-    
+
     return PydanticField(
         default=default,
         json_schema_extra={"field_info": field_info},
@@ -387,12 +387,12 @@ def PasswordField(
 ) -> Any:
     """
     A password field (masked input).
-    
+
     Example:
         password: str = PasswordField(min_length=12)
     """
     from pydantic import Field as PydanticField
-    
+
     field_info = FieldInfo(
         input_type="password",
         min_length=min_length,
@@ -402,7 +402,7 @@ def PasswordField(
         required=required,
         **kwargs,
     )
-    
+
     return PydanticField(
         default=... if required else None,
         min_length=min_length,

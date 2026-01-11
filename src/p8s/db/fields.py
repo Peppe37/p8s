@@ -2,16 +2,27 @@
 P8s Database Fields - Django-style field helpers for SQLModel.
 """
 
-from typing import Any, Type, Optional, List, TypeVar
-from datetime import datetime, date
 from decimal import Decimal
+from typing import Any
 
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    Float,
+    Integer,
+    Numeric,
+    String,
+    Text,
+)
 from sqlmodel import Field as SQLModelField
 from sqlmodel import Relationship as SQLModelRelationship
 from sqlmodel import SQLModel
-from sqlalchemy import Column, String, Text, Boolean, Integer, Float, Numeric, Date, DateTime, JSON
 
 # Basic Types
+
 
 def _process_args(kwargs: dict[str, Any]) -> dict[str, Any]:
     """Helper to map Django-style args to Pydantic/SQLModel."""
@@ -25,7 +36,7 @@ def _process_args(kwargs: dict[str, Any]) -> dict[str, Any]:
 def CharField(max_length: int = 255, **kwargs: Any) -> Any:
     """
     String field with fixed max length.
-    
+
     Args:
         max_length: Maximum allowed length.
         **kwargs: Additional arguments for Field().
@@ -66,19 +77,25 @@ def FloatField(default: float = 0.0, **kwargs: Any) -> Any:
     return SQLModelField(default=default, sa_column=Column(Float), **kwargs)
 
 
-def DecimalField(max_digits: int = 10, decimal_places: int = 2, default: Decimal = Decimal("0"), **kwargs: Any) -> Any:
+def DecimalField(
+    max_digits: int = 10,
+    decimal_places: int = 2,
+    default: Decimal = Decimal("0"),
+    **kwargs: Any,
+) -> Any:
     """
     Decimal number field for currency etc.
     """
     kwargs = _process_args(kwargs)
     return SQLModelField(
         default=default,
-        sa_column=Column(Numeric(precision=max_digits, scale=decimal_places)), 
-        **kwargs
+        sa_column=Column(Numeric(precision=max_digits, scale=decimal_places)),
+        **kwargs,
     )
 
 
 # Date/Time
+
 
 def DateField(auto_now: bool = False, auto_now_add: bool = False, **kwargs: Any) -> Any:
     """
@@ -88,13 +105,14 @@ def DateField(auto_now: bool = False, auto_now_add: bool = False, **kwargs: Any)
     # Note: auto_now logic is typically handled by sa_column_kwargs or default_factory
     # SQLModel doesn't have direct auto_now support on Field like Django
     # We map it to sqlalchemy defaults/onupdate
-    
+
     sa_kwargs = kwargs.pop("sa_column_kwargs", {})
-    
+
     if auto_now:
         from sqlalchemy import func
+
         sa_kwargs["onupdate"] = func.now()
-        
+
     if auto_now_add:
         # We use default_factory for creation time if not provided
         # But for DB level default we can use server_default
@@ -103,27 +121,32 @@ def DateField(auto_now: bool = False, auto_now_add: bool = False, **kwargs: Any)
     # For simplicity in this helper we rely on standard Field usage or specific implementations
     # If the user wants auto behaviors they usually use the Model built-ins (created_at)
     # But to support Django-like args:
-    
+
     if auto_now_add and "default_factory" not in kwargs:
         from datetime import date
+
         kwargs["default_factory"] = date.today
-        
+
     return SQLModelField(sa_column=Column(Date), sa_column_kwargs=sa_kwargs, **kwargs)
 
 
-def DateTimeField(auto_now: bool = False, auto_now_add: bool = False, **kwargs: Any) -> Any:
+def DateTimeField(
+    auto_now: bool = False, auto_now_add: bool = False, **kwargs: Any
+) -> Any:
     """
     DateTime field.
     """
     kwargs = _process_args(kwargs)
     if auto_now_add and "default_factory" not in kwargs:
         from datetime import datetime, timezone
+
         kwargs["default_factory"] = lambda: datetime.now(timezone.utc)
-        
+
     return SQLModelField(sa_column=Column(DateTime), **kwargs)
 
 
 # Structured / Validated
+
 
 def JSONField(default: Any = None, **kwargs: Any) -> Any:
     """
@@ -137,7 +160,7 @@ def JSONField(default: Any = None, **kwargs: Any) -> Any:
 
 def EmailField(**kwargs: Any) -> Any:
     """
-    Email string field. 
+    Email string field.
     Note: Requires type annotation to be EmailStr for validation alongside this Field.
     """
     kwargs = _process_args(kwargs)
@@ -154,10 +177,13 @@ def URLField(**kwargs: Any) -> Any:
 
 # Relationships
 
-def ForeignKey(to: Type[SQLModel] | str, on_delete: str = "CASCADE", **kwargs: Any) -> Any:
+
+def ForeignKey(
+    to: type[SQLModel] | str, on_delete: str = "CASCADE", **kwargs: Any
+) -> Any:
     """
     Foreign Key field.
-    
+
     Args:
         to: Target model class or 'app.Model' string.
         on_delete: policies like CASCADE, SET NULL etc. (currently just passed)
@@ -167,17 +193,19 @@ def ForeignKey(to: Type[SQLModel] | str, on_delete: str = "CASCADE", **kwargs: A
     target = to
     if isinstance(to, type) and issubclass(to, SQLModel):
         target = getattr(to, "__tablename__", to.__name__.lower())
-    
+
     # Assuming standard ID naming. This might be brittle if PK isn't 'id'
     target_col = f"{target}.id"
-    
+
     return SQLModelField(foreign_key=target_col, **kwargs)
 
 
-def ManyToManyField(to: Type[SQLModel], link_model: Type[SQLModel], **kwargs: Any) -> Any:
+def ManyToManyField(
+    to: type[SQLModel], link_model: type[SQLModel], **kwargs: Any
+) -> Any:
     """
     Many-to-Many relationship.
-    
+
     Args:
         to: Target model.
         link_model: The association table model.
@@ -186,12 +214,12 @@ def ManyToManyField(to: Type[SQLModel], link_model: Type[SQLModel], **kwargs: An
     return SQLModelRelationship(link_model=link_model, **kwargs)
 
 
-def OneToOneField(to: Type[SQLModel] | str, **kwargs: Any) -> Any:
+def OneToOneField(to: type[SQLModel] | str, **kwargs: Any) -> Any:
     """
     One-to-One relationship (Foreign Key with Unique constraint).
     """
     # This is complex because logically it's a Field (FK) AND a Relationship usually in ORMs
     # In SQLModel, one-to-one is typically modeled as a unique Foreign Key
-    
+
     kwargs["unique"] = True
     return ForeignKey(to, **kwargs)

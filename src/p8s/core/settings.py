@@ -20,7 +20,7 @@ class DatabaseSettings(BaseSettings):
     # Database URL (supports async drivers)
     url: str = Field(
         default="sqlite+aiosqlite:///./db.sqlite3",
-        description="Database connection URL"
+        description="Database connection URL",
     )
 
     # Connection pool settings
@@ -40,7 +40,7 @@ class AuthSettings(BaseSettings):
     # JWT settings
     secret_key: str = Field(
         default="p8s-secret-key-change-in-production",
-        description="Secret key for JWT encoding"
+        description="Secret key for JWT encoding",
     )
     algorithm: str = Field(default="HS256")
     access_token_expire_minutes: int = Field(default=30, ge=1)
@@ -75,22 +75,20 @@ class AISettings(BaseSettings):
 
     enabled: bool = Field(
         default=False,
-        description="Enable AI field processing. Set to true to activate AI features."
+        description="Enable AI field processing. Set to true to activate AI features.",
     )
 
     # =========================================================================
     # Provider configuration
     # =========================================================================
 
-    provider: Literal["openai", "anthropic", "gemini", "azure", "ollama", "custom"] = Field(
-        default="openai",
-        description="LLM provider to use"
+    provider: Literal["openai", "anthropic", "gemini", "azure", "ollama", "custom"] = (
+        Field(default="openai", description="LLM provider to use")
     )
 
     # Default model for text generation (overridable per-field)
     model: str = Field(
-        default="gpt-4o-mini",
-        description="Default model for text generation"
+        default="gpt-4o-mini", description="Default model for text generation"
     )
 
     # =========================================================================
@@ -99,121 +97,82 @@ class AISettings(BaseSettings):
 
     # OpenAI
     openai_api_key: str | None = Field(
-        default=None,
-        description="OpenAI API key (P8S_AI_OPENAI_API_KEY)"
+        default=None, description="OpenAI API key (P8S_AI_OPENAI_API_KEY)"
     )
     openai_organization: str | None = Field(
-        default=None,
-        description="OpenAI organization ID"
+        default=None, description="OpenAI organization ID"
     )
     openai_base_url: str | None = Field(
-        default=None,
-        description="Custom OpenAI base URL (for proxies)"
+        default=None, description="Custom OpenAI base URL (for proxies)"
     )
 
     # Anthropic
-    anthropic_api_key: str | None = Field(
-        default=None,
-        description="Anthropic API key"
-    )
+    anthropic_api_key: str | None = Field(default=None, description="Anthropic API key")
 
     # Google Gemini
     gemini_api_key: str | None = Field(
-        default=None,
-        description="Google Gemini API key"
+        default=None, description="Google Gemini API key"
     )
 
     # Azure OpenAI
-    azure_api_key: str | None = Field(
-        default=None,
-        description="Azure OpenAI API key"
-    )
+    azure_api_key: str | None = Field(default=None, description="Azure OpenAI API key")
     azure_endpoint: str | None = Field(
-        default=None,
-        description="Azure OpenAI endpoint URL"
+        default=None, description="Azure OpenAI endpoint URL"
     )
     azure_api_version: str = Field(
-        default="2024-02-15-preview",
-        description="Azure OpenAI API version"
+        default="2024-02-15-preview", description="Azure OpenAI API version"
     )
     azure_deployment: str | None = Field(
-        default=None,
-        description="Azure deployment name"
+        default=None, description="Azure deployment name"
     )
 
     # Ollama (local)
     ollama_base_url: str = Field(
-        default="http://localhost:11434",
-        description="Ollama server URL"
+        default="http://localhost:11434", description="Ollama server URL"
     )
 
     # Custom provider
     custom_base_url: str | None = Field(
-        default=None,
-        description="Custom LLM endpoint URL"
+        default=None, description="Custom LLM endpoint URL"
     )
-    custom_api_key: str | None = Field(
-        default=None,
-        description="Custom LLM API key"
-    )
+    custom_api_key: str | None = Field(default=None, description="Custom LLM API key")
 
     # =========================================================================
     # Generation settings - defaults, overridable per-field
     # =========================================================================
 
     temperature: float = Field(
-        default=0.7,
-        ge=0.0,
-        le=2.0,
-        description="Default temperature for generation"
+        default=0.7, ge=0.0, le=2.0, description="Default temperature for generation"
     )
     max_tokens: int = Field(
-        default=1000,
-        ge=1,
-        le=100000,
-        description="Default max tokens for generation"
+        default=1000, ge=1, le=100000, description="Default max tokens for generation"
     )
-    timeout: int = Field(
-        default=60,
-        ge=1,
-        description="Request timeout in seconds"
-    )
+    timeout: int = Field(default=60, ge=1, description="Request timeout in seconds")
 
     # =========================================================================
     # Embeddings configuration
     # =========================================================================
 
     embedding_enabled: bool = Field(
-        default=False,
-        description="Enable vector embeddings for VectorField"
+        default=False, description="Enable vector embeddings for VectorField"
     )
     embedding_provider: Literal["openai", "ollama", "custom"] = Field(
-        default="openai",
-        description="Provider for embeddings"
+        default="openai", description="Provider for embeddings"
     )
     embedding_model: str = Field(
-        default="text-embedding-3-small",
-        description="Model for generating embeddings"
+        default="text-embedding-3-small", description="Model for generating embeddings"
     )
     embedding_dimensions: int = Field(
-        default=1536,
-        ge=1,
-        le=4096,
-        description="Embedding vector dimensions"
+        default=1536, ge=1, le=4096, description="Embedding vector dimensions"
     )
 
     # =========================================================================
     # Caching - reduce API costs
     # =========================================================================
 
-    cache_enabled: bool = Field(
-        default=True,
-        description="Cache AI responses"
-    )
+    cache_enabled: bool = Field(default=True, description="Cache AI responses")
     cache_ttl: int = Field(
-        default=3600,
-        ge=0,
-        description="Cache TTL in seconds (0 = forever)"
+        default=3600, ge=0, description="Cache TTL in seconds (0 = forever)"
     )
 
     # =========================================================================
@@ -221,26 +180,19 @@ class AISettings(BaseSettings):
     # =========================================================================
 
     process_on_create: bool = Field(
-        default=True,
-        description="Process AI fields when model is created"
+        default=True, description="Process AI fields when model is created"
     )
     process_on_update: bool = Field(
-        default=True,
-        description="Process AI fields when source fields change"
+        default=True, description="Process AI fields when source fields change"
     )
     async_processing: bool = Field(
-        default=False,
-        description="Process AI fields asynchronously (background task)"
+        default=False, description="Process AI fields asynchronously (background task)"
     )
     retry_on_error: bool = Field(
-        default=True,
-        description="Retry failed AI generations"
+        default=True, description="Retry failed AI generations"
     )
     max_retries: int = Field(
-        default=3,
-        ge=0,
-        le=10,
-        description="Maximum number of retries"
+        default=3, ge=0, le=10, description="Maximum number of retries"
     )
 
     def is_configured(self) -> bool:
@@ -385,8 +337,8 @@ def _discover_settings_class() -> type[Settings]:
     If only module path is given (e.g., "backend.settings"), looks for
     AppSettings or Settings class in that module.
     """
-    import os
     import importlib
+    import os
 
     settings_module = os.environ.get("P8S_SETTINGS_MODULE")
 
@@ -404,7 +356,9 @@ def _discover_settings_class() -> type[Settings]:
                 module = importlib.import_module(module_path)
                 if hasattr(module, maybe_class):
                     settings_class = getattr(module, maybe_class)
-                    if isinstance(settings_class, type) and issubclass(settings_class, Settings):
+                    if isinstance(settings_class, type) and issubclass(
+                        settings_class, Settings
+                    ):
                         return settings_class
             except ImportError:
                 pass
@@ -415,7 +369,9 @@ def _discover_settings_class() -> type[Settings]:
                 for name in ["AppSettings", "Settings"]:
                     if hasattr(module, name):
                         settings_class = getattr(module, name)
-                        if isinstance(settings_class, type) and issubclass(settings_class, Settings):
+                        if isinstance(settings_class, type) and issubclass(
+                            settings_class, Settings
+                        ):
                             return settings_class
             except ImportError:
                 pass
@@ -425,11 +381,14 @@ def _discover_settings_class() -> type[Settings]:
         for name in ["AppSettings", "Settings"]:
             if hasattr(module, name):
                 settings_class = getattr(module, name)
-                if isinstance(settings_class, type) and issubclass(settings_class, Settings):
+                if isinstance(settings_class, type) and issubclass(
+                    settings_class, Settings
+                ):
                     return settings_class
         return Settings
     except (ImportError, AttributeError) as e:
         import warnings
+
         warnings.warn(f"Could not load settings from {settings_module}: {e}")
         return Settings
 

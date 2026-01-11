@@ -3,6 +3,7 @@ P8s Admin Registry - Model registration for admin panel.
 """
 
 from typing import Any, TypeVar
+
 from sqlmodel import SQLModel
 
 # Global registry of models for admin
@@ -63,7 +64,7 @@ def get_model(name: str) -> type[SQLModel] | None:
 def _get_app_label(model: type[SQLModel]) -> str:
     """
     Get the app label for a model.
-    
+
     Tries to infer from module name:
     - backend.apps.blog.models -> Blog
     - p8s.auth.models -> Auth
@@ -71,7 +72,7 @@ def _get_app_label(model: type[SQLModel]) -> str:
     """
     module = model.__module__
     parts = module.split(".")
-    
+
     # Check for backend.apps.X
     if "apps" in parts:
         try:
@@ -80,22 +81,21 @@ def _get_app_label(model: type[SQLModel]) -> str:
                 return parts[apps_index + 1].title()
         except ValueError:
             pass
-            
+
     # Check for p8s.X
     if parts[0] == "p8s" and len(parts) > 1:
         # Special case for core/auth
         if parts[1] == "auth":
             return "Authentication"
         return parts[1].title()
-        
+
     # Fallback to module name if it's simple
     if len(parts) > 1:
         # exclude .models if present
         if parts[-1] == "models":
             return parts[-2].title()
-            
-    return "Core"
 
+    return "Core"
 
 
 def get_model_metadata(model: type[SQLModel]) -> dict[str, Any]:
@@ -119,7 +119,9 @@ def get_model_metadata(model: type[SQLModel]) -> dict[str, Any]:
         default_value = field_info.default
         if default_value is PydanticUndefined:
             default_value = None
-        elif not isinstance(default_value, (str, int, float, bool, list, dict, type(None))):
+        elif not isinstance(
+            default_value, (str, int, float, bool, list, dict, type(None))
+        ):
             default_value = str(default_value) if default_value is not None else None
 
         # Normalize type for frontend
@@ -135,13 +137,13 @@ def get_model_metadata(model: type[SQLModel]) -> dict[str, Any]:
         elif annotation in (int, float) or "int" in type_name or "float" in type_name:
             type_str = "number"
             if "Decimal" in type_name:
-                 type_str = "number" # Decimal treated as number in frontend
+                type_str = "number"  # Decimal treated as number in frontend
         elif annotation is bool or "bool" in type_name:
             type_str = "boolean"
         elif "datetime" in type_name:
-             type_str = "datetime"
+            type_str = "datetime"
         elif "date" in type_name:
-             type_str = "date"
+            type_str = "date"
         elif annotation in (dict, list) or "dict" in type_name or "list" in type_name:
             type_str = "json"
 
@@ -180,7 +182,7 @@ def get_model_metadata(model: type[SQLModel]) -> dict[str, Any]:
             rtype = "unknown"
 
             if rel.direction == RelationshipDirection.MANYTOONE:
-                rtype = "many-to-one" # Foreign Key
+                rtype = "many-to-one"  # Foreign Key
             elif rel.direction == RelationshipDirection.MANYTOMANY:
                 rtype = "many-to-many"
             elif rel.direction == RelationshipDirection.ONETOMANY:
@@ -208,12 +210,13 @@ def get_model_metadata(model: type[SQLModel]) -> dict[str, Any]:
                         "model": target_name,
                         "type": rtype,
                         "field": "id",
-                        "local_field": local_field
-                    }
+                        "local_field": local_field,
+                    },
                 }
     except Exception as e:
         # Fallback if introspection fails
         import logging
+
         logging.error(f"Introspection failed for {model}: {e}")
         pass
 
@@ -232,46 +235,56 @@ def get_model_metadata(model: type[SQLModel]) -> dict[str, Any]:
     if hasattr(model, "Admin"):
         # Allow overriding name/plural_name
         if hasattr(model.Admin, "name"):
-            admin_config["name"] = getattr(model.Admin, "name")
+            admin_config["name"] = model.Admin.name
         if hasattr(model.Admin, "plural_name"):
-            admin_config["plural_name"] = getattr(model.Admin, "plural_name")
+            admin_config["plural_name"] = model.Admin.plural_name
 
         # Map direct attributes
-        for attr in ["list_display", "search_fields", "list_filter",
-                     "ordering", "readonly_fields"]:
+        for attr in [
+            "list_display",
+            "search_fields",
+            "list_filter",
+            "ordering",
+            "readonly_fields",
+        ]:
             if hasattr(model.Admin, attr):
                 admin_config[attr] = getattr(model.Admin, attr)
 
         # Map exclude -> hidden_fields
         if hasattr(model.Admin, "exclude"):
-            admin_config["hidden_fields"] = getattr(model.Admin, "exclude")
+            admin_config["hidden_fields"] = model.Admin.exclude
         elif hasattr(model.Admin, "hidden_fields"):
-             admin_config["hidden_fields"] = getattr(model.Admin, "hidden_fields")
+            admin_config["hidden_fields"] = model.Admin.hidden_fields
 
     # Get registered actions with metadata
-    from p8s.admin.actions import get_model_actions, DEFAULT_ACTIONS
+    from p8s.admin.actions import DEFAULT_ACTIONS, get_model_actions
 
     actions_list = []
     model_actions = get_model_actions(model.__name__)
 
     # Add default actions
     for action_name, func in DEFAULT_ACTIONS.items():
-        actions_list.append({
-            "name": action_name,
-            "description": getattr(func, "_action_description", action_name),
-            "confirm": getattr(func, "_action_confirm", False),
-        })
+        actions_list.append(
+            {
+                "name": action_name,
+                "description": getattr(func, "_action_description", action_name),
+                "confirm": getattr(func, "_action_confirm", False),
+            }
+        )
 
     # Add model-specific actions
     for action_name, action_meta in model_actions.items():
-        actions_list.append({
-            "name": action_name,
-            "description": action_meta.get("description", action_name),
-            "confirm": action_meta.get("confirm", False),
-        })
+        actions_list.append(
+            {
+                "name": action_name,
+                "description": action_meta.get("description", action_name),
+                "confirm": action_meta.get("confirm", False),
+            }
+        )
 
     # Get inline configurations
     from p8s.admin.inlines import get_model_inlines
+
     inlines = get_model_inlines(model)
 
     return {
@@ -294,8 +307,9 @@ def auto_discover_models() -> None:
 
     Also imports admin.py to allow site.register() calls.
     """
-    from p8s.core.settings import get_settings
     import importlib
+
+    from p8s.core.settings import get_settings
 
     settings = get_settings()
 

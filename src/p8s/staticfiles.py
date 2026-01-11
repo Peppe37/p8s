@@ -16,11 +16,11 @@ from starlette.staticfiles import StaticFiles as StarletteStaticFiles
 class StaticFilesConfig:
     """
     Configuration for static files serving.
-    
+
     Example:
         ```python
         from p8s.staticfiles import StaticFilesConfig
-        
+
         static = StaticFilesConfig(
             static_url="/static/",
             static_root="collected_static",
@@ -28,7 +28,7 @@ class StaticFilesConfig:
         )
         ```
     """
-    
+
     def __init__(
         self,
         static_url: str = "/static/",
@@ -39,7 +39,7 @@ class StaticFilesConfig:
     ) -> None:
         """
         Initialize static files configuration.
-        
+
         Args:
             static_url: URL prefix for static files.
             static_root: Directory for collected static files.
@@ -57,14 +57,14 @@ class StaticFilesConfig:
 def mount_static_files(app: Any, config: StaticFilesConfig | None = None) -> None:
     """
     Mount static and media file serving on a FastAPI app.
-    
+
     Args:
         app: FastAPI application instance.
         config: Static files configuration (uses defaults if None).
     """
     if config is None:
         config = StaticFilesConfig()
-    
+
     # Mount collected static files
     if config.static_root.exists():
         app.mount(
@@ -72,7 +72,7 @@ def mount_static_files(app: Any, config: StaticFilesConfig | None = None) -> Non
             StarletteStaticFiles(directory=str(config.static_root)),
             name="static",
         )
-    
+
     # Mount media files
     config.media_root.mkdir(parents=True, exist_ok=True)
     app.mount(
@@ -88,69 +88,69 @@ def collectstatic(
 ) -> dict[str, Any]:
     """
     Collect static files from various locations into STATIC_ROOT.
-    
+
     Args:
         config: Static files configuration.
         clear: Clear STATIC_ROOT before collecting.
-    
+
     Returns:
         Dict with collection stats.
     """
     import shutil
-    
+
     stats = {"copied": 0, "skipped": 0, "errors": []}
-    
+
     config.static_root.mkdir(parents=True, exist_ok=True)
-    
+
     if clear:
         for item in config.static_root.iterdir():
             if item.is_dir():
                 shutil.rmtree(item)
             else:
                 item.unlink()
-    
+
     for source_dir in config.staticfiles_dirs:
         if not source_dir.exists():
             continue
-        
+
         for source_file in source_dir.rglob("*"):
             if source_file.is_dir():
                 continue
-            
+
             relative = source_file.relative_to(source_dir)
             dest_file = config.static_root / relative
-            
+
             try:
                 dest_file.parent.mkdir(parents=True, exist_ok=True)
-                
+
                 # Check if file needs updating
                 if dest_file.exists():
                     if source_file.stat().st_mtime <= dest_file.stat().st_mtime:
                         stats["skipped"] += 1
                         continue
-                
+
                 shutil.copy2(source_file, dest_file)
                 stats["copied"] += 1
             except Exception as e:
                 stats["errors"].append(f"{source_file}: {e}")
-    
+
     return stats
 
 
 def get_static_url(path: str, config: StaticFilesConfig | None = None) -> str:
     """
     Generate URL for a static file.
-    
+
     Args:
         path: Relative path to static file.
         config: Static files configuration.
-    
+
     Returns:
         Full URL to the static file.
     """
     if config is None:
         config = StaticFilesConfig()
-    
+
     url = config.static_url
     if not url.endswith("/"):
         url += "/"
@@ -160,17 +160,17 @@ def get_static_url(path: str, config: StaticFilesConfig | None = None) -> str:
 def get_media_url(path: str, config: StaticFilesConfig | None = None) -> str:
     """
     Generate URL for a media file.
-    
+
     Args:
         path: Relative path to media file.
         config: Static files configuration.
-    
+
     Returns:
         Full URL to the media file.
     """
     if config is None:
         config = StaticFilesConfig()
-    
+
     url = config.media_url
     if not url.endswith("/"):
         url += "/"

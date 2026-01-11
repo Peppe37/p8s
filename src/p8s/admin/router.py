@@ -9,20 +9,19 @@ These endpoints provide:
 Like Django: /admin/ serves the UI, /admin/api/ contains the REST endpoints.
 """
 
+from pathlib import Path
 from typing import Any
 from uuid import UUID
 
-from pathlib import Path
-
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from starlette.responses import FileResponse, HTMLResponse
-from sqlalchemy import select, func, or_, String
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.responses import FileResponse, HTMLResponse
 
 from p8s.admin.registry import (
-    get_registered_models,
     get_model,
     get_model_metadata,
+    get_registered_models,
 )
 from p8s.auth.dependencies import require_admin
 from p8s.auth.models import User
@@ -42,6 +41,7 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
     """
     # Auto-discover models from installed apps
     from p8s.admin.registry import auto_discover_models
+
     auto_discover_models()
 
     router = APIRouter()
@@ -57,7 +57,10 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         index_path = static_dir / "index.html"
         if index_path.exists():
             return FileResponse(index_path)
-        return HTMLResponse("<h1>Admin UI not built</h1><p>Running in headless mode.</p>", status_code=404)
+        return HTMLResponse(
+            "<h1>Admin UI not built</h1><p>Running in headless mode.</p>",
+            status_code=404,
+        )
 
     @router.get("/assets/{path:path}", include_in_schema=False)
     async def admin_assets(path: str):
@@ -76,6 +79,7 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
     async def admin_version() -> dict[str, str]:
         """Get P8s version (public endpoint for login page)."""
         from p8s import __version__
+
         return {"version": __version__}
 
     # =========================================================================
@@ -93,15 +97,13 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
             Admin settings and available models.
         """
         from p8s import __version__
+
         models = get_registered_models()
 
         return {
             "title": settings.title,
             "version": __version__,
-            "models": [
-                get_model_metadata(model)
-                for model in models.values()
-            ],
+            "models": [get_model_metadata(model) for model in models.values()],
         }
 
     @router.get("/models")
@@ -116,10 +118,7 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         """
         models = get_registered_models()
 
-        return [
-            get_model_metadata(model)
-            for model in models.values()
-        ]
+        return [get_model_metadata(model) for model in models.values()]
 
     @router.get("/models/{model_name}")
     async def get_model_info(
@@ -185,25 +184,25 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         if hasattr(model, "Admin") and hasattr(model.Admin, "list_filter"):
             list_filter = getattr(model.Admin, "list_filter", [])
             query_params = request.query_params if request else {}
-            
+
             for field_name in list_filter:
                 value = query_params.get(field_name)
                 if value is None:
                     continue
 
                 target_field = None
-                
+
                 # Check if model has the field
                 if hasattr(model, field_name):
                     field = getattr(model, field_name)
-                    
+
                     # Detect if it is a Relationship
                     is_relation = False
                     if hasattr(field, "property"):
                         prop_type = type(field.property).__name__
                         if "Relationship" in prop_type:
                             is_relation = True
-                    
+
                     if is_relation:
                         # If relation, try to use the _id field (Foreign Key)
                         # This assumes standard naming convention (name -> name_id)
@@ -213,20 +212,23 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
                     else:
                         # Normal field
                         target_field = field
-                
+
                 # Fallback: Check if field_name_id exists directly
                 elif hasattr(model, f"{field_name}_id"):
                     target_field = getattr(model, f"{field_name}_id")
-                
+
                 if target_field is not None:
                     # Handle Boolean conversion
                     # SQLAlchemy/SQLModel might not automatically convert "true"/"false" strings
-                    if hasattr(target_field, "type") and type(target_field.type).__name__ == "Boolean":
+                    if (
+                        hasattr(target_field, "type")
+                        and type(target_field.type).__name__ == "Boolean"
+                    ):
                         if str(value).lower() in ("true", "1", "yes"):
                             value = True
                         elif str(value).lower() in ("false", "0", "no"):
                             value = False
-                            
+
                     # Handle UUID conversion
                     # If the field expects a UUID, we must convert the string
                     if hasattr(target_field, "type"):
@@ -254,22 +256,22 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
 
             if hasattr(model, field_name):
                 field = getattr(model, field_name)
-                
+
                 # Safe sort: ignore relationships for now to avoid 500 errors
                 # We check if it is a RelationshipProperty (by checking for 'mapper' or 'entity')
                 # Or simply try/except the sort construction
                 try:
-                   # Check if it's a relationship by inspecting property
-                   is_relation = False
-                   if hasattr(field, "property"):
-                       prop_type = type(field.property).__name__
-                       if "Relationship" in prop_type:
-                           is_relation = True
-                   
-                   if not is_relation:
-                       query = query.order_by(field.desc() if desc else field.asc())
+                    # Check if it's a relationship by inspecting property
+                    is_relation = False
+                    if hasattr(field, "property"):
+                        prop_type = type(field.property).__name__
+                        if "Relationship" in prop_type:
+                            is_relation = True
+
+                    if not is_relation:
+                        query = query.order_by(field.desc() if desc else field.asc())
                 except Exception:
-                   pass
+                    pass
         elif hasattr(model, "created_at"):
             query = query.order_by(model.created_at.desc())
 
@@ -280,15 +282,15 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         # Eager load relationships if they are in list_display
         # We need to know which fields are relations. We can check the model metadata.
         from sqlalchemy.orm import selectinload
-        
+
         metadata = get_model_metadata(model)
         relations_to_load = []
-        
+
         # Check list_display from Admin config
         list_display = []
         if hasattr(model, "Admin") and hasattr(model.Admin, "list_display"):
-            list_display = getattr(model.Admin, "list_display")
-            
+            list_display = model.Admin.list_display
+
         for field_name in list_display:
             if field_name in metadata["fields"]:
                 field_meta = metadata["fields"][field_name]
@@ -300,12 +302,13 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         if relations_to_load:
             for rel in relations_to_load:
                 query = query.options(selectinload(rel))
-        
+
         # Helper to get relation fields to exclude from dump
         # This prevents implicit lazy loading during serialization which causes MissingGreenlet
         metadata = get_model_metadata(model)
         relation_fields = {
-            name for name, meta in metadata["fields"].items() 
+            name
+            for name, meta in metadata["fields"].items()
             if meta.get("type") == "relation"
         }
 
@@ -315,34 +318,37 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         # Execute query
         result = await session.execute(query)
         items = result.scalars().all()
-        
+
         # Serialize items
         final_items = []
         for item in items:
             # Exclude relations from automatic dump to avoid lazy load
             data = item.model_dump(exclude=relation_fields)
-            
+
             # Inject relation string refs manually (safe access if loaded)
             for rel_field in list_display:
-                if rel_field in metadata["fields"] and metadata["fields"][rel_field].get("type") == "relation":
+                if (
+                    rel_field in metadata["fields"]
+                    and metadata["fields"][rel_field].get("type") == "relation"
+                ):
                     # Only access if we expect it to be loaded via selectinload above
                     # But checking if loaded is hard in async.
                     # Since we added it to relations_to_load, it SHOULD be loaded.
                     # If it's NOT in list_display, we definitely shouldn't touch it.
-                    
+
                     try:
                         rel_val = getattr(item, rel_field, None)
                         if rel_val:
                             # Try __str__ or some reasonable default
                             data[rel_field] = str(rel_val)
-                            
+
                             # If the relation object has a 'name' or 'title', use that preference
                             if hasattr(rel_val, "name"):
                                 data[rel_field] = rel_val.name
                             elif hasattr(rel_val, "title"):
                                 data[rel_field] = rel_val.title
                         else:
-                             data[rel_field] = None
+                            data[rel_field] = None
                     except Exception:
                         # Fallback if somehow not loaded
                         data[rel_field] = "Error loading"
@@ -373,13 +379,15 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         Returns:
             Item data.
         """
+        model = get_model(model_name)
         if not model:
             raise HTTPException(status_code=404, detail="Model not found")
 
         # Prepare eager loading for all relationships
         from sqlalchemy.orm import selectinload
+
         query = select(model).where(model.id == item_id)
-        
+
         metadata = get_model_metadata(model)
         for name, meta in metadata["fields"].items():
             if meta.get("type") == "relation":
@@ -394,21 +402,22 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
 
         # Safe serialization
         from sqlalchemy.inspection import inspect
+
         mapper = inspect(model)
-        
+
         serialized = {}
         for column in mapper.columns:
             val = getattr(item, column.key)
             if isinstance(val, UUID):
                 val = str(val)
             serialized[column.key] = val
-        
+
         # Also include loaded relations IDs for frontend form
         for name, meta in metadata["fields"].items():
             if meta.get("type") == "relation":
                 # For many-to-one, the FK column is enough (handled above)
                 pass
-            
+
         return serialized
 
     @router.post("/{model_name}", status_code=201)
@@ -445,18 +454,19 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
             session.add(item)
             await session.flush()
             await session.refresh(item)
-            
+
             # Safe serialization
             from sqlalchemy.inspection import inspect
+
             mapper = inspect(model)
-            
+
             serialized = {}
             for column in mapper.columns:
                 val = getattr(item, column.key)
                 if isinstance(val, UUID):
                     val = str(val)
                 serialized[column.key] = val
-            
+
             return serialized
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
@@ -487,8 +497,9 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
 
         # Prepare eager loading for all relationships
         from sqlalchemy.orm import selectinload
+
         query = select(model).where(model.id == item_id)
-        
+
         metadata = get_model_metadata(model)
         for name, meta in metadata["fields"].items():
             if meta.get("type") == "relation":
@@ -509,10 +520,11 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         # Get relation field names to skip them during update
         # (frontend should send category_id, not category)
         relation_fields = {
-            name for name, meta in metadata["fields"].items() 
+            name
+            for name, meta in metadata["fields"].items()
             if meta.get("type") == "relation"
         }
-        
+
         for key, value in data.items():
             if key in readonly:
                 continue
@@ -530,8 +542,9 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         # Safe serialization: Only include columns, ignore relationships
         # model_dump() triggers lazy loads which fail in async
         from sqlalchemy.inspection import inspect
+
         mapper = inspect(model)
-        
+
         serialized = {}
         for column in mapper.columns:
             val = getattr(item, column.key)
@@ -541,7 +554,7 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
             # Simple types (str, int, float, bool, None) pass through
             # Complex types might need casting, but JSON response handles most
             serialized[column.key] = val
-            
+
         return serialized
 
     @router.delete("/{model_name}/{item_id}")
@@ -568,9 +581,7 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         if not model:
             raise HTTPException(status_code=404, detail="Model not found")
 
-        result = await session.execute(
-            select(model).where(model.id == item_id)
-        )
+        result = await session.execute(select(model).where(model.id == item_id))
         item = result.scalar_one_or_none()
 
         if not item:
@@ -614,9 +625,7 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         for item_id in ids:
             try:
                 uuid_id = UUID(item_id) if isinstance(item_id, str) else item_id
-                result = await session.execute(
-                    select(model).where(model.id == uuid_id)
-                )
+                result = await session.execute(select(model).where(model.id == uuid_id))
                 item = result.scalar_one_or_none()
                 if item:
                     if hasattr(item, "soft_delete"):
@@ -666,14 +675,14 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
                     uuid_ids.append(UUID(id_str) if isinstance(id_str, str) else id_str)
                 except ValueError:
                     continue
-            
+
             return await execute_action(model_name, action_name, session, uuid_ids)
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
             import traceback
+
             traceback.print_exc()
             raise HTTPException(status_code=500, detail=str(e))
 
     return router
-

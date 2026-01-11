@@ -5,14 +5,12 @@ In DEBUG mode: Shows detailed error info with stack traces.
 In PRODUCTION mode: Shows generic, styled error pages.
 """
 
-import traceback
 import html
+import traceback
 from pathlib import Path
-from typing import Any
 
 from fastapi import Request
 from fastapi.responses import HTMLResponse
-
 
 # P8s Color Palette
 P8S_COLORS = {
@@ -39,8 +37,8 @@ def _get_base_styles() -> str:
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
         body {{
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: {P8S_COLORS['bg_dark']};
-            color: {P8S_COLORS['text_primary']};
+            background: {P8S_COLORS["bg_dark"]};
+            color: {P8S_COLORS["text_primary"]};
             min-height: 100vh;
             line-height: 1.6;
         }}
@@ -50,7 +48,7 @@ def _get_base_styles() -> str:
             padding: 2rem;
         }}
         .error-header {{
-            background: linear-gradient(135deg, {P8S_COLORS['danger']}, {P8S_COLORS['primary']});
+            background: linear-gradient(135deg, {P8S_COLORS["danger"]}, {P8S_COLORS["primary"]});
             padding: 2rem;
             border-radius: 1rem 1rem 0 0;
         }}
@@ -70,8 +68,8 @@ def _get_base_styles() -> str:
             margin-top: 0.5rem;
         }}
         .error-body {{
-            background: {P8S_COLORS['bg_secondary']};
-            border: 1px solid {P8S_COLORS['border']};
+            background: {P8S_COLORS["bg_secondary"]};
+            border: 1px solid {P8S_COLORS["border"]};
             border-top: none;
             border-radius: 0 0 1rem 1rem;
             padding: 2rem;
@@ -83,49 +81,49 @@ def _get_base_styles() -> str:
             font-size: 0.875rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            color: {P8S_COLORS['primary']};
+            color: {P8S_COLORS["primary"]};
             margin-bottom: 1rem;
             font-weight: 600;
         }}
         .traceback {{
-            background: {P8S_COLORS['bg_dark']};
-            border: 1px solid {P8S_COLORS['border']};
+            background: {P8S_COLORS["bg_dark"]};
+            border: 1px solid {P8S_COLORS["border"]};
             border-radius: 0.5rem;
             overflow: hidden;
         }}
         .frame {{
-            border-bottom: 1px solid {P8S_COLORS['border']};
+            border-bottom: 1px solid {P8S_COLORS["border"]};
             padding: 1rem;
         }}
         .frame:last-child {{
             border-bottom: none;
         }}
         .frame.current {{
-            background: {P8S_COLORS['danger_bg']};
+            background: {P8S_COLORS["danger_bg"]};
         }}
         .frame-location {{
             font-size: 0.875rem;
-            color: {P8S_COLORS['text_secondary']};
+            color: {P8S_COLORS["text_secondary"]};
             margin-bottom: 0.5rem;
         }}
         .frame-file {{
-            color: {P8S_COLORS['primary']};
+            color: {P8S_COLORS["primary"]};
         }}
         .frame-line {{
-            color: {P8S_COLORS['text_muted']};
+            color: {P8S_COLORS["text_muted"]};
         }}
         .frame-function {{
-            color: {P8S_COLORS['success']};
+            color: {P8S_COLORS["success"]};
             font-weight: 600;
         }}
         .code-block {{
-            background: {P8S_COLORS['bg_tertiary']};
+            background: {P8S_COLORS["bg_tertiary"]};
             border-radius: 0.25rem;
             padding: 0.75rem 1rem;
             font-family: 'Fira Code', 'Monaco', monospace;
             font-size: 0.875rem;
             overflow-x: auto;
-            color: {P8S_COLORS['text_primary']};
+            color: {P8S_COLORS["text_primary"]};
         }}
         .info-table {{
             width: 100%;
@@ -135,11 +133,11 @@ def _get_base_styles() -> str:
         .info-table td {{
             padding: 0.75rem 1rem;
             text-align: left;
-            border-bottom: 1px solid {P8S_COLORS['border']};
+            border-bottom: 1px solid {P8S_COLORS["border"]};
         }}
         .info-table th {{
-            background: {P8S_COLORS['bg_tertiary']};
-            color: {P8S_COLORS['text_secondary']};
+            background: {P8S_COLORS["bg_tertiary"]};
+            color: {P8S_COLORS["text_secondary"]};
             font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -150,7 +148,7 @@ def _get_base_styles() -> str:
             font-size: 0.875rem;
         }}
         .info-table td:first-child {{
-            color: {P8S_COLORS['primary']};
+            color: {P8S_COLORS["primary"]};
             white-space: nowrap;
             width: 200px;
         }}
@@ -158,7 +156,7 @@ def _get_base_styles() -> str:
             display: inline-block;
             margin-top: 1.5rem;
             padding: 0.75rem 1.5rem;
-            background: {P8S_COLORS['primary']};
+            background: {P8S_COLORS["primary"]};
             color: white;
             text-decoration: none;
             border-radius: 0.5rem;
@@ -166,12 +164,12 @@ def _get_base_styles() -> str:
             transition: 0.2s;
         }}
         .home-link:hover {{
-            background: {P8S_COLORS['primary_hover']};
+            background: {P8S_COLORS["primary_hover"]};
         }}
         .footer {{
             text-align: center;
             padding: 2rem;
-            color: {P8S_COLORS['text_muted']};
+            color: {P8S_COLORS["text_muted"]};
             font-size: 0.875rem;
         }}
         .logo {{
@@ -201,7 +199,7 @@ def _get_base_styles() -> str:
         .production-code {{
             font-size: 8rem;
             font-weight: 800;
-            background: linear-gradient(135deg, {P8S_COLORS['primary']}, {P8S_COLORS['danger']});
+            background: linear-gradient(135deg, {P8S_COLORS["primary"]}, {P8S_COLORS["danger"]});
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -210,11 +208,11 @@ def _get_base_styles() -> str:
         }}
         .production-title {{
             font-size: 1.5rem;
-            color: {P8S_COLORS['text_primary']};
+            color: {P8S_COLORS["text_primary"]};
             margin-bottom: 0.5rem;
         }}
         .production-message {{
-            color: {P8S_COLORS['text_secondary']};
+            color: {P8S_COLORS["text_secondary"]};
             margin-bottom: 2rem;
             max-width: 400px;
         }}
@@ -229,32 +227,38 @@ def render_debug_error(
 ) -> HTMLResponse:
     """
     Render a detailed debug error page (Django-style).
-    
+
     Shows full stack trace, request info, and local variables.
     Only use when DEBUG=True.
     """
     # Get exception info
     exc_type = type(exc).__name__
     exc_message = str(exc)
-    
+
     # Get formatted traceback
     tb_lines = traceback.format_exception(type(exc), exc, exc.__traceback__)
-    
+
     # Parse traceback for structured display
     frames_html = ""
     tb = exc.__traceback__
     frame_list = []
-    
+
     while tb is not None:
         frame = tb.tb_frame
-        frame_list.append({
-            "filename": frame.f_code.co_filename,
-            "lineno": tb.tb_lineno,
-            "name": frame.f_code.co_name,
-            "locals": {k: repr(v)[:200] for k, v in frame.f_locals.items() if not k.startswith("__")},
-        })
+        frame_list.append(
+            {
+                "filename": frame.f_code.co_filename,
+                "lineno": tb.tb_lineno,
+                "name": frame.f_code.co_name,
+                "locals": {
+                    k: repr(v)[:200]
+                    for k, v in frame.f_locals.items()
+                    if not k.startswith("__")
+                },
+            }
+        )
         tb = tb.tb_next
-    
+
     # Reverse to show most recent first
     for i, frame in enumerate(reversed(frame_list)):
         is_current = i == 0
@@ -272,18 +276,18 @@ def render_debug_error(
                 </table>
             </div>
             """
-        
+
         frames_html += f"""
-        <div class="frame {'current' if is_current else ''}">
+        <div class="frame {"current" if is_current else ""}">
             <div class="frame-location">
-                <span class="frame-file">{html.escape(frame['filename'])}</span>
-                <span class="frame-line">line {frame['lineno']}</span>
-                in <span class="frame-function">{html.escape(frame['name'])}</span>
+                <span class="frame-file">{html.escape(frame["filename"])}</span>
+                <span class="frame-line">line {frame["lineno"]}</span>
+                in <span class="frame-function">{html.escape(frame["name"])}</span>
             </div>
             {locals_html}
         </div>
         """
-    
+
     # Request info
     request_info = f"""
     <table class="info-table">
@@ -292,11 +296,11 @@ def render_debug_error(
             <tr><td>Method</td><td>{html.escape(request.method)}</td></tr>
             <tr><td>URL</td><td>{html.escape(str(request.url))}</td></tr>
             <tr><td>Path</td><td>{html.escape(request.url.path)}</td></tr>
-            <tr><td>Client</td><td>{html.escape(str(request.client.host) if request.client else 'Unknown')}</td></tr>
+            <tr><td>Client</td><td>{html.escape(str(request.client.host) if request.client else "Unknown")}</td></tr>
         </tbody>
     </table>
     """
-    
+
     # Headers
     headers_html = "".join(
         f"<tr><td>{html.escape(k)}</td><td>{html.escape(v)}</td></tr>"
@@ -308,7 +312,7 @@ def render_debug_error(
         <tbody>{headers_html}</tbody>
     </table>
     """
-    
+
     # Query params
     query_html = ""
     if request.query_params:
@@ -325,7 +329,7 @@ def render_debug_error(
             </table>
         </div>
         """
-    
+
     content = f"""
     <!DOCTYPE html>
     <html lang="en">
@@ -371,7 +375,7 @@ def render_debug_error(
                 
                 <div class="section">
                     <h3 class="section-title">Full Traceback</h3>
-                    <pre class="code-block">{html.escape(''.join(tb_lines))}</pre>
+                    <pre class="code-block">{html.escape("".join(tb_lines))}</pre>
                 </div>
             </div>
         </div>
@@ -382,7 +386,7 @@ def render_debug_error(
     </body>
     </html>
     """
-    
+
     return HTMLResponse(content=content, status_code=status_code)
 
 
@@ -395,7 +399,7 @@ def render_production_error(
 ) -> HTMLResponse:
     """
     Render a generic production error page.
-    
+
     Checks for user override in templates/errors/{status_code}.html first.
     """
     # Default messages
@@ -405,15 +409,20 @@ def render_production_error(
         403: ("Forbidden", "You don't have permission to access this resource."),
         404: ("Not Found", "The page you're looking for doesn't exist."),
         405: ("Method Not Allowed", "This method is not allowed for this resource."),
-        500: ("Internal Server Error", "Something went wrong on our end. We're working on it."),
+        500: (
+            "Internal Server Error",
+            "Something went wrong on our end. We're working on it.",
+        ),
         502: ("Bad Gateway", "The server received an invalid response."),
         503: ("Service Unavailable", "The service is temporarily unavailable."),
     }
-    
-    default_title, default_message = error_info.get(status_code, ("Error", "An error occurred."))
+
+    default_title, default_message = error_info.get(
+        status_code, ("Error", "An error occurred.")
+    )
     title = title or default_title
     message = message or default_message
-    
+
     # Check for user override template
     if templates_dir:
         user_template = templates_dir / "errors" / f"{status_code}.html"
@@ -428,7 +437,7 @@ def render_production_error(
                 return HTMLResponse(content=content, status_code=status_code)
             except Exception:
                 pass  # Fall back to default
-    
+
     content = f"""
     <!DOCTYPE html>
     <html lang="en">
@@ -454,7 +463,7 @@ def render_production_error(
     </body>
     </html>
     """
-    
+
     return HTMLResponse(content=content, status_code=status_code)
 
 
@@ -506,5 +515,5 @@ def render_debug_404(request: Request) -> HTMLResponse:
     </body>
     </html>
     """
-    
+
     return HTMLResponse(content=content, status_code=404)

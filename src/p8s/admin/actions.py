@@ -7,8 +7,8 @@ Provides:
 - Execution utilities
 """
 
-from typing import Any, Callable, TypeVar
-from functools import wraps
+from collections.abc import Callable
+from typing import Any, TypeVar
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -29,47 +29,53 @@ def admin_action(
 ) -> Callable[[T], T]:
     """
     Decorator to define an admin action.
-    
+
     The decorated function receives:
     - session: AsyncSession
     - queryset: List of selected model instances
-    
+
     Example:
         ```python
         from p8s.admin.actions import admin_action
-        
+
         @admin_action(description="Mark selected products as active")
         async def mark_active(session, queryset):
             for item in queryset:
                 item.is_active = True
                 session.add(item)
             return f"{len(queryset)} products activated"
-        
+
         class Product(Model, table=True):
             name: str
             is_active: bool = True
-            
+
             class Admin:
                 actions = ["mark_active"]
         ```
-    
+
     Args:
         description: Human-readable description for the action.
         confirm: If True, require user confirmation before execution.
         confirm_message: Custom confirmation message.
-    
+
     Returns:
         Decorator function.
     """
+
     def decorator(func: T) -> T:
         # Store action metadata on the function
         func._admin_action = True
-        func._action_description = description or func.__name__.replace("_", " ").title()
+        func._action_description = (
+            description or func.__name__.replace("_", " ").title()
+        )
         func._action_confirm = confirm
-        func._action_confirm_message = confirm_message or f"Are you sure you want to {func.__name__.replace('_', ' ')}?"
-        
+        func._action_confirm_message = (
+            confirm_message
+            or f"Are you sure you want to {func.__name__.replace('_', ' ')}?"
+        )
+
         return func
-    
+
     return decorator
 
 
@@ -81,7 +87,7 @@ def register_action(
 ) -> None:
     """
     Register an action for a model.
-    
+
     Args:
         model_name: Name of the model class.
         action_name: Name of the action.
@@ -90,10 +96,11 @@ def register_action(
     """
     if model_name not in _admin_actions:
         _admin_actions[model_name] = {}
-    
+
     _admin_actions[model_name][action_name] = {
         "func": func,
-        "description": description or getattr(func, "_action_description", action_name.replace("_", " ").title()),
+        "description": description
+        or getattr(func, "_action_description", action_name.replace("_", " ").title()),
         "confirm": getattr(func, "_action_confirm", False),
         "confirm_message": getattr(func, "_action_confirm_message", None),
     }
@@ -102,10 +109,10 @@ def register_action(
 def get_model_actions(model_name: str) -> dict[str, dict[str, Any]]:
     """
     Get all registered actions for a model.
-    
+
     Args:
         model_name: Name of the model class.
-    
+
     Returns:
         Dictionary of action_name -> action metadata.
     """
@@ -115,11 +122,11 @@ def get_model_actions(model_name: str) -> dict[str, dict[str, Any]]:
 def get_action(model_name: str, action_name: str) -> dict[str, Any] | None:
     """
     Get a specific action for a model.
-    
+
     Args:
         model_name: Name of the model class.
         action_name: Name of the action.
-    
+
     Returns:
         Action metadata or None.
     """
@@ -134,55 +141,58 @@ async def execute_action(
 ) -> dict[str, Any]:
     """
     Execute an admin action.
-    
+
     Args:
         model_name: Name of the model class.
         action_name: Name of the action.
         session: Database session.
         item_ids: List of item IDs to act on.
-    
+
     Returns:
         Result dictionary with message or error.
-    
+
     Raises:
         ValueError: If action not found.
     """
-    from p8s.admin.registry import get_model
     from sqlalchemy import select
-    
+
+    from p8s.admin.registry import get_model
+
     action = get_action(model_name, action_name)
     if not action:
         raise ValueError(f"Action '{action_name}' not found for model '{model_name}'")
-    
+
     model = get_model(model_name)
     if not model:
         raise ValueError(f"Model '{model_name}' not found")
-    
+
     # Load items
-    result = await session.execute(
-        select(model).where(model.id.in_(item_ids))
-    )
+    result = await session.execute(select(model).where(model.id.in_(item_ids)))
     queryset = list(result.scalars().all())
-    
+
     if not queryset:
         return {"message": "No items selected", "affected": 0}
-    
+
     # Execute action
     func = action["func"]
     response = await func(session, queryset)
-    
+
     # Process response
     if isinstance(response, str):
         return {"message": response, "affected": len(queryset)}
     elif isinstance(response, dict):
         return {"affected": len(queryset), **response}
     else:
-        return {"message": f"Action completed on {len(queryset)} items", "affected": len(queryset)}
+        return {
+            "message": f"Action completed on {len(queryset)} items",
+            "affected": len(queryset),
+        }
 
 
 # ============================================================================
 # Built-in Actions
 # ============================================================================
+
 
 @admin_action(description="Delete selected items")
 async def delete_selected(session: AsyncSession, queryset: list) -> str:
