@@ -1,6 +1,19 @@
 # CHANGELOG
 
 
+## v1.0.2 (2026-01-11)
+
+### Bug Fixes
+
+- Trigger first PyPI release
+  ([`23a3564`](https://github.com/Peppe37/p8s/commit/23a3564bd28448164dad7102620c99d7c5c221ef))
+
+### Continuous Integration
+
+- Remove duplicate build step (semantic-release handles it)
+  ([`7b057db`](https://github.com/Peppe37/p8s/commit/7b057db94d183ea92a78cfa74328959044dcf181))
+
+
 ## v1.0.1 (2026-01-11)
 
 ### Bug Fixes
