@@ -904,6 +904,285 @@ def version():
 
 
 # ============================================================================
+# DBSHELL command
+# ============================================================================
+
+@app.command()
+def dbshell():
+    """
+    Open the database shell.
+    
+    Opens sqlite3, psql, or mysql based on DATABASE_URL.
+    
+    Example:
+        p8s dbshell
+    """
+    import os
+    import shutil
+    
+    ensure_settings_module()
+    
+    from p8s.core.settings import get_settings
+    settings = get_settings()
+    
+    db_url = settings.database.url
+    
+    # Parse database URL to determine type
+    if db_url.startswith("sqlite"):
+        # Extract path from sqlite URL
+        # sqlite+aiosqlite:///./db.sqlite3 -> ./db.sqlite3
+        path = db_url.split("///")[-1]
+        
+        if not shutil.which("sqlite3"):
+            console.print("[red]Error:[/red] sqlite3 not found in PATH")
+            raise typer.Exit(1)
+        
+        console.print(f"[bold]Opening SQLite database: {path}[/bold]")
+        os.execvp("sqlite3", ["sqlite3", path])
+        
+    elif db_url.startswith("postgresql") or db_url.startswith("postgres"):
+        # postgresql+asyncpg://user:pass@host:port/dbname
+        if not shutil.which("psql"):
+            console.print("[red]Error:[/red] psql not found in PATH")
+            raise typer.Exit(1)
+        
+        # Convert async URL to regular for psql
+        psql_url = db_url.replace("+asyncpg", "").replace("+psycopg2", "")
+        console.print("[bold]Opening PostgreSQL database...[/bold]")
+        os.execvp("psql", ["psql", psql_url])
+        
+    elif db_url.startswith("mysql"):
+        if not shutil.which("mysql"):
+            console.print("[red]Error:[/red] mysql client not found in PATH")
+            raise typer.Exit(1)
+        
+        # Parse mysql URL for connection params
+        # mysql+aiomysql://user:pass@host:port/dbname
+        from urllib.parse import urlparse
+        parsed = urlparse(db_url.replace("+aiomysql", "").replace("+pymysql", ""))
+        
+        args = ["mysql"]
+        if parsed.hostname:
+            args.extend(["-h", parsed.hostname])
+        if parsed.port:
+            args.extend(["-P", str(parsed.port)])
+        if parsed.username:
+            args.extend(["-u", parsed.username])
+        if parsed.password:
+            args.append(f"-p{parsed.password}")
+        if parsed.path:
+            args.append(parsed.path.lstrip("/"))
+        
+        console.print("[bold]Opening MySQL database...[/bold]")
+        os.execvp("mysql", args)
+    else:
+        console.print(f"[red]Error:[/red] Unsupported database type in: {db_url}")
+        raise typer.Exit(1)
+
+
+# ============================================================================
+# CHECK command
+# ============================================================================
+
+@app.command()
+def check(
+    deploy: bool = typer.Option(False, "--deploy", help="Run deployment checks"),
+):
+    """
+    Run system checks.
+    
+    Validates settings, models, and configuration.
+    
+    Example:
+        p8s check
+        p8s check --deploy
+    """
+    ensure_settings_module()
+    
+    errors = []
+    warnings = []
+    
+    console.print("[bold]Running system checks...[/bold]")
+    console.print()
+    
+    # Check 1: Settings
+    console.print("  Checking settings...", end=" ")
+    try:
+        from p8s.core.settings import get_settings
+        settings = get_settings()
+        console.print("[green]OK[/green]")
+    except Exception as e:
+        errors.append(f"Settings error: {e}")
+        console.print("[red]FAIL[/red]")
+    
+    # Check 2: Database connectivity
+    console.print("  Checking database...", end=" ")
+    try:
+        import asyncio
+        from p8s.db.session import init_db, close_db
+        
+        async def _check_db():
+            await init_db(settings.database)
+            await close_db()
+        
+        asyncio.run(_check_db())
+        console.print("[green]OK[/green]")
+    except Exception as e:
+        errors.append(f"Database error: {e}")
+        console.print("[red]FAIL[/red]")
+    
+    # Check 3: Installed apps
+    console.print("  Checking installed apps...", end=" ")
+    try:
+        import importlib
+        for app_name in settings.installed_apps:
+            importlib.import_module(app_name)
+        console.print(f"[green]OK[/green] ({len(settings.installed_apps)} apps)")
+    except ImportError as e:
+        errors.append(f"App import error: {e}")
+        console.print("[red]FAIL[/red]")
+    
+    # Check 4: Admin models
+    console.print("  Checking admin models...", end=" ")
+    try:
+        from p8s.admin.registry import get_registered_models
+        models = get_registered_models()
+        console.print(f"[green]OK[/green] ({len(models)} models)")
+    except Exception as e:
+        warnings.append(f"Admin registry: {e}")
+        console.print("[yellow]WARN[/yellow]")
+    
+    # Check 5: Migrations
+    console.print("  Checking migrations...", end=" ")
+    if Path("migrations").exists():
+        console.print("[green]OK[/green]")
+    else:
+        warnings.append("No migrations directory found")
+        console.print("[yellow]WARN[/yellow]")
+    
+    # Deployment checks
+    if deploy:
+        console.print()
+        console.print("[bold]Deployment checks:[/bold]")
+        
+        # Debug mode
+        console.print("  DEBUG mode...", end=" ")
+        if settings.debug:
+            errors.append("DEBUG is True - should be False in production")
+            console.print("[red]FAIL[/red]")
+        else:
+            console.print("[green]OK[/green]")
+        
+        # Secret key
+        console.print("  SECRET_KEY...", end=" ")
+        if "change" in settings.secret_key.lower() or "default" in settings.secret_key.lower():
+            errors.append("SECRET_KEY appears to be a default value")
+            console.print("[red]FAIL[/red]")
+        else:
+            console.print("[green]OK[/green]")
+        
+        # Database URL
+        console.print("  Database URL...", end=" ")
+        if "sqlite" in settings.database.url:
+            warnings.append("SQLite database - consider PostgreSQL for production")
+            console.print("[yellow]WARN[/yellow]")
+        else:
+            console.print("[green]OK[/green]")
+    
+    # Summary
+    console.print()
+    if errors:
+        console.print(f"[red]✗ {len(errors)} error(s) found:[/red]")
+        for err in errors:
+            console.print(f"  - {err}")
+    
+    if warnings:
+        console.print(f"[yellow]! {len(warnings)} warning(s):[/yellow]")
+        for warn in warnings:
+            console.print(f"  - {warn}")
+    
+    if not errors and not warnings:
+        console.print("[green]✓ All checks passed![/green]")
+    elif not errors:
+        console.print("[green]✓ No critical issues found[/green]")
+    else:
+        raise typer.Exit(1)
+
+
+# ============================================================================
+# SENDTESTEMAIL command
+# ============================================================================
+
+@app.command()
+def sendtestemail(
+    email: str = typer.Argument(..., help="Email address to send test to"),
+):
+    """
+    Send a test email.
+    
+    Verifies email configuration is working.
+    
+    Example:
+        p8s sendtestemail admin@example.com
+    """
+    import asyncio
+    
+    ensure_settings_module()
+    
+    console.print(f"[bold]Sending test email to {email}...[/bold]")
+    
+    try:
+        from p8s.email import EmailMessage, get_email_backend
+        
+        message = EmailMessage(
+            subject="P8s Test Email",
+            body="""This is a test email from P8s.
+
+If you received this email, your email configuration is working correctly.
+
+Configuration details:
+- Backend: {backend}
+- Timestamp: {timestamp}
+
+🔥 P8s Framework
+            """.format(
+                backend=type(get_email_backend()).__name__,
+                timestamp=__import__("datetime").datetime.now().isoformat(),
+            ),
+            from_email="noreply@example.com",
+            to=[email],
+        )
+        
+        async def _send():
+            result = await message.send()
+            return result
+        
+        sent = asyncio.run(_send())
+        
+        if sent:
+            console.print(f"[green]✓[/green] Test email sent successfully!")
+        else:
+            console.print(f"[yellow]![/yellow] Email queued (check backend logs)")
+            
+    except ImportError:
+        console.print("[yellow]Note:[/yellow] Using console backend (email printed to stdout)")
+        
+        from p8s.email import EmailMessage
+        message = EmailMessage(
+            subject="P8s Test Email",
+            body="This is a test email from P8s.\n\nIf you see this, email is configured correctly!",
+            from_email="noreply@example.com",
+            to=[email],
+        )
+        message.send()
+        console.print("[green]✓[/green] Test email printed to console")
+        
+    except Exception as e:
+        console.print(f"[red]Error:[/red] {e}")
+        raise typer.Exit(1)
+
+
+# ============================================================================
 # CREATESUPERUSER command
 # ============================================================================
 
