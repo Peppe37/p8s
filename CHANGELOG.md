@@ -1,35 +1,56 @@
-# Changelog
+# CHANGELOG
 
-All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## v1.0.0 (2026-01-11)
 
-## [Unreleased]
+### Bug Fixes
 
-### Added
-- Django-style settings discovery with `P8S_SETTINGS_MODULE`
-- Protected `/docs` and `/redoc` endpoints (admin-only)
-- CLI log tags `[backend]` and `[frontend]` with colors
-- Django-style admin panel at `/admin/`
-- Comprehensive documentation in `docs/`
-- GitHub Actions for CI and releases
+- Linting and build pipeline
+  ([`c337a0a`](https://github.com/Peppe37/p8s/commit/c337a0a0a8bcba5282dd6cdb22be18f4ce1f9edb))
 
-### Changed
-- Admin panel now serves HTML at `/admin/` without auth (frontend handles login)
-- Updated README with professional layout
+- Updated pyproject.toml to use new ruff lint section syntax - Formatted all 50+ source files with
+  ruff format - Fixed missing model lookup in admin router get_item - Added node_modules exclusion
+  to hatch build config - Updated CI workflow to Python 3.11-3.13 - Added comprehensive lint ignore
+  rules for edge cases
 
-### Fixed
-- Settings not being loaded from project's `settings.py`
-- Admin login URL path (`/api/auth/login` → `/auth/login`)
+- Test suite
+  ([`e632d79`](https://github.com/Peppe37/p8s/commit/e632d79f903fad8cd8a3b8d4e21eb1552ad37883))
 
-## [0.1.0] - 2026-01-06
+- Routing
+  ([`c12dab1`](https://github.com/Peppe37/p8s/commit/c12dab186028c605c7f2a696ffb1a9eeb776309e))
 
-### Added
-- Initial release
-- FastAPI-based async backend
-- SQLModel ORM integration
-- JWT authentication
-- Admin panel with React UI
-- AIField and VectorField for AI-native features
-- CLI tools (`p8s new`, `p8s dev`, `p8s createsuperuser`)
+- Admin update
+  ([`ffec28b`](https://github.com/Peppe37/p8s/commit/ffec28be0354e849cb25c5603022e084b946dd56))
+
+### Documentation
+
+- Documentation and readme update
+  ([`321b44c`](https://github.com/Peppe37/p8s/commit/321b44c45d4578ec54b65885d3d938d0af09be99))
+
+- Revise README for P8s framework introduction
+  ([`4a9df4f`](https://github.com/Peppe37/p8s/commit/4a9df4fe8f58752225c1d88dd530722dbcd75436))
+
+Updated README to reflect new branding and features of P8s framework.
+
+### Features
+
+- Middleware and fields
+  ([`79036a9`](https://github.com/Peppe37/p8s/commit/79036a98e2dee1ccd2805eed8b13a2a674dfd83a))
+
+- Debug pages
+  ([`c97b698`](https://github.com/Peppe37/p8s/commit/c97b698a40e75ef1c00828a5dcb6b3312dcb8617))
+
+- Favicon
+  ([`8521d73`](https://github.com/Peppe37/p8s/commit/8521d733c2c954ba6133ee99ab4cc0be8c0daade))
+
+- Admin page and models fields
+  ([`217f8ba`](https://github.com/Peppe37/p8s/commit/217f8baa72f2dc350ab615ea659fe3155fc526b8))
+
+- Update auth and decorators
+  ([`a782ad0`](https://github.com/Peppe37/p8s/commit/a782ad04e9a8e7989c7354eaa47500415d5e3fc9))
+
+- Docs and refinements
+  ([`fbfc104`](https://github.com/Peppe37/p8s/commit/fbfc104144a73b89e332fc0b2c314e36152f4fd3))
+
+- First structure need updates
+  ([`6360458`](https://github.com/Peppe37/p8s/commit/6360458f38b9057ca4f3474ee4b91a1b031383ae))
