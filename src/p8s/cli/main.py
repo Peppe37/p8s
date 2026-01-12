@@ -31,7 +31,7 @@ console = Console()
 def print_banner():
     """Print the P8s banner."""
     banner = """
-🔥 P8s (Prometheus)
+ P8s (Prometheus)
 ━━━━━━━━━━━━━━━━━━━
 Forge AI-native applications with the fire of the gods.
     """

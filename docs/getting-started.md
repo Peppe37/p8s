@@ -64,7 +64,7 @@ p8s dev --no-frontend
 
 Output:
 ```
-🔥 P8s (Prometheus)
+P8s (Prometheus)
 ━━━━━━━━━━━━━━━━━━━
 Starting development server...
   Backend:  http://0.0.0.0:8000

@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">🔥 P8s (Prometheus)</h1>
+  <h1 align="center">P8s (Prometheus)</h1>
   <p align="center">
     <strong>Forge AI-native, full-stack applications with the fire of the gods.</strong>
   </p>
@@ -10,12 +10,12 @@
   <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/FastAPI-async-009688?style=flat-square" alt="FastAPI"></a>
   <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-Vite-61DAFB?style=flat-square" alt="React"></a>
   <a href="#"><img src="https://img.shields.io/badge/AI-Native-orange?style=flat-square" alt="AI Native"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License"></a>
+  <a href="https://github.com/Peppe37/p8s/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License"></a>
 </p>
 
 <p align="center">
-  <a href="docs/getting-started.md">Getting Started</a> •
-  <a href="docs/index.md">Documentation</a> •
+  <a href="https://peppe37.github.io/p8s/getting-started/">Getting Started</a> •
+  <a href="https://peppe37.github.io/p8s/">Documentation</a> •
   <a href="#features">Features</a> •
   <a href="#quick-start">Quick Start</a>
 </p>
@@ -35,44 +35,44 @@
 
 ---
 
-## ✨ Features
+## Features
 
-### ⚡ Async Backend
+### Async Backend
 - **FastAPI** under the hood
 - **SQLModel** ORM (SQLAlchemy + Pydantic)
 - **Automatic CRUD** for registered models
 - **UUID & Soft Deletes** by default (`.active()`, `.deleted()`, `.all_with_deleted()`)
 
-### 🔐 Authentication
+### Authentication
 - **JWT Authentication** out of the box
 - **User roles** (User, Admin, Superuser)
 - **Permissions & Groups** (Django-style)
 - **Secure defaults** (bcrypt, protected routes)
 
-### 🤖 AI-Native
+### AI-Native
 - **AIField**: Auto-generate content from prompts
 - **VectorField**: Store embeddings for semantic search
 - **VectorSearch**: Query by similarity
 - Supports **OpenAI**, **Anthropic**, **Google**, **Ollama**, and more
 
-### 🧑‍💼 Admin Panel
+### Admin Panel
 - **Django-style** admin interface
 - **Dynamic CRUD** from your models
 - **Search, filter, paginate, bulk actions**
 - **No frontend code required**
 
-### 📝 Forms & Validation
+### Forms & Validation
 - **Pydantic-based** form validation
 - **ModelForm** auto-generated from models
 - **11 field types** with HTML rendering hints
 - **CSRF protection** middleware
 
-### 🗄️ Database & Migrations
+### Database & Migrations
 - **Auto-detected migrations** with Alembic
 - **Fixtures**: `dumpdata` / `loaddata`
 - **Database shell**: `dbshell`
 
-### 📦 CLI Tools (18+ commands)
+### CLI Tools (18+ commands)
 
 ```bash
 p8s new project myapp    # Create project
@@ -92,14 +92,12 @@ p8s collectstatic        # Collect static files
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation
 
 ```bash
-git clone https://github.com/Peppe37/p8s.git
-cd p8s
-pip install -e ".[all]"
+pip install p8s
 ```
 
 ### Create a Project
@@ -116,7 +114,7 @@ p8s dev
 ```
 
 ```
-🔥 P8s (Prometheus)
+P8s (Prometheus)
 ━━━━━━━━━━━━━━━━━━━
 Starting development server...
   Backend:  http://localhost:8000
@@ -137,7 +135,7 @@ Starting development server...
 
 ---
 
-## 💻 Code Example
+## Code Example
 
 ```python
 from p8s import Model
@@ -183,7 +181,7 @@ if form.is_valid():
 
 ---
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 myapp/
@@ -204,37 +202,37 @@ myapp/
 
 ---
 
-## 📚 Documentation
+## Documentation
 
-| Topic                                      | Description                  |
-| ------------------------------------------ | ---------------------------- |
-| [Getting Started](docs/getting-started.md) | Create your first project    |
-| [CLI Reference](docs/cli.md)               | All 18+ commands             |
-| [Models & Database](docs/models.md)        | SQLModel ORM usage           |
-| [Migrations](docs/migrations.md)           | Auto-detected migrations     |
-| [Authentication](docs/authentication.md)   | JWT and user management      |
-| [Admin Panel](docs/admin.md)               | Django-style admin           |
-| [Forms](docs/forms.md)                     | Validation & ModelForm       |
-| [Middleware](docs/middleware.md)           | CSRF, security, timing       |
-| [AI Features](docs/ai.md)                  | AIField, VectorField, search |
-| [Testing](docs/testing.md)                 | Test utilities               |
-| [Configuration](docs/configuration.md)     | Environment and settings     |
-| [Deployment](docs/deployment.md)           | Docker, Railway, Fly.io      |
+| Topic                                                             | Description                  |
+| ----------------------------------------------------------------- | ---------------------------- |
+| [Getting Started](https://peppe37.github.io/p8s/getting-started/) | Create your first project    |
+| [CLI Reference](https://peppe37.github.io/p8s/cli/)               | All 18+ commands             |
+| [Models & Database](https://peppe37.github.io/p8s/models/)        | SQLModel ORM usage           |
+| [Migrations](https://peppe37.github.io/p8s/migrations/)           | Auto-detected migrations     |
+| [Authentication](https://peppe37.github.io/p8s/authentication/)   | JWT and user management      |
+| [Admin Panel](https://peppe37.github.io/p8s/admin/)               | Django-style admin           |
+| [Forms](https://peppe37.github.io/p8s/forms/)                     | Validation & ModelForm       |
+| [Middleware](https://peppe37.github.io/p8s/middleware/)           | CSRF, security, timing       |
+| [AI Features](https://peppe37.github.io/p8s/ai/)                  | AIField, VectorField, search |
+| [Testing](https://peppe37.github.io/p8s/testing/)                 | Test utilities               |
+| [Configuration](https://peppe37.github.io/p8s/configuration/)     | Environment and settings     |
+| [Deployment](https://peppe37.github.io/p8s/deployment/)           | Docker, Railway, Fly.io      |
 
 ---
 
-## 🧪 Test Coverage
+## Test Coverage
 
 ```bash
 pytest tests/ -v
-# 186 passed ✅
+# 186 passed
 ```
 
 ---
 
-## 🛣️ Roadmap
+## Roadmap
 
-### ✅ Completed
+### Completed
 - [x] Django-style settings discovery (`P8S_SETTINGS_MODULE`)
 - [x] Admin panel with login, CRUD, bulk actions
 - [x] JWT authentication with permissions/groups
@@ -246,12 +244,12 @@ pytest tests/ -v
 - [x] **Testing utilities**
 - [x] **186 tests passing**
 
-### 🚧 In Progress
+### In Progress
 - [ ] Admin inlines (nested models)
 - [ ] Frontend auth hooks
 - [ ] TypeScript type generation
 
-### 📋 Planned
+### Planned
 - [ ] WebSocket support
 - [ ] Background tasks (Celery/ARQ)
 - [ ] i18n/l10n
@@ -261,7 +259,7 @@ pytest tests/ -v
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please read the contributing guidelines before submitting a PR.
 
@@ -278,12 +276,12 @@ ruff format src/
 
 ---
 
-## 📜 License
+## License
 
-MIT — steal the fire, responsibly 🔥
+MIT — steal the fire, responsibly
 
 ---
 
 <p align="center">
-  <sub>Built with ❤️ by the Prometheus team</sub>
+  <sub>Built with ❤️ by Peppe37</sub>
 </p>

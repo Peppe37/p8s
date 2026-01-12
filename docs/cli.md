@@ -203,7 +203,7 @@ Email: admin@example.com
 Password: ****
 Repeat for confirmation: ****
 
-✓ Superuser created successfully!
+[SUCCESS] Superuser created successfully!
 ```
 
 **Options:**
@@ -236,7 +236,7 @@ Running system checks...
   Checking admin models... OK (5 models)
   Checking migrations... OK
 
-✓ All checks passed!
+[SUCCESS] All checks passed!
 ```
 
 With `--deploy`:
