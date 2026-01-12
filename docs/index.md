@@ -1,4 +1,4 @@
-# 🔥 p8s
+# p8s
 
 **Forge AI-native, full-stack applications with the fire of the gods.**
 
@@ -6,11 +6,11 @@ p8s is a high-performance, async-first Python framework built on top of **FastAP
 
 ## Key Features
 
-- 🚀 **Async by Default**: Built on Starlette and FastAPI for maximum performance.
-- 🤖 **AI-Native**: First-class support for LLMs, Vector Databases, and RAG.
-- 🛡️ **Type Safe**: Fully typed codebase leveraging Pydantic and Python 3.10+ types.
-- 🔌 **Batteries Included**: Auth, Admin Panel, ORM, Migrations, and more out of the box.
-- ⚛️ **Modern Admin**: A sleek, React-based Admin Panel that feels premium.
+- **Async by Default**: Built on Starlette and FastAPI for maximum performance.
+- **AI-Native**: First-class support for LLMs, Vector Databases, and RAG.
+- **Type Safe**: Fully typed codebase leveraging Pydantic and Python 3.10+ types.
+- **Batteries Included**: Auth, Admin Panel, ORM, Migrations, and more out of the box.
+- **Modern Admin**: A sleek, React-based Admin Panel that feels premium.
 
 ## Installation
 

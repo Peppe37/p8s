@@ -1,5 +1,5 @@
 """
-🔥 P8s (Prometheus) - Forge AI-native, full-stack applications with the fire of the gods.
+P8s (Prometheus) - Forge AI-native, full-stack applications with the fire of the gods.
 
 P8s is an opinionated, batteries-included framework that fuses the architecture
 and DX of Django with the performance and async nature of FastAPI, plus first-class

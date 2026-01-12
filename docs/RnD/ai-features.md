@@ -37,14 +37,14 @@ P8s provides AI-native features that distinguish it from Django:
 
 ## Supported Providers
 
-| Provider     | Model Examples                 | Status   |
-| ------------ | ------------------------------ | -------- |
-| OpenAI       | gpt-4o, gpt-4o-mini            | ✅ Stable |
-| Anthropic    | claude-3-opus, claude-3-sonnet | ✅ Stable |
-| Google       | gemini-pro                     | ✅ Stable |
-| Ollama       | llama2, mistral                | ✅ Stable |
-| Azure OpenAI | gpt-4                          | ✅ Stable |
-| Custom       | Any OpenAI-compatible          | ✅ Stable |
+| Provider     | Model Examples                 | Status |
+| ------------ | ------------------------------ | ------ |
+| OpenAI       | gpt-4o, gpt-4o-mini            | Stable |
+| Anthropic    | claude-3-opus, claude-3-sonnet | Stable |
+| Google       | gemini-pro                     | Stable |
+| Ollama       | llama2, mistral                | Stable |
+| Azure OpenAI | gpt-4                          | Stable |
+| Custom       | Any OpenAI-compatible          | Stable |
 
 ## Configuration
 
@@ -86,10 +86,10 @@ class Review(Model, table=True):
 ### Prompt Best Practices
 
 ```python
-# ❌ Bad - verbose output
+# Bad - verbose output
 prompt="What is the sentiment?"  # Returns: "The sentiment appears to be..."
 
-# ✅ Good - precise output
+# Good - precise output
 prompt="Return ONLY one word: positive, negative, or neutral"
 ```
 
@@ -152,8 +152,8 @@ results = await search.similarity_search(
 
 | Feature                 | Priority | Status   |
 | ----------------------- | -------- | -------- |
-| RAG Pipeline            | 🔴 High   | Research |
-| Function Calling        | 🟡 Medium | Planned  |
-| Streaming Responses     | 🟡 Medium | Planned  |
-| Multi-modal (Images)    | 🟢 Low    | Future   |
-| Fine-tuning Integration | 🟢 Low    | Future   |
+| RAG Pipeline            | High     | Research |
+| Function Calling        | Medium   | Planned  |
+| Streaming Responses     | Medium   | Planned  |
+| Multi-modal (Images)    | Low      | Future   |
+| Fine-tuning Integration | Low      | Future   |

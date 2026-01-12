@@ -36,9 +36,25 @@ nav:
   - Home: index.md
   - About: about.md
   - Documentation:
-    - Getting Started: docs/getting-started.md
-    - Architecture: docs/RnD/architecture.md
-    - API Reference: reference/
+    - Getting Started: getting-started.md
+    - CLI Reference: cli.md
+    - Models & Database: models.md
+    - Migrations: migrations.md
+    - Authentication: authentication.md
+    - Admin Panel: admin.md
+    - Forms: forms.md
+    - Middleware: middleware.md
+    - AI Features: ai.md
+    - Testing: testing.md
+    - Configuration: configuration.md
+    - Deployment: deployment.md
+    - Static Files: staticfiles.md
+    - Signals: signals.md
+    - Permissions: permissions.md
+    - Email: email.md
+    - Cache: cache.md
+    - Architecture: RnD/architecture.md
+
 
 markdown_extensions:
   - admonition

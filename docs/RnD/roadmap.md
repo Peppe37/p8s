@@ -78,17 +78,17 @@ Features requested by community (to be prioritized):
 
 | Feature               | Votes | Status     |
 | --------------------- | ----- | ---------- |
-| GraphQL support       | ⭐⭐⭐   | Evaluating |
-| WebSocket abstraction | ⭐⭐    | Planned    |
-| Stripe integration    | ⭐⭐    | Consider   |
-| OAuth providers       | ⭐⭐    | Planned    |
-| Docker templates      | ⭐     | Easy win   |
+| GraphQL support       | 3     | Evaluating |
+| WebSocket abstraction | 2     | Planned    |
+| Stripe integration    | 2     | Consider   |
+| OAuth providers       | 2     | Planned    |
+| Docker templates      | 1     | Easy win   |
 
 ---
 
 ## Contributing
 
-Want to help implement a feature? See [CONTRIBUTING.md](../CONTRIBUTING.md).
+Want to help implement a feature? See [CONTRIBUTING.md](https://github.com/Peppe37/p8s/blob/main/CONTRIBUTING.md).
 
 Priority areas:
 1. Documentation improvements
