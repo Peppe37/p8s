@@ -1,36 +1,56 @@
 site_name: p8s
-site_description: 🔥 Forge AI-native, full-stack applications with the fire of the gods
+site_description: Forge AI-native, full-stack applications with the fire of the gods
 site_url: https://peppe37.github.io/p8s/
 repo_url: https://github.com/Peppe37/p8s
 repo_name: Peppe37/p8s
 
 theme:
   name: material
+  custom_dir: docs/overrides
+  logo: assets/logo.svg
+  favicon: assets/logo.svg
   features:
     - navigation.tabs
     - navigation.sections
     - navigation.top
+    - navigation.instant
+    - navigation.tracking
     - search.suggest
     - search.highlight
     - content.code.copy
+    - content.code.annotate
+    - announce.dismiss
   palette:
-    # Light mode
+    # Light mode - Fire Palette
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: indigo
-      accent: deep purple
+      primary: custom
+      accent: custom
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
 
-    # Dark mode
+    # Dark mode - Fire Palette
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: indigo
-      accent: deep purple
+      primary: custom
+      accent: custom
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
+
+extra:
+  version_display: "1.1.0"
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Peppe37/p8s
+      name: P8s on GitHub
+    - icon: fontawesome/solid/envelope
+      link: mailto:lapietra.giu@gmail.com
+      name: Contact via Email
+
+extra_css:
+  - stylesheets/extra.css
 
 nav:
   - Home: index.md
@@ -65,5 +85,8 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
 
-copyright: Copyright &copy; 2024 Giuseppe Lapietra
+copyright: Copyright &copy; 2024-2026 Giuseppe Lapietra
