@@ -1,6 +1,27 @@
 # CHANGELOG
 
 
+## v1.1.0 (2026-01-12)
+
+### Bug Fixes
+
+- Update project metadata and remove deprecated action
+  ([`68644ff`](https://github.com/Peppe37/p8s/commit/68644ffea8d739f1438fa0797f3f688d3b521094))
+
+### Documentation
+
+- Cleanup and professionalize documentation and usage
+  ([`0726edb`](https://github.com/Peppe37/p8s/commit/0726edb0c26590b7c44c6f08d9c4ba350146faa7))
+
+- Remove emojis from README, CLI, and docs for professional tone - Update README with absolute links
+  and better formatting - Ensure consistent author attribution - Finalize MkDocs configuration setup
+
+### Features
+
+- Setup documentation site with mkdocs-material
+  ([`3fd7ef0`](https://github.com/Peppe37/p8s/commit/3fd7ef025fedd6f982fd77a68a617eb2d408a22c))
+
+
 ## v1.0.3 (2026-01-11)
 
 ### Bug Fixes
