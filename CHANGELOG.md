@@ -1,6 +1,23 @@
 # CHANGELOG
 
 
+## v1.2.0 (2026-01-12)
+
+### Bug Fixes
+
+- Author surname
+  ([`3c98bcb`](https://github.com/Peppe37/p8s/commit/3c98bcbe98e8d0f94617873c266d06ff4646f4cb))
+
+### Features
+
+- Dynamic version loading and MkDocs customization
+  ([`e4532d0`](https://github.com/Peppe37/p8s/commit/e4532d039b56101c96eb457ee1098a7f0f3af704))
+
+- Use importlib.metadata for dynamic __version__ from pyproject.toml - Add custom MkDocs theme with
+  fire palette colors - Add announcement banner with version display - Add logo, favicon, and social
+  links (GitHub + email) - Update PyPI description to be more professional
+
+
 ## v1.1.0 (2026-01-12)
 
 ### Bug Fixes
