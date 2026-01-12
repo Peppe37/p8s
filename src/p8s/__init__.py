@@ -7,7 +7,7 @@ AI/LLM integration and a native React frontend.
 """
 
 __version__ = "0.2.0"
-__author__ = "Giuseppe La Pietra"
+__author__ = "Giuseppe Lapietra"
 
 # Core exports
 # Auth exports

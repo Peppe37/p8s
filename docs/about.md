@@ -8,4 +8,4 @@ To forge AI-native applications with the fire of the gods.
 
 ## Maintainers
 
-- **Giuseppe La Pietra** (@Peppe37) - Creator & Lead Maintainer
+- **Giuseppe Lapietra** (@Peppe37) - Creator & Lead Maintainer
