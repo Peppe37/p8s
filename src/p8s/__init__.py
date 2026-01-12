@@ -6,7 +6,13 @@ and DX of Django with the performance and async nature of FastAPI, plus first-cl
 AI/LLM integration and a native React frontend.
 """
 
-__version__ = "0.2.0"
+from importlib.metadata import PackageNotFoundError, version
+
+try:
+    __version__ = version("p8s")
+except PackageNotFoundError:
+    __version__ = "unknown"
+
 __author__ = "Giuseppe Lapietra"
 
 # Core exports
