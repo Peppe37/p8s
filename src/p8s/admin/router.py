@@ -527,6 +527,11 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
 
         for key, value in data.items():
             if key in readonly:
+                # Special case: allow password_hash update for User model
+                # but hash the new password value
+                if key == "password_hash" and model_name == "User" and value:
+                    from p8s.auth.security import get_password_hash
+                    setattr(item, key, get_password_hash(value))
                 continue
             if key in relation_fields:
                 # Skip relation fields - use the FK field instead (e.g., category_id)
@@ -592,6 +597,131 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         else:
             item.soft_delete()
             session.add(item)
+            
+        return {"detail": "Item deleted"}
+
+    @router.get("/{model_name}/export/csv")
+    async def export_csv(
+        model_name: str,
+        session: AsyncSession = Depends(get_session),
+        user: User = Depends(require_admin),
+    ):
+        """
+        Export model data to CSV.
+        """
+        model = get_model(model_name)
+        if not model:
+            raise HTTPException(status_code=404, detail="Model not found")
+
+        import csv
+        import io
+        from fastapi.responses import StreamingResponse
+
+        # Get all fields
+        from sqlalchemy.inspection import inspect
+        mapper = inspect(model)
+        field_names = [c.key for c in mapper.columns]
+
+        # Get data
+        query = select(model)
+        result = await session.execute(query)
+        items = result.scalars().all()
+
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # Write header
+        writer.writerow(field_names)
+        
+        # Write rows
+        for item in items:
+            row = []
+            for field in field_names:
+                val = getattr(item, field, "")
+                if val is None:
+                    val = ""
+                else:
+                    val = str(val)
+                row.append(val)
+            writer.writerow(row)
+            
+        output.seek(0)
+        
+        return StreamingResponse(
+            iter([output.getvalue()]),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={model_name}_export.csv"}
+        )
+
+    @router.post("/{model_name}/import/csv")
+    async def import_csv(
+        model_name: str,
+        request: Request,
+        session: AsyncSession = Depends(get_session),
+        user: User = Depends(require_admin),
+    ) -> dict[str, Any]:
+        """
+        Import model data from CSV.
+        Expects a file upload with key 'file'.
+        """
+        model = get_model(model_name)
+        if not model:
+            raise HTTPException(status_code=404, detail="Model not found")
+            
+        import csv
+        import io
+        
+        # Get/Read file from form data
+        form = await request.form()
+        file = form.get("file")
+        
+        if not file:
+             raise HTTPException(status_code=400, detail="No file uploaded")
+             
+        content = await file.read()
+        text = content.decode("utf-8")
+        
+        reader = csv.DictReader(io.StringIO(text))
+        
+        created_count = 0
+        errors = []
+        
+        for i, row in enumerate(reader):
+            try:
+                # Clean empty strings to None for optional fields if needed
+                # But mostly just try to pass to model
+                clean_row = {}
+                for k, v in row.items():
+                    if v == "" and k not in model.model_fields: 
+                         # Skip extra fields or handle empty strings?
+                         # For now let's pass as is, pydantic might coerce
+                         clean_row[k] = v
+                    else:
+                        clean_row[k] = v
+                        
+                    # Handle boolean
+                    if v.lower() == 'true': clean_row[k] = True
+                    if v.lower() == 'false': clean_row[k] = False
+                
+                # Create instance
+                # Remove ID if present to avoid conflicts (or use it to update?)
+                # This simple version creates new items
+                if "id" in clean_row:
+                    del clean_row["id"]
+                    
+                item = model(**clean_row)
+                session.add(item)
+                created_count += 1
+            except Exception as e:
+                errors.append(f"Row {i+1}: {str(e)}")
+        
+        if created_count > 0:
+            await session.commit()
+            
+        return {
+            "created": created_count,
+            "errors": errors
+        }
 
         await session.flush()
 

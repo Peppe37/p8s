@@ -102,6 +102,38 @@ class TestMemoryCache:
         assert cache.get("key1") is None
         assert cache.get("key4") == "value4"
 
+    def test_incr(self):
+        """Test incr operation."""
+        cache = MemoryCache()
+
+        # Create key on first incr
+        assert cache.incr("counter") == 1
+        assert cache.incr("counter") == 2
+        assert cache.incr("counter", 5) == 7
+
+    def test_decr(self):
+        """Test decr operation."""
+        cache = MemoryCache()
+
+        cache.set("counter", 10)
+        assert cache.decr("counter") == 9
+        assert cache.decr("counter", 5) == 4
+
+    def test_incr_creates_key(self):
+        """Test incr creates key if not exists."""
+        cache = MemoryCache()
+
+        assert cache.incr("new_counter", 10) == 10
+        assert cache.get("new_counter") == 10
+
+    def test_incr_non_integer_raises(self):
+        """Test incr raises ValueError on non-integer."""
+        cache = MemoryCache()
+
+        cache.set("string_key", "not_a_number")
+        with pytest.raises(ValueError):
+            cache.incr("string_key")
+
 
 class TestFileCache:
     """Test FileCache backend."""
@@ -138,6 +170,22 @@ class TestFileCache:
         
         assert cache.get("key1") is None
         assert cache.get("key2") is None
+
+    def test_incr(self, tmp_path):
+        """Test incr operation for FileCache."""
+        cache = FileCache(location=tmp_path / "cache")
+
+        assert cache.incr("counter") == 1
+        assert cache.incr("counter") == 2
+        assert cache.incr("counter", 10) == 12
+
+    def test_decr(self, tmp_path):
+        """Test decr operation for FileCache."""
+        cache = FileCache(location=tmp_path / "cache")
+
+        cache.set("counter", 100)
+        assert cache.decr("counter") == 99
+        assert cache.decr("counter", 9) == 90
 
 
 class TestCacheDecorators:

@@ -204,6 +204,27 @@ export function DynamicForm({
                 );
 
             case 'readonly':
+                // Special handling for password_hash - show a change password button
+                if (field.name === 'password_hash' && value) {
+                    return (
+                        <div className="password-hash-field" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span className="readonly-field" style={{ flex: 1, fontFamily: 'monospace', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                ••••••••••••••••
+                            </span>
+                            <button
+                                type="button"
+                                className="btn btn-secondary"
+                                onClick={() => {
+                                    const modal = document.getElementById('change-password-modal');
+                                    if (modal) modal.style.display = 'flex';
+                                }}
+                                style={{ whiteSpace: 'nowrap' }}
+                            >
+                                Change Password
+                            </button>
+                        </div>
+                    );
+                }
                 return (
                     <div className="readonly-field">
                         {typeof value === 'object' ? JSON.stringify(value) : String(value ?? '—')}

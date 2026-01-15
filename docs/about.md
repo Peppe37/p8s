@@ -1,6 +1,6 @@
 # About p8s
 
-**p8s** (pronounced "pates") is a modern, AI-native full-stack framework designed to bridge the gap between Django's battery-included philosophy and FastAPI's performance and flexibility.
+**p8s** (pronounced "Prometheus") is a modern, AI-native full-stack framework designed to bridge the gap between Django's battery-included philosophy and FastAPI's performance and flexibility.
 
 ## The Mission
 

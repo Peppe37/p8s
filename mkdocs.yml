@@ -64,6 +64,8 @@ nav:
     - Admin Panel: admin.md
     - Forms: forms.md
     - Middleware: middleware.md
+    - Background Tasks: tasks.md
+    - Cache: cache.md
     - AI Features: ai.md
     - Testing: testing.md
     - Configuration: configuration.md
@@ -72,7 +74,7 @@ nav:
     - Signals: signals.md
     - Permissions: permissions.md
     - Email: email.md
-    - Cache: cache.md
+
     - Architecture: RnD/architecture.md
 
 

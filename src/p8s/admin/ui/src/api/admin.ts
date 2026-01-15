@@ -30,13 +30,13 @@ async function handleResponse<T>(response: Response): Promise<T> {
     return response.json();
 }
 
-export async function login(username: string, password: string): Promise<{ access_token: string; token_type: string }> {
+export async function login(identifier: string, password: string): Promise<{ access_token: string; token_type: string }> {
     const response = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: username, password }),
+        body: JSON.stringify({ identifier, password }),
     });
     return handleResponse(response);
 }

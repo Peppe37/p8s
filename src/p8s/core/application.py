@@ -326,3 +326,41 @@ class P8sApp(FastAPI):
                 prefix=prefix or f"/{app_name.split('.')[-1]}",
                 tags=tags or [app_name.split(".")[-1]],
             )
+
+    def add_p8s_middleware(self, middleware: Any, **kwargs: Any) -> None:
+        """
+        Add a P8s middleware to the application.
+
+        This is a convenience method that automatically wraps P8s middlewares
+        with MiddlewareWrapper for compatibility with FastAPI/Starlette.
+
+        Example:
+            ```python
+            from p8s import P8sApp
+            from p8s.middleware import RateLimitMiddleware
+
+            app = P8sApp()
+            app.add_p8s_middleware(RateLimitMiddleware, rate="100/minute")
+            ```
+
+        Args:
+            middleware: P8s Middleware class or instance.
+            **kwargs: Arguments to pass to the middleware constructor.
+        """
+        from p8s.middleware import Middleware, MiddlewareWrapper
+
+        # If it's a class, instantiate it
+        if isinstance(middleware, type):
+            if issubclass(middleware, Middleware):
+                instance = middleware(**kwargs)
+                self.add_middleware(MiddlewareWrapper, middleware=instance)
+            else:
+                # It's a regular Starlette middleware class
+                self.add_middleware(middleware, **kwargs)
+        elif isinstance(middleware, Middleware):
+            # It's already an instance
+            self.add_middleware(MiddlewareWrapper, middleware=middleware)
+        else:
+            raise TypeError(
+                f"Expected P8s Middleware class or instance, got {type(middleware)}"
+            )

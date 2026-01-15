@@ -53,6 +53,14 @@ def ensure_settings_module():
             os.environ["P8S_SETTINGS_MODULE"] = "backend.settings"
 
 
+@app.callback()
+def main_callback():
+    """
+    Global callback to ensure settings module is loaded.
+    """
+    ensure_settings_module()
+
+
 # ============================================================================
 # NEW command group
 # ============================================================================
@@ -108,6 +116,8 @@ from p8s import P8sApp
 
 app = P8sApp(title="{name}")
 
+# Import admin to register models
+import backend.admin  # noqa: F401
 
 @app.get("/")
 async def root():
@@ -138,6 +148,31 @@ from sqlmodel import Field
 #     description: str | None = None
 '''
         (dest / "backend" / "models.py").write_text(models_content)
+
+        # Write admin.py
+        admin_content = '''"""
+Admin configuration for the application.
+
+Register your models here to make them visible in the admin panel.
+"""
+
+from p8s.admin import site
+
+# Register built-in auth models (User, Group)
+from p8s.auth.models import User
+from p8s.auth.permissions import Group
+
+site.register(User)
+site.register(Group)
+
+# Import your models and register them:
+# from backend.models import Product
+# site.register(Product)
+'''
+        (dest / "backend" / "admin.py").write_text(admin_content)
+
+        # Write __init__.py for backend module
+        (dest / "backend" / "__init__.py").write_text('"""Backend module."""\n')
 
         # Write settings.py
         settings_content = '''"""
@@ -244,6 +279,8 @@ frontend/dist/
     "@types/react-dom": "^18.2.0",
     "@types/node": "^20.0.0",
     "@vitejs/plugin-react": "^4.2.0",
+    "@tailwindcss/vite": "^4.0.0",
+    "tailwindcss": "^4.0.0",
     "typescript": "^5.3.0",
     "vite": "^5.0.0"
   }}
@@ -254,9 +291,10 @@ frontend/dist/
         # Write vite.config.ts
         vite_config = r"""import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   server: {
     port: 5173,
     proxy: {
@@ -342,53 +380,45 @@ export default App
         (dest / "frontend" / "src" / "App.tsx").write_text(app_tsx)
 
         # Write index.css
-        index_css = """:root {
-  --primary: #f97316;
-  --bg: #0f0f0f;
-  --text: #fafafa;
+        index_css = """@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --color-primary: #f97316;
+  --container-center: true;
+  --container-padding: 2rem;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+:root {
+  color-scheme: dark;
 }
 
 body {
-  font-family: 'Inter', system-ui, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
+  font-family: var(--font-sans);
+  @apply bg-zinc-950 text-zinc-50 min-h-screen;
 }
 
 .app {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
+  @apply container py-8;
 }
 
 header {
-  text-align: center;
-  margin-bottom: 3rem;
+  @apply text-center mb-12;
 }
 
 header h1 {
-  font-size: 3rem;
-  background: linear-gradient(135deg, var(--primary), #fbbf24);
+  @apply text-5xl font-bold mb-2;
+  background: linear-gradient(135deg, var(--color-primary), #fbbf24);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin-bottom: 0.5rem;
 }
 
 header p {
-  color: #888;
+  @apply text-zinc-400;
 }
 
 main {
-  background: #1a1a1a;
-  border-radius: 1rem;
-  padding: 2rem;
-  border: 1px solid #333;
+  @apply bg-zinc-900 rounded-2xl p-8 border border-zinc-800;
 }
 """
         (dest / "frontend" / "src" / "index.css").write_text(index_css)
@@ -440,6 +470,10 @@ main {
     console.print(f"  cd {name}")
     console.print("  pip install -e .")
     console.print("  cd frontend && npm install && cd ..")
+    console.print("  p8s init-migrations")
+    console.print("  p8s makemigrations -m 'Initial'")
+    console.print("  p8s migrate")
+    console.print("  p8s createsuperuser")
     console.print("  p8s dev")
 
 
@@ -1229,7 +1263,15 @@ def createsuperuser(
     password: str = typer.Option(
         ..., prompt=True, hide_input=True, confirmation_prompt=True
     ),
-    username: str = typer.Option(None, "--username", "-u"),
+    username: str = typer.Option(
+        None, "--username", "-u", prompt="Username (optional, press Enter to skip)"
+    ),
+    first_name: str = typer.Option(
+        None, "--first-name", prompt="First name (optional, press Enter to skip)"
+    ),
+    last_name: str = typer.Option(
+        None, "--last-name", prompt="Last name (optional, press Enter to skip)"
+    ),
 ):
     """
     Create a superuser with admin privileges.
@@ -1242,6 +1284,11 @@ def createsuperuser(
 
     # Ensure settings module is loaded from project
     ensure_settings_module()
+
+    # Clean optional fields (treat empty strings as None)
+    username = username.strip() if username and username.strip() else None
+    first_name = first_name.strip() if first_name and first_name.strip() else None
+    last_name = last_name.strip() if last_name and last_name.strip() else None
 
     from sqlmodel import select
 
@@ -1256,7 +1303,7 @@ def createsuperuser(
 
         try:
             async with SessionManager() as session:
-                # Check if user exists
+                # Check if email exists
                 query = select(User).where(User.email == email)
                 result = await session.execute(query)
                 existing = result.scalar_one_or_none()
@@ -1267,11 +1314,25 @@ def createsuperuser(
                     )
                     raise typer.Exit(1)
 
+                # Check if username exists (if provided)
+                if username:
+                    query = select(User).where(User.username == username)
+                    result = await session.execute(query)
+                    existing = result.scalar_one_or_none()
+
+                    if existing:
+                        console.print(
+                            f"[red]Error:[/red] User with username '{username}' already exists"
+                        )
+                        raise typer.Exit(1)
+
                 # Create user
                 user = User(
                     email=email,
                     password_hash=get_password_hash(password),
                     username=username,
+                    first_name=first_name,
+                    last_name=last_name,
                     role=UserRole.SUPERUSER,
                     is_active=True,
                     is_verified=True,
@@ -1282,15 +1343,142 @@ def createsuperuser(
                 await session.refresh(user)
 
                 console.print(
-                    "[green]✓[/green] Superuser created created successfully!"
+                    "[green]✓[/green] Superuser created successfully!"
                 )
                 console.print(f"  ID: {user.id}")
                 console.print(f"  Email: {user.email}")
+                if user.username:
+                    console.print(f"  Username: {user.username}")
+                if user.first_name or user.last_name:
+                    console.print(f"  Name: {user.full_name}")
                 console.print(f"  Role: {user.role}")
         finally:
             await close_db()
 
     asyncio.run(_create())
+
+
+# ============================================================================
+# SEED - Database seeding
+# ============================================================================
+
+
+@app.command()
+def seed(
+    script: str = typer.Option(
+        "seed_db.py", "--script", "-s", help="Path to seed script (default: seed_db.py)"
+    ),
+):
+    """
+    Run database seeding script using ORM.
+
+    This executes a Python script to populate the database with initial data.
+    The script should use P8s models and session to ensure data integrity.
+
+    By default, looks for 'seed_db.py' in the current directory or 'backend/'.
+
+    Example:
+        p8s seed
+        p8s seed --script seeds/initial_data.py
+    """
+    import runpy
+    import sys
+    import os
+
+    # Ensure settings module is loaded from project
+    ensure_settings_module()
+
+    script_path = Path(script)
+
+    # Check common locations if not found relative to CWD
+    if not script_path.exists():
+        potential_paths = [
+            Path("backend") / script,
+            Path("scripts") / script,
+        ]
+        for p in potential_paths:
+            if p.exists():
+                script_path = p
+                break
+    
+    if not script_path.exists():
+        console.print(f"[red]Error:[/red] Seed script '{script}' not found.")
+        console.print("Please create a seed script (e.g., 'seed_db.py') first.")
+        raise typer.Exit(1)
+        
+    console.print(f"[bold blue]Running seed script:[/bold blue] {script_path}")
+    
+    # Ensure Current Directory is in sys.path so imports work
+    cwd = str(Path.cwd())
+    if cwd not in sys.path:
+        sys.path.append(cwd)
+
+    try:
+        # Run the script as __main__
+        runpy.run_path(str(script_path), run_name="__main__")
+        console.print("[bold green]✓ Seeding completed successfully![/bold green]")
+    except Exception as e:
+        console.print(f"[red]Seeding failed:[/red] {e}")
+        raise typer.Exit(1)
+
+
+
+# ============================================================================
+# TYPES - TypeScript generation
+# ============================================================================
+
+
+@app.command()
+def types(
+    output: Path = typer.Option(
+        Path("frontend/src/types/api.ts"), "--output", "-o", help="Output TypeScript file"
+    ),
+):
+    """
+    Generate TypeScript definitions from OpenAPI schema.
+    
+    Uses 'npx openapi-typescript' to generate types.
+    Requires 'backend.main:app' to be importable.
+    """
+    import json
+    import subprocess
+    import sys
+    
+    print_banner()
+    console.print("[bold]Generating TypeScript types...[/bold]")
+    
+    # 1. Extract Schema
+    try:
+        if str(Path.cwd()) not in sys.path:
+            sys.path.insert(0, str(Path.cwd()))
+            
+        from backend.main import app as fastapi_app
+        schema = fastapi_app.openapi()
+    except (ImportError, AttributeError) as e:
+        console.print(f"[red]Error:[/red] Could not load 'backend.main:app'. {e}")
+        console.print("Make sure you are in the project root.")
+        raise typer.Exit(1)
+        
+    # 2. Save temp file
+    temp_file = Path("openapi.json")
+    temp_file.write_text(json.dumps(schema, indent=2))
+    
+    # 3. Run generator
+    try:
+        # Check if output dir exists
+        if not output.parent.exists():
+            output.parent.mkdir(parents=True)
+
+        cmd = ["npx", "-y", "openapi-typescript", str(temp_file), "-o", str(output)]
+        subprocess.run(cmd, check=True)
+        console.print(f"[green]✓[/green] Types generated at [bold]{output}[/bold]")
+    except subprocess.CalledProcessError:
+        console.print("[red]Error:[/red] Failed to generate types.")
+        console.print("Ensure Node.js is installed and 'npx' is available.")
+        raise typer.Exit(1)
+    finally:
+        if temp_file.exists():
+            temp_file.unlink()
 
 
 # ============================================================================
@@ -1495,6 +1683,113 @@ def dumpdata(
             await close_db()
 
     asyncio.run(_dump())
+
+
+# ============================================================================
+# WORKER commands - Background task processing
+# ============================================================================
+
+
+@app.command()
+def worker(
+    redis_url: str = typer.Option(
+        "redis://localhost:6379", "--redis", "-r", help="Redis connection URL"
+    ),
+    queues: list[str] = typer.Option(
+        ["default"], "--queue", "-q", help="Queues to process"
+    ),
+    max_jobs: int = typer.Option(10, "--max-jobs", "-j", help="Max concurrent jobs"),
+    burst: bool = typer.Option(
+        False, "--burst", "-b", help="Run in burst mode (exit when queue is empty)"
+    ),
+):
+    """
+    Start the background task worker.
+
+    Processes tasks enqueued with @task decorator.
+
+    Example:
+        p8s worker
+        p8s worker --redis redis://localhost:6379
+        p8s worker --queue high --queue default
+        p8s worker --burst
+    """
+    ensure_settings_module()
+
+    from p8s.tasks.worker import WorkerSettings, run_worker
+
+    console.print("[bold]🔧 Starting P8s Worker[/bold]")
+    console.print(f"  Redis: {redis_url}")
+    console.print(f"  Queues: {', '.join(queues)}")
+    console.print(f"  Max Jobs: {max_jobs}")
+    console.print()
+
+    # Discover task modules from settings
+    task_modules = []
+    try:
+        from p8s.core.settings import get_settings
+
+        settings = get_settings()
+        if hasattr(settings, "tasks") and hasattr(settings.tasks, "modules"):
+            task_modules = settings.tasks.modules
+        elif hasattr(settings, "installed_apps"):
+            # Auto-discover tasks in installed apps
+            task_modules = [f"{app}.tasks" for app in settings.installed_apps]
+    except Exception:
+        pass
+
+    worker_settings = WorkerSettings(
+        redis_url=redis_url,
+        task_modules=task_modules,
+        queues=queues,
+        max_jobs=max_jobs,
+    )
+
+    try:
+        # run_worker is sync - ARQ manages its own event loop
+        run_worker(worker_settings)
+    except KeyboardInterrupt:
+        console.print("\n[yellow]Worker stopped[/yellow]")
+    except ImportError as e:
+        console.print(f"[red]Error:[/red] {e}")
+        console.print()
+        console.print("Install ARQ for production task processing:")
+        console.print("  pip install arq")
+        raise typer.Exit(1)
+
+
+@app.command()
+def beat():
+    """
+    Start the periodic task scheduler.
+
+    Runs @periodic_task decorated functions on schedule.
+
+    Example:
+        p8s beat
+    """
+    ensure_settings_module()
+
+    console.print("[bold]⏰ Starting P8s Scheduler (Beat)[/bold]")
+    console.print()
+    console.print("Note: ARQ handles periodic tasks within the worker.")
+    console.print("Run 'p8s worker' to process both regular and periodic tasks.")
+    console.print()
+
+    # List registered periodic tasks
+    try:
+        from p8s.tasks.decorators import get_periodic_tasks
+
+        periodic = get_periodic_tasks()
+        if periodic:
+            console.print("[bold]Registered periodic tasks:[/bold]")
+            for task_def, options in periodic:
+                schedule = options.cron or f"every {options.interval}s"
+                console.print(f"  • {task_def.name}: {schedule}")
+        else:
+            console.print("[dim]No periodic tasks registered.[/dim]")
+    except ImportError:
+        console.print("[yellow]Warning:[/yellow] Tasks module not loaded")
 
 
 # ============================================================================

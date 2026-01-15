@@ -133,18 +133,25 @@ from sqlmodel import SQLModel
 
 # Import P8s framework models (User, permissions, etc.)
 from p8s.auth.models import User
-from p8s.auth.permissions import UserPermission, UserGroup
+from p8s.auth.permissions import UserPermissionLink, UserGroupLink
 
 # Auto-discover models from installed apps
 from p8s.core.settings import get_settings
 import importlib
 
 settings = get_settings()
-for app_name in settings.installed_apps:
+for app_name in getattr(settings, 'installed_apps', []):
     try:
         importlib.import_module(f"{app_name}.models")
     except ImportError:
         pass
+
+# Explicitly import project models (backend.models)
+# This ensures models are discovered even without installed_apps config
+try:
+    import backend.models  # noqa: F401
+except ImportError:
+    pass
 
 # This is the Alembic Config object
 config = context.config

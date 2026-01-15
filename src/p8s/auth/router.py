@@ -5,6 +5,7 @@ P8s Auth Router - Authentication endpoints.
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -90,10 +91,10 @@ async def login(
     session: AsyncSession = Depends(get_session),
 ) -> TokenResponse:
     """
-    Login with email and password.
+    Login with email/username and password.
 
     Args:
-        login_data: Login credentials.
+        login_data: Login credentials (identifier can be email or username).
         session: Database session.
 
     Returns:
@@ -102,14 +103,24 @@ async def login(
     Raises:
         401: Invalid credentials.
     """
-    # Find user
-    result = await session.execute(select(User).where(User.email == login_data.email))
+    from sqlalchemy import or_
+
+    # Find user by email OR username
+    identifier = login_data.identifier.strip()
+    result = await session.execute(
+        select(User).where(
+            or_(
+                User.email == identifier,
+                User.username == identifier,
+            )
+        )
+    )
     user = result.scalar_one_or_none()
 
     if not user or not verify_password(login_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
+            detail="Invalid email/username or password",
         )
 
     if not user.is_active:
@@ -221,3 +232,46 @@ async def logout(
     # - Log the logout event
 
     return {"message": "Successfully logged out"}
+
+
+class ChangePasswordRequest(BaseModel):
+    """Schema for password change request."""
+
+    current_password: str
+    new_password: str = Field(min_length=8)
+
+
+@router.post("/change-password")
+async def change_password(
+    data: ChangePasswordRequest,
+    user: User = Depends(require_auth),
+    session: AsyncSession = Depends(get_session),
+) -> dict:
+    """
+    Change the current user's password.
+
+    Args:
+        data: Current and new password.
+        user: Authenticated user.
+        session: Database session.
+
+    Returns:
+        Success message.
+
+    Raises:
+        400: Current password is incorrect.
+    """
+    # Verify current password
+    if not verify_password(data.current_password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect",
+        )
+
+    # Update password
+    user.password_hash = get_password_hash(data.new_password)
+    session.add(user)
+    await session.flush()
+
+
+    return {"message": "Password changed successfully"}

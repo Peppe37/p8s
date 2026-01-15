@@ -535,13 +535,13 @@ export function AdminPanel({ }: AdminPanelProps) {
                     )}
 
                     <div className="form-group">
-                        <label className="form-label">Username</label>
+                        <label className="form-label">Email / Username</label>
                         <input
                             type="text"
                             value={loginUser}
                             onChange={e => setLoginUser(e.target.value)}
                             className="form-input"
-                            placeholder="Enter your username"
+                            placeholder="Enter your email or username"
                             required
                         />
                     </div>
@@ -835,8 +835,129 @@ export function AdminPanel({ }: AdminPanelProps) {
                     </div>
                 </div>
             )}
+
+            {/* Change Password Modal */}
+            <ChangePasswordModal
+                userId={editingId}
+                onSuccess={() => showNotification('Password changed successfully', 'success')}
+                onError={(msg) => showNotification(msg, 'error')}
+            />
+        </div>
+    );
+}
+
+// Change Password Modal Component
+function ChangePasswordModal({ userId, onSuccess, onError }: { userId: string | null; onSuccess: () => void; onError: (msg: string) => void }) {
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [saving, setSaving] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (newPassword.length < 8) {
+            onError('Password must be at least 8 characters');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            onError('Passwords do not match');
+            return;
+        }
+
+        if (!userId) {
+            onError('No user selected');
+            return;
+        }
+
+        setSaving(true);
+        try {
+            const token = localStorage.getItem('p8s_token');
+            const API_BASE = import.meta.env.DEV ? 'http://localhost:8000' : '';
+
+            // Update user's password via admin endpoint
+            const response = await fetch(`${API_BASE}/admin/User/${userId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify({ password_hash: newPassword }),
+            });
+
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({ detail: 'Failed to change password' }));
+                throw new Error(err.detail || 'Failed to change password');
+            }
+
+            onSuccess();
+            setNewPassword('');
+            setConfirmPassword('');
+            const modal = document.getElementById('change-password-modal');
+            if (modal) modal.style.display = 'none';
+        } catch (err: any) {
+            onError(err.message || 'Failed to change password');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const closeModal = () => {
+        const modal = document.getElementById('change-password-modal');
+        if (modal) modal.style.display = 'none';
+        setNewPassword('');
+        setConfirmPassword('');
+    };
+
+    return (
+        <div
+            id="change-password-modal"
+            className="modal-overlay"
+            style={{ display: 'none' }}
+            onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
+        >
+            <div className="modal-content" style={{ maxWidth: '400px', width: '100%' }}>
+                <div className="modal-header">
+                    <h3>Change Password</h3>
+                    <button className="btn-close" onClick={closeModal}>×</button>
+                </div>
+                <form onSubmit={handleSubmit} className="modal-body" style={{ padding: '24px' }}>
+                    <div className="form-group">
+                        <label className="form-label">New Password</label>
+                        <input
+                            type="password"
+                            className="form-input"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            placeholder="Minimum 8 characters"
+                            required
+                            minLength={8}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Confirm Password</label>
+                        <input
+                            type="password"
+                            className="form-input"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            placeholder="Repeat password"
+                            required
+                        />
+                    </div>
+                    <div className="form-actions" style={{ marginTop: '24px' }}>
+                        <button type="button" className="btn btn-secondary" onClick={closeModal}>
+                            Cancel
+                        </button>
+                        <button type="submit" className="btn btn-primary" disabled={saving}>
+                            {saving ? 'Saving...' : 'Change Password'}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }
 
 export default AdminPanel;
+

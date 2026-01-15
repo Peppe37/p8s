@@ -175,6 +175,152 @@ class MaintenanceModeMiddleware(Middleware):
         return await call_next(request)
 
 
+class RateLimitMiddleware(Middleware):
+    """
+    Rate limiting middleware to prevent abuse.
+
+    Supports configurable rate limits with sliding window algorithm.
+
+    Example:
+        ```python
+        from p8s.middleware import RateLimitMiddleware
+
+        # 100 requests per minute per IP
+        app.add_middleware(
+            MiddlewareWrapper,
+            middleware=RateLimitMiddleware(rate="100/minute")
+        )
+
+        # 1000 requests per hour with custom key function
+        app.add_middleware(
+            MiddlewareWrapper,
+            middleware=RateLimitMiddleware(
+                rate="1000/hour",
+                key_func=lambda r: r.headers.get("X-API-Key", r.client.host),
+            )
+        )
+        ```
+    """
+
+    # Rate period mappings in seconds
+    PERIODS = {
+        "second": 1,
+        "minute": 60,
+        "hour": 3600,
+        "day": 86400,
+    }
+
+    def __init__(
+        self,
+        rate: str = "100/minute",
+        key_func: Callable[[Request], str] | None = None,
+        exempt_paths: list[str] | None = None,
+        backend: str = "memory",
+    ) -> None:
+        """
+        Initialize rate limit middleware.
+
+        Args:
+            rate: Rate limit in format "count/period" (e.g., "100/minute").
+            key_func: Function to extract rate limit key from request.
+                      Defaults to client IP address.
+            exempt_paths: Paths exempt from rate limiting.
+            backend: Cache backend to use ("memory" or "redis").
+        """
+        self.limit, self.period = self._parse_rate(rate)
+        self.key_func = key_func or self._default_key_func
+        self.exempt_paths = exempt_paths or []
+        self.backend = backend
+        self._cache = None
+
+    def _parse_rate(self, rate: str) -> tuple[int, int]:
+        """Parse rate string like '100/minute' to (count, seconds)."""
+        parts = rate.split("/")
+        if len(parts) != 2:
+            raise ValueError(f"Invalid rate format: {rate}. Use 'count/period'.")
+
+        count = int(parts[0])
+        period_name = parts[1].lower()
+
+        if period_name not in self.PERIODS:
+            raise ValueError(
+                f"Unknown period: {period_name}. "
+                f"Valid periods: {list(self.PERIODS.keys())}"
+            )
+
+        return count, self.PERIODS[period_name]
+
+    def _default_key_func(self, request: Request) -> str:
+        """Default key function using client IP."""
+        if request.client:
+            return f"ratelimit:{request.client.host}"
+        return "ratelimit:unknown"
+
+    def _get_cache(self):
+        """Get or create cache backend."""
+        if self._cache is None:
+            from p8s.cache import get_cache
+
+            self._cache = get_cache(self.backend)
+        return self._cache
+
+    def _is_exempt(self, request: Request) -> bool:
+        """Check if request path is exempt."""
+        path = request.url.path
+        for exempt_path in self.exempt_paths:
+            if path.startswith(exempt_path):
+                return True
+        return False
+
+    async def process_request(self, request: Request, call_next) -> Response:
+        # Skip rate limiting for exempt paths
+        if self._is_exempt(request):
+            return await call_next(request)
+
+        cache = self._get_cache()
+        key = self.key_func(request)
+
+        # Get current count
+        current = cache.get(key, 0)
+
+        # Check if rate limit exceeded
+        if current >= self.limit:
+            from starlette.responses import JSONResponse
+
+            retry_after = self.period
+            return JSONResponse(
+                {
+                    "detail": "Rate limit exceeded",
+                    "limit": self.limit,
+                    "period": self.period,
+                    "retry_after": retry_after,
+                },
+                status_code=429,
+                headers={"Retry-After": str(retry_after)},
+            )
+
+        # Increment counter with TTL
+        try:
+            cache.incr(key)
+            # Set expiration if this is a new key
+            if current == 0:
+                cache.set(key, 1, timeout=self.period)
+        except (ValueError, TypeError):
+            # If incr fails, just set the value
+            cache.set(key, 1, timeout=self.period)
+
+        # Process request
+        response = await call_next(request)
+
+        # Add rate limit headers
+        remaining = max(0, self.limit - current - 1)
+        response.headers["X-RateLimit-Limit"] = str(self.limit)
+        response.headers["X-RateLimit-Remaining"] = str(remaining)
+        response.headers["X-RateLimit-Reset"] = str(self.period)
+
+        return response
+
+
 class CSRFMiddleware(Middleware):
     """
     Cross-Site Request Forgery protection middleware.
