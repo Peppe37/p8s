@@ -43,28 +43,28 @@ dependencies = [
     "fastapi>=0.109.0",
     "uvicorn[standard]>=0.27.0",
     "starlette>=0.35.0",
-    
+
     # Database
     "sqlmodel>=0.0.14",
     "sqlalchemy[asyncio]>=2.0.0",
     "alembic>=1.13.0",
     "asyncpg>=0.29.0",  # PostgreSQL async driver
     "aiosqlite>=0.19.0",  # SQLite async driver
-    
+
     # Configuration
     "pydantic>=2.5.0",
     "pydantic-settings>=2.1.0",
-    
+
     # CLI
     "typer[all]>=0.9.0",
     "rich>=13.0.0",
-    
+
     # Utilities
     "python-dotenv>=1.0.0",
     "python-multipart>=0.0.6",
     "aiofiles>=23.2.0",
     "httpx>=0.25.0",
-    
+
     # Auth
     "passlib[bcrypt]>=1.7.4",
     "python-jose[cryptography]>=3.3.0",
@@ -81,6 +81,10 @@ ai = [
 admin = [
     "jinja2>=3.1.0",
 ]
+tasks = [
+    "arq>=0.25.0",
+    "redis>=5.0.0",
+]
 dev = [
     "pytest>=7.4.0",
     "pytest-asyncio>=0.23.0",
@@ -92,7 +96,7 @@ dev = [
     "mkdocs-material>=9.5.0",
 ]
 all = [
-    "p8s[ai,admin,dev]",
+    "p8s[ai,admin,tasks,dev]",
 ]
 
 [project.scripts]
@@ -100,7 +104,7 @@ p8s = "p8s.cli.main:app"
 
 [project.urls]
 Homepage = "https://github.com/Peppe37/p8s"
-Documentation = "https://github.com/Peppe37/p8s#readme"
+Documentation = "https://peppe37.github.io/p8s/"
 Repository = "https://github.com/Peppe37/p8s"
 
 [tool.hatch.build.targets.wheel]

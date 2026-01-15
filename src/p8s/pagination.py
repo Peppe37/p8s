@@ -303,3 +303,84 @@ def paginate_query(
         "has_next": page_obj.has_next(),
         "has_previous": page_obj.has_previous(),
     }
+
+
+async def async_paginate(
+    session: Any,
+    query: Any,
+    page: int = 1,
+    per_page: int = 10,
+) -> dict[str, Any]:
+    """
+    Paginate an async SQLAlchemy query and return response dict.
+
+    This executes the query with LIMIT/OFFSET for efficient pagination
+    and also counts total items.
+
+    Example:
+        ```python
+        from p8s.pagination import async_paginate
+        from sqlmodel import select
+
+        @app.get("/products")
+        async def list_products(
+            session: AsyncSession = Depends(get_session),
+            page: int = 1,
+            per_page: int = 10,
+        ):
+            query = select(Product).where(Product.is_active == True)
+            return await async_paginate(session, query, page, per_page)
+        ```
+
+    Args:
+        session: SQLAlchemy AsyncSession.
+        query: SQLAlchemy Select query.
+        page: Page number (1-indexed).
+        per_page: Items per page.
+
+    Returns:
+        {
+            "items": [...],
+            "page": 1,
+            "per_page": 10,
+            "total": 100,
+            "pages": 10,
+            "has_next": True,
+            "has_previous": False,
+        }
+    """
+    from sqlalchemy import func, select as sa_select
+
+    # Ensure valid page number
+    if page < 1:
+        page = 1
+
+    # Calculate offset
+    offset = (page - 1) * per_page
+
+    # Get total count
+    # Extract the model from the query's column_descriptions
+    count_query = sa_select(func.count()).select_from(query.subquery())
+    count_result = await session.execute(count_query)
+    total = count_result.scalar() or 0
+
+    # Apply pagination to query
+    paginated_query = query.offset(offset).limit(per_page)
+    result = await session.execute(paginated_query)
+    items = result.scalars().all()
+
+    # Calculate pages
+    pages = math.ceil(total / per_page) if per_page > 0 else 1
+    if pages == 0:
+        pages = 1
+
+    return {
+        "items": list(items),
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "pages": pages,
+        "has_next": page < pages,
+        "has_previous": page > 1,
+    }
+

@@ -1,7 +1,7 @@
 # P8s Feature Roadmap v2.0
 
-> **Status**: Active Development  
-> **Created**: 2026-01-12  
+> **Status**: Active Development\
+> **Created**: 2026-01-12\
 > **Goal**: Make P8s a compelling Django alternative
 
 ---
@@ -16,12 +16,12 @@ P8s già include molte feature Django-like (Signals, Cache, Forms, Admin, Auth).
 
 | #   | Feature             | Priority | Status      | Target  |
 | --- | ------------------- | -------- | ----------- | ------- |
-| 1   | Background Tasks    | 🔴 P0     | Not Started | Q1 2026 |
-| 2   | Cache Improvements  | 🔴 P0     | Partial     | Q1 2026 |
-| 3   | Admin Inlines       | 🔴 P0     | Not Started | Q1 2026 |
-| 4   | Custom Commands     | 🟡 P1     | Not Started | Q1 2026 |
-| 5   | File/Media Fields   | 🟡 P1     | Partial     | Q1 2026 |
-| 6   | Security Middleware | 🟡 P1     | Partial     | Q2 2026 |
+| 1   | Background Tasks    | 🔴 P0     | ✅ Complete  | Q1 2026 |
+| 2   | Cache Improvements  | 🔴 P0     | ✅ Complete  | Q1 2026 |
+| 3   | Admin Inlines       | 🔴 P0     | ✅ Complete  | Q1 2026 |
+| 4   | Custom Commands     | 🟡 P1     | ✅ Complete  | Q1 2026 |
+| 5   | File/Media Fields   | 🟡 P1     | ✅ Complete  | Q1 2026 |
+| 6   | Security Middleware | 🟡 P1     | ✅ Complete  | Q2 2026 |
 | 7   | i18n/l10n           | 🟢 P2     | Not Started | Q2 2026 |
 | 8   | WebSocket Support   | 🟢 P2     | Not Started | Q2 2026 |
 | 9   | Multi-Database      | 🟢 P2     | Not Started | Q3 2026 |
@@ -98,11 +98,11 @@ from p8s.admin import register_model, TabularInline
 class OrderItemInline(TabularInline):
     model = OrderItem
     extra = 1
-    
+
 @register_model
 class Order(Model, table=True):
     ...
-    
+
     class Admin:
         list_display = ["id", "customer", "total"]
         inlines = [OrderItemInline]
@@ -131,10 +131,10 @@ from p8s.cli import Command
 class ImportDataCommand(Command):
     name = "import_data"
     help = "Import products from CSV"
-    
+
     def add_arguments(self, parser):
         parser.add_argument("--file", required=True)
-    
+
     async def handle(self, file: str):
         # Import logic
         self.stdout.success(f"Imported from {file}")
@@ -248,7 +248,7 @@ from p8s.websocket import WebSocketEndpoint
 class ChatSocket(WebSocketEndpoint):
     async def on_connect(self, websocket):
         await websocket.accept()
-    
+
     async def on_receive(self, websocket, data):
         await websocket.send_json({"echo": data})
 
@@ -272,13 +272,13 @@ class AppSettings(Settings):
         "default": "postgresql://...",
         "replica": "postgresql://replica.../",
     }
-    
+
     database_routers = [ReadReplicaRouter]
 
 class ReadReplicaRouter:
     def db_for_read(self, model):
         return "replica"
-    
+
     def db_for_write(self, model):
         return "default"
 ```

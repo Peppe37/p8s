@@ -29,6 +29,7 @@ pip install -e ".[all]"
 | `p8s dumpdata`           | Export data to fixture                  |
 | `p8s loaddata`           | Import data from fixture                |
 | `p8s collectstatic`      | Collect static files                    |
+| `p8s seed`               | Run seed script                         |
 | `p8s types`              | Generate TypeScript types               |
 | `p8s version`            | Show P8s version                        |
 
@@ -37,6 +38,8 @@ pip install -e ".[all]"
 ## Project Commands
 
 ### `p8s new project`
+
+Create a new P8s project (now with **Tailwind CSS v4** support out of the box).
 
 Create a new P8s project with the standard directory structure.
 
@@ -158,6 +161,23 @@ Opens `sqlite3`, `psql`, or `mysql` depending on your database.
 
 ## Data Management
 
+### `p8s seed`
+
+Run database seeding script using the ORM.
+
+```bash
+p8s seed
+p8s seed --script backend/seeds_v2.py
+```
+
+**Options:**
+
+| Option     | Description             |
+| ---------- | ----------------------- |
+| `--script` | Path to the seed script |
+
+The script should use the P8s ORM models to populate the database. The command automatically handles `sys.path`.
+
 ### `p8s dumpdata`
 
 Export data to a fixture file.
@@ -261,6 +281,22 @@ p8s collectstatic
 p8s collectstatic --clear  # Clear destination first
 p8s collectstatic --dry-run  # Preview without copying
 ```
+
+### `p8s types`
+
+Generate TypeScript interfaces from your backend OpenAPI schema.
+
+```bash
+p8s types
+p8s types -o frontend/src/types/schema.ts
+```
+
+**Requirements:**
+- The command uses `npx openapi-typescript`, so Node.js must be available.
+- You should be in the project root.
+
+**Integration:**
+The generated file can be directly used in your frontend API client for full type safety.
 
 ### `p8s shell`
 

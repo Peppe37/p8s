@@ -170,3 +170,27 @@ p8s migrate
 2. **Use soft deletes** for audit trails
 3. **Index frequently queried fields**
 4. **Use `table=True`** for database-backed models
+
+## Standalone Scripts & Seeding
+
+For scripts that run outside the API context (e.g., seeding data, cron jobs, data analysis), use the `setup_context` utility. This ensures the database and settings are correctly initialized.
+
+```python
+import asyncio
+from p8s.core.context import setup_context
+from p8s.db.session import SessionManager
+from backend.models import Product
+
+async def main():
+    async with setup_context():
+        async with SessionManager() as session:
+            # Full ORM access
+            product = Product(name="Script created", price=10.0)
+            session.add(product)
+            await session.commit()
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+Use `p8s seed` to execute these scripts easily.

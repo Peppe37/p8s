@@ -116,7 +116,24 @@ def get_inline_metadata(inline: InlineConfig) -> dict[str, Any]:
     if not model:
         return {}
 
-    # Get field info from the model
+    # Handle model as string (model name) - return minimal metadata
+    if isinstance(model, str):
+        return {
+            "model": model,
+            "fk_field": inline.fk_field,
+            "fields": [{"name": f, "type": "str", "required": False, "readonly": False} 
+                      for f in inline.fields] if inline.fields else [],
+            "template": getattr(inline, "template", "tabular"),
+            "extra": inline.extra,
+            "max_num": inline.max_num,
+            "min_num": inline.min_num,
+            "can_delete": inline.can_delete,
+            "verbose_name": inline.verbose_name or model,
+            "verbose_name_plural": inline.verbose_name_plural or f"{model}s",
+            "ordering": inline.ordering,
+        }
+
+    # Get field info from the model class
     fields = []
     for field_name, field_info in model.model_fields.items():
         # Skip if not in fields list (when fields specified)

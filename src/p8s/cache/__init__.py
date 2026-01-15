@@ -101,4 +101,8 @@ __all__ = [
     # Decorators
     "cache_page",
     "cache_result",
+    "cache",  # Alias for cache_result
 ]
+
+# Alias for intuitive import: from p8s.cache import cache
+cache = cache_result

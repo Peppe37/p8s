@@ -55,6 +55,46 @@ class CacheBackend(ABC):
         """Check if key exists in cache."""
         return self.get(key) is not None
 
+    def incr(self, key: str, delta: int = 1) -> int:
+        """
+        Increment value by delta.
+
+        If key doesn't exist, creates it with value = delta.
+        Raises ValueError if existing value is not an integer.
+
+        Args:
+            key: Cache key to increment.
+            delta: Amount to increment by (default: 1).
+
+        Returns:
+            New value after increment.
+        """
+        value = self.get(key)
+        if value is None:
+            new_value = delta
+        elif isinstance(value, int):
+            new_value = value + delta
+        else:
+            raise ValueError(f"Value at '{key}' is not an integer: {type(value)}")
+        self.set(key, new_value)
+        return new_value
+
+    def decr(self, key: str, delta: int = 1) -> int:
+        """
+        Decrement value by delta.
+
+        If key doesn't exist, creates it with value = -delta.
+        Raises ValueError if existing value is not an integer.
+
+        Args:
+            key: Cache key to decrement.
+            delta: Amount to decrement by (default: 1).
+
+        Returns:
+            New value after decrement.
+        """
+        return self.incr(key, -delta)
+
 
 class MemoryCache(CacheBackend):
     """
@@ -129,6 +169,30 @@ class MemoryCache(CacheBackend):
             for k in expired:
                 del self._cache[k]
             return len(expired)
+
+    def incr(self, key: str, delta: int = 1) -> int:
+        """Atomic increment for memory cache."""
+        with self._lock:
+            if key not in self._cache:
+                expires_at = None
+                new_value = delta
+            else:
+                value, expires_at = self._cache[key]
+                # Check expiration
+                if expires_at is not None and time.time() > expires_at:
+                    del self._cache[key]
+                    expires_at = None
+                    new_value = delta
+                elif not isinstance(value, int):
+                    raise ValueError(f"Value at '{key}' is not an integer: {type(value)}")
+                else:
+                    new_value = value + delta
+            self._cache[key] = (new_value, expires_at)
+            return new_value
+
+    def decr(self, key: str, delta: int = 1) -> int:
+        """Atomic decrement for memory cache."""
+        return self.incr(key, -delta)
 
 
 class FileCache(CacheBackend):
@@ -208,3 +272,51 @@ class FileCache(CacheBackend):
                 path.unlink()
             except Exception:
                 pass
+
+    def incr(self, key: str, delta: int = 1) -> int:
+        """Increment for file cache."""
+        path = self._key_to_path(key)
+
+        # Read existing value
+        current_value = 0
+        expires_at = None
+
+        if path.exists():
+            try:
+                with open(path) as f:
+                    data = json.load(f)
+                existing = data.get("value")
+                expires_at = data.get("expires_at")
+
+                # Check expiration
+                if expires_at is not None and time.time() > expires_at:
+                    path.unlink(missing_ok=True)
+                    expires_at = None
+                elif not isinstance(existing, int):
+                    raise ValueError(
+                        f"Value at '{key}' is not an integer: {type(existing)}"
+                    )
+                else:
+                    current_value = existing
+            except json.JSONDecodeError:
+                pass
+
+        new_value = current_value + delta
+
+        data = {
+            "value": new_value,
+            "expires_at": expires_at,
+            "created_at": time.time(),
+        }
+
+        try:
+            with open(path, "w") as f:
+                json.dump(data, f)
+        except Exception:
+            pass
+
+        return new_value
+
+    def decr(self, key: str, delta: int = 1) -> int:
+        """Decrement for file cache."""
+        return self.incr(key, -delta)

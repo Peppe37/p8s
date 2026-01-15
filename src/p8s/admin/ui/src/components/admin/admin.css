@@ -669,13 +669,13 @@ h1 {
 .checkbox-label input[type="checkbox"]:checked::after {
     content: "";
     position: absolute;
-    left: 7px;
-    top: 3px;
+    left: 50%;
+    top: 50%;
     width: 5px;
     height: 10px;
     border: solid white;
     border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
+    transform: translate(-50%, -60%) rotate(45deg);
 }
 
 .checkbox-label input[type="checkbox"]:focus {
@@ -861,4 +861,209 @@ h1 {
 .btn-close:hover {
     background-color: var(--bg-hover);
     color: var(--text-primary);
+}
+
+/* ========================================
+   Inline Editor Styles
+   ======================================== */
+
+.inline-editor {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color);
+}
+
+.inline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.inline-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.btn-add-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.btn-add-inline:hover {
+    background: var(--bg-hover);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+/* Tabular Inline */
+.tabular-inline .inline-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.tabular-inline .inline-table th {
+    background: var(--bg-secondary);
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: capitalize;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tabular-inline .inline-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tabular-inline .inline-table tr:last-child td {
+    border-bottom: none;
+}
+
+.tabular-inline .row-new {
+    background: var(--success-bg);
+}
+
+.th-drag,
+.td-drag {
+    width: 32px;
+    text-align: center;
+}
+
+.drag-handle {
+    color: var(--text-secondary);
+    cursor: grab;
+}
+
+.th-actions,
+.td-actions {
+    width: 48px;
+    text-align: center;
+}
+
+.inline-input {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.inline-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.inline-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.btn-delete-inline {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-delete-inline:hover {
+    color: var(--danger);
+    background: var(--danger-bg);
+}
+
+.required {
+    color: var(--danger);
+    margin-left: 2px;
+}
+
+.inline-empty {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    padding: 24px;
+    text-align: center;
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
+}
+
+/* Stacked Inline */
+.stacked-inline .stacked-items {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.stacked-item {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.stacked-item.item-new {
+    border-color: var(--success);
+}
+
+.stacked-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.item-title {
+    font-weight: 500;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.badge-new {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    background: var(--success-bg);
+    color: var(--success);
+    border-radius: 4px;
+}
+
+.stacked-item-fields {
+    padding: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.stacked-field label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    text-transform: capitalize;
 }

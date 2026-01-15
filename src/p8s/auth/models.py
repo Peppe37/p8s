@@ -302,5 +302,5 @@ class TokenResponse(BaseModel):
 class LoginRequest(BaseModel):
     """Schema for login request."""
 
-    email: EmailStr
+    identifier: str  # Can be email or username
     password: str

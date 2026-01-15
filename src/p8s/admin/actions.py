@@ -24,6 +24,7 @@ _admin_actions: dict[str, dict[str, dict[str, Any]]] = {}
 def admin_action(
     description: str | None = None,
     *,
+    model: type | None = None,
     confirm: bool = False,
     confirm_message: str | None = None,
 ) -> Callable[[T], T]:
@@ -34,10 +35,21 @@ def admin_action(
     - session: AsyncSession
     - queryset: List of selected model instances
 
-    Example:
+    Example (Django-style with model parameter):
         ```python
-        from p8s.admin.actions import admin_action
+        from p8s.admin import admin_action
+        from backend.models import Product
 
+        @admin_action("Mark as Featured", model=Product)
+        async def mark_featured(session, queryset):
+            for item in queryset:
+                item.is_featured = True
+                session.add(item)
+            return f"{len(queryset)} products marked as featured"
+        ```
+
+    Example (Classic style - referenced in Admin class):
+        ```python
         @admin_action(description="Mark selected products as active")
         async def mark_active(session, queryset):
             for item in queryset:
@@ -55,6 +67,7 @@ def admin_action(
 
     Args:
         description: Human-readable description for the action.
+        model: Optional model class to auto-register the action for.
         confirm: If True, require user confirmation before execution.
         confirm_message: Custom confirmation message.
 
@@ -74,9 +87,20 @@ def admin_action(
             or f"Are you sure you want to {func.__name__.replace('_', ' ')}?"
         )
 
+        # If model is provided, auto-register the action
+        if model is not None:
+            model_name = model.__name__
+            register_action(
+                model_name=model_name,
+                action_name=func.__name__,
+                func=func,
+                description=func._action_description,
+            )
+
         return func
 
     return decorator
+
 
 
 def register_action(

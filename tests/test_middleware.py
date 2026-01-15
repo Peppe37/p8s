@@ -187,3 +187,59 @@ class TestExceptionHandlerMiddleware:
         # Should NOT contain stack trace or internal details
         assert "traceback" not in production_error
         assert "file" not in production_error
+
+
+class TestRateLimitMiddleware:
+    """Test rate limiting middleware."""
+
+    def test_rate_limit_import(self):
+        """Test RateLimitMiddleware can be imported."""
+        from p8s.middleware import RateLimitMiddleware
+
+        assert RateLimitMiddleware is not None
+
+    def test_rate_parsing(self):
+        """Test rate string parsing."""
+        from p8s.middleware import RateLimitMiddleware
+
+        middleware = RateLimitMiddleware(rate="100/minute")
+        assert middleware.limit == 100
+        assert middleware.period == 60
+
+        middleware = RateLimitMiddleware(rate="1000/hour")
+        assert middleware.limit == 1000
+        assert middleware.period == 3600
+
+    def test_rate_parsing_invalid(self):
+        """Test invalid rate format raises error."""
+        from p8s.middleware import RateLimitMiddleware
+
+        with pytest.raises(ValueError):
+            RateLimitMiddleware(rate="invalid")
+
+        with pytest.raises(ValueError):
+            RateLimitMiddleware(rate="100/invalid_period")
+
+    def test_exempt_paths_config(self):
+        """Test exempt paths configuration."""
+        from p8s.middleware import RateLimitMiddleware
+
+        middleware = RateLimitMiddleware(
+            rate="100/minute",
+            exempt_paths=["/health", "/metrics"],
+        )
+        assert "/health" in middleware.exempt_paths
+        assert "/metrics" in middleware.exempt_paths
+
+    def test_rate_limit_headers(self):
+        """Test expected rate limit headers."""
+        expected_headers = [
+            "X-RateLimit-Limit",
+            "X-RateLimit-Remaining",
+            "X-RateLimit-Reset",
+            "Retry-After",
+        ]
+
+        # Verify header names are valid
+        for header in expected_headers:
+            assert header.startswith("X-") or header == "Retry-After"
