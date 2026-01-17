@@ -30,7 +30,7 @@ export interface AdminConfig {
 // Field metadata
 export interface FieldMeta {
     name: string;
-    type: 'string' | 'number' | 'boolean' | 'date' | 'datetime' | 'json' | 'relation' | 'ai' | 'vector' | 'richtext' | 'color' | 'tags' | 'code';
+    type: 'string' | 'number' | 'boolean' | 'date' | 'datetime' | 'json' | 'relation' | 'ai' | 'vector' | 'richtext' | 'color' | 'tags' | 'code' | 'slug';
     primary_key: boolean;
     required: boolean;
     nullable: boolean;
@@ -49,6 +49,7 @@ export interface FieldMeta {
         source_fields: string[];
     };
     language?: string; // For code fields
+    populate_from?: string; // For slug fields - source field name
 }
 
 // Model schema from admin API
@@ -120,7 +121,7 @@ export interface FormField {
     name: string;
     label: string;
     description?: string; // Help text
-    type: 'text' | 'number' | 'email' | 'password' | 'textarea' | 'select' | 'checkbox' | 'date' | 'datetime' | 'json' | 'readonly' | 'relation' | 'richtext' | 'color' | 'tags' | 'code';
+    type: 'text' | 'number' | 'email' | 'password' | 'textarea' | 'select' | 'checkbox' | 'date' | 'datetime' | 'json' | 'readonly' | 'relation' | 'richtext' | 'color' | 'tags' | 'code' | 'slug';
     required: boolean;
     placeholder?: string;
     options?: Array<{ value: string; label: string }>;
@@ -130,6 +131,7 @@ export interface FormField {
         local_field?: string;
     };
     language?: string; // For code fields
+    populateFrom?: string; // For slug fields - source field name
     validation?: {
         min?: number;
         max?: number;

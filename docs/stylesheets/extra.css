@@ -52,8 +52,10 @@
 }
 
 /* Header tabs hover */
+/* Header tabs hover */
 .md-tabs__link:hover {
-    color: var(--md-primary-fg-color);
+    color: rgba(255, 255, 255, 1);
+    opacity: 1;
 }
 
 /* Navigation highlight */

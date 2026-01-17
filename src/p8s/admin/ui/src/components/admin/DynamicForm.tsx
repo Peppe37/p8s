@@ -40,8 +40,39 @@ export function DynamicForm({
         setValues(initialValues);
     }, [initialValues]);
 
+    // Slugify helper function
+    const slugify = (text: string): string => {
+        return text
+            .toLowerCase()
+            .trim()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+            .replace(/[^a-z0-9\s-]/g, '')   // Remove special chars
+            .replace(/[\s_]+/g, '-')         // Replace spaces/underscores with dashes
+            .replace(/-+/g, '-')             // Remove consecutive dashes
+            .replace(/^-+|-+$/g, '');        // Trim dashes from ends
+    };
+
     const handleChange = (name: string, value: unknown) => {
-        setValues(prev => ({ ...prev, [name]: value }));
+        setValues(prev => {
+            const newValues = { ...prev, [name]: value };
+
+            // Auto-generate slug for fields that populate from this field
+            const slugFields = fields.filter(f => f.type === 'slug' && f.populateFrom === name);
+            for (const slugField of slugFields) {
+                // Only auto-generate if slug is empty or matches the old slugified value
+                const currentSlug = prev[slugField.name] as string || '';
+                const oldSourceValue = prev[name] as string || '';
+                const oldSlug = slugify(oldSourceValue);
+
+                if (currentSlug === '' || currentSlug === oldSlug) {
+                    newValues[slugField.name] = slugify(String(value || ''));
+                }
+            }
+
+            return newValues;
+        });
+
         // Clear error when field changes
         if (errors[name]) {
             setErrors(prev => {
@@ -319,6 +350,22 @@ export function DynamicForm({
                     />
                 );
 
+            case 'slug':
+                return (
+                    <div className="slug-field">
+                        <input
+                            {...baseProps}
+                            type="text"
+                            value={String(value ?? '')}
+                            onChange={(e) => handleChange(field.name, e.target.value)}
+                            className="form-input slug-input"
+                        />
+                        {field.populateFrom && (
+                            <span className="slug-hint">Auto-generated from {field.populateFrom}</span>
+                        )}
+                    </div>
+                );
+
             default:
                 return (
                     <input
@@ -473,6 +520,9 @@ export function fieldMetaToFormField(
 
         case 'code':
             return { ...baseField, type: 'code' as const, language: meta.language };
+
+        case 'slug':
+            return { ...baseField, type: 'slug' as const, populateFrom: meta.populate_from };
 
         default:
             if (meta.choices) {

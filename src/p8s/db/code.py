@@ -21,32 +21,12 @@ def CodeField(
     language: str | None = None,
     theme: str = "vs-dark",
     line_numbers: bool = True,
+    default: Any = "",
     **kwargs: Any,
 ) -> Any:
-    """
-    Create a code field for storing code snippets.
-
-    Renders with syntax highlighting editor in admin.
-
-    Args:
-        language: Programming language for syntax highlighting
-        theme: Editor theme (for Monaco editor)
-        line_numbers: Show line numbers
-        **kwargs: Additional Field arguments
-
-    Returns:
-        SQLModel Field configured for code storage
-
-    Example:
-        ```python
-        class Template(Model, table=True):
-            name: str
-            html: str = CodeField(language="html")
-            css: str = CodeField(language="css")
-        ```
-    """
-    json_schema_extra = kwargs.pop("json_schema_extra", {})
-    json_schema_extra.update(
+    # ... (docstring) ...
+    schema_extra = kwargs.pop("schema_extra", {})
+    schema_extra.update(
         {
             "x-code": True,
             "x-language": language,
@@ -56,9 +36,9 @@ def CodeField(
     )
 
     return Field(
-        default="",
+        default=default,
         sa_column=Column(Text),
-        json_schema_extra=json_schema_extra,
+        schema_extra=schema_extra,
         **kwargs,
     )
 
