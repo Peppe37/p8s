@@ -1,6 +1,31 @@
 # CHANGELOG
 
 
+## v1.3.0 (2026-01-17)
+
+### Documentation
+
+- Update roadmap, status reports and core project configuration
+  ([`e2ca422`](https://github.com/Peppe37/p8s/commit/e2ca42270d9323e2fb05f039c571bb9ad0655717))
+
+- Roadmap jenuary 2026
+  ([`b0252c8`](https://github.com/Peppe37/p8s/commit/b0252c89c237ee4ef77dbd7bb58d5bb2bf00e468))
+
+### Features
+
+- Implement oauth2 social login and advanced model fields
+  ([`5c5baec`](https://github.com/Peppe37/p8s/commit/5c5baecbafc0268767ca3ae23e78ebc5910319ca))
+
+- Add admin enhancements, CLI system checks, command discovery and multi-db support
+  ([`0bc8da6`](https://github.com/Peppe37/p8s/commit/0bc8da6562037d6c0b7a03fa0c11172720c26bf4))
+
+- Implement core framework features including CSRF, MFA, i18n, and sessions
+  ([`deecbaa`](https://github.com/Peppe37/p8s/commit/deecbaa4fe94ca0ac0d9dcc12a1375bf7aa1be1d))
+
+- Add seed/types commands, tailwind v4 template, and setup_context utility
+  ([`842757f`](https://github.com/Peppe37/p8s/commit/842757f2b9ee0ec9716e4c064825f7ce06eca3dc))
+
+
 ## v1.2.0 (2026-01-12)
 
 ### Bug Fixes
