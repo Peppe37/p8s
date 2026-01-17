@@ -17,9 +17,10 @@ Example:
 """
 
 import json
+from collections.abc import Sequence
 from datetime import date, datetime
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 from uuid import UUID
 
 
@@ -111,11 +112,13 @@ async def dump_all_models(
         result = await session.execute(query)
         items = result.scalars().all()
 
-        all_data.append({
-            "model": model_class.__name__,
-            "count": len(items),
-            "items": [serialize_model(item) for item in items],
-        })
+        all_data.append(
+            {
+                "model": model_class.__name__,
+                "count": len(items),
+                "items": [serialize_model(item) for item in items],
+            }
+        )
 
     return json.dumps(all_data, cls=JSONEncoder, indent=indent)
 

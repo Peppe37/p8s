@@ -15,7 +15,7 @@ import re
 import unicodedata
 from typing import Any
 
-from sqlalchemy import String, Column
+from sqlalchemy import Column, String
 from sqlmodel import Field
 
 
@@ -49,11 +49,13 @@ def SlugField(
         ```
     """
     json_schema_extra = kwargs.pop("json_schema_extra", {})
-    json_schema_extra.update({
-        "x-slug": True,
-        "x-populate-from": populate_from,
-        "x-allow-unicode": allow_unicode,
-    })
+    json_schema_extra.update(
+        {
+            "x-slug": True,
+            "x-populate-from": populate_from,
+            "x-allow-unicode": allow_unicode,
+        }
+    )
 
     return Field(
         default="",

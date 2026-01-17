@@ -26,12 +26,12 @@ Example:
     ```
 """
 
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from fastapi import Request
 from fastapi.responses import HTMLResponse
-
 
 # Template configuration
 _template_dir: Path | None = None
@@ -88,9 +88,7 @@ def get_environment():
         RuntimeError: If not configured
     """
     if _jinja_env is None:
-        raise RuntimeError(
-            "Template engine not configured. Call configure() first."
-        )
+        raise RuntimeError("Template engine not configured. Call configure() first.")
     return _jinja_env
 
 
@@ -208,15 +206,19 @@ def render_string(
 # Built-in context processors
 def static_url_processor(request: Request) -> dict[str, Any]:
     """Add static URL helper to context."""
+
     def static(path: str) -> str:
         return f"/static/{path}"
+
     return {"static": static}
 
 
 def url_for_processor(request: Request) -> dict[str, Any]:
     """Add url_for helper to context."""
+
     def url_for(name: str, **kwargs: Any) -> str:
         return request.app.url_path_for(name, **kwargs)
+
     return {"url_for": url_for}
 
 

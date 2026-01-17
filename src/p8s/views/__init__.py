@@ -43,7 +43,7 @@ if TYPE_CHECKING:
 T = TypeVar("T", bound="SQLModel")
 
 
-class View(ABC):
+class View:
     """
     Base class for all views.
 
@@ -67,8 +67,7 @@ class View(ABC):
 
         if handler is None:
             raise HTTPException(
-                status_code=405,
-                detail=f"Method {request.method} not allowed"
+                status_code=405, detail=f"Method {request.method} not allowed"
             )
 
         return await handler(request, **kwargs)

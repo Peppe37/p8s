@@ -44,11 +44,13 @@ def TagField(
         ```
     """
     json_schema_extra = kwargs.pop("json_schema_extra", {})
-    json_schema_extra.update({
-        "x-tags": True,
-        "x-max-tags": max_tags,
-        "x-separator": separator,
-    })
+    json_schema_extra.update(
+        {
+            "x-tags": True,
+            "x-max-tags": max_tags,
+            "x-separator": separator,
+        }
+    )
 
     return Field(
         default=[],

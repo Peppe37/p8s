@@ -7,16 +7,17 @@ from __future__ import annotations
 import asyncio
 import functools
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import Any, Callable, TypeVar
+from typing import Any, TypeVar
 
 logger = logging.getLogger(__name__)
 
 F = TypeVar("F", bound=Callable[..., Any])
 
 # Module-level task registry
-_task_registry: dict[str, "TaskDefinition"] = {}
+_task_registry: dict[str, TaskDefinition] = {}
 
 
 @dataclass
@@ -100,12 +101,12 @@ class TaskDefinition:
         return task_id
 
     @classmethod
-    def get(cls, name: str) -> "TaskDefinition | None":
+    def get(cls, name: str) -> TaskDefinition | None:
         """Get a registered task by name."""
         return _task_registry.get(name)
 
     @classmethod
-    def all(cls) -> dict[str, "TaskDefinition"]:
+    def all(cls) -> dict[str, TaskDefinition]:
         """Get all registered tasks."""
         return _task_registry.copy()
 

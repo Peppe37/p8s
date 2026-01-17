@@ -34,6 +34,7 @@ from sqlmodel import Field, SQLModel
 
 class ActionFlag(IntEnum):
     """Action type flags."""
+
     ADDITION = 1
     CHANGE = 2
     DELETION = 3
@@ -94,6 +95,7 @@ def create_change_message(changes: dict[str, dict[str, Any]]) -> str:
         JSON string of changes
     """
     import json
+
     return json.dumps(changes, default=str)
 
 
@@ -108,6 +110,7 @@ def parse_change_message(message: str) -> dict[str, dict[str, Any]]:
         Dict of changes
     """
     import json
+
     try:
         return json.loads(message)
     except json.JSONDecodeError:

@@ -21,15 +21,15 @@ Example:
     ```
 """
 
+from p8s.auth.social.models import SocialAccount
 from p8s.auth.social.providers import (
-    OAuth2Provider,
-    GoogleProvider,
     GitHubProvider,
+    GoogleProvider,
     MicrosoftProvider,
+    OAuth2Provider,
     get_provider,
     register_provider,
 )
-from p8s.auth.social.models import SocialAccount
 from p8s.auth.social.router import router as oauth_router
 
 __all__ = [

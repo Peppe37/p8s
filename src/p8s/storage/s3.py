@@ -31,7 +31,7 @@ class S3Storage(Storage):
             secret_key="...",
             region_name="us-east-1",
         )
-        
+
         path = storage.save("uploads/photo.jpg", file_content)
         url = storage.url(path)  # "https://my-bucket.s3.amazonaws.com/uploads/photo.jpg"
         ```
@@ -70,7 +70,7 @@ class S3Storage(Storage):
         self.default_acl = default_acl
         self.querystring_auth = querystring_auth
         self.querystring_expire = querystring_expire
-        
+
         self._client = None
         self._access_key = access_key
         self._secret_key = secret_key
@@ -85,21 +85,21 @@ class S3Storage(Storage):
                     "boto3 is required for S3Storage. "
                     "Install it with: pip install boto3"
                 )
-            
+
             kwargs = {
                 "service_name": "s3",
                 "region_name": self.region_name,
             }
-            
+
             if self._access_key and self._secret_key:
                 kwargs["aws_access_key_id"] = self._access_key
                 kwargs["aws_secret_access_key"] = self._secret_key
-            
+
             if self.endpoint_url:
                 kwargs["endpoint_url"] = self.endpoint_url
-            
+
             self._client = boto3.client(**kwargs)
-        
+
         return self._client
 
     def save(self, name: str, content: BinaryIO, **kwargs: Any) -> str:
@@ -115,27 +115,27 @@ class S3Storage(Storage):
             The S3 key where the file was saved.
         """
         client = self._get_client()
-        
+
         extra_args = {
             "ACL": kwargs.get("acl", self.default_acl),
         }
-        
+
         if "content_type" in kwargs:
             extra_args["ContentType"] = kwargs["content_type"]
-        
+
         client.upload_fileobj(
             content,
             self.bucket_name,
             name,
             ExtraArgs=extra_args,
         )
-        
+
         return name
 
     def delete(self, name: str) -> bool:
         """Delete a file from S3."""
         client = self._get_client()
-        
+
         try:
             client.delete_object(Bucket=self.bucket_name, Key=name)
             return True
@@ -145,7 +145,7 @@ class S3Storage(Storage):
     def exists(self, name: str) -> bool:
         """Check if a file exists in S3."""
         client = self._get_client()
-        
+
         try:
             client.head_object(Bucket=self.bucket_name, Key=name)
             return True
@@ -161,7 +161,7 @@ class S3Storage(Storage):
         """
         if self.custom_domain:
             return f"https://{self.custom_domain}/{name}"
-        
+
         if self.querystring_auth:
             client = self._get_client()
             return client.generate_presigned_url(
@@ -169,16 +169,16 @@ class S3Storage(Storage):
                 Params={"Bucket": self.bucket_name, "Key": name},
                 ExpiresIn=self.querystring_expire,
             )
-        
+
         if self.endpoint_url:
             return f"{self.endpoint_url}/{self.bucket_name}/{name}"
-        
+
         return f"https://{self.bucket_name}.s3.{self.region_name}.amazonaws.com/{name}"
 
     def size(self, name: str) -> int:
         """Get file size in bytes."""
         client = self._get_client()
-        
+
         response = client.head_object(Bucket=self.bucket_name, Key=name)
         return response["ContentLength"]
 
@@ -195,7 +195,7 @@ class GCSStorage(Storage):
             bucket_name="my-bucket",
             project_id="my-project",
         )
-        
+
         path = storage.save("uploads/photo.jpg", file_content)
         url = storage.url(path)
         ```
@@ -224,7 +224,7 @@ class GCSStorage(Storage):
         self.credentials_file = credentials_file
         self.custom_domain = custom_domain
         self.default_acl = default_acl
-        
+
         self._client = None
         self._bucket = None
 
@@ -238,7 +238,7 @@ class GCSStorage(Storage):
                     "google-cloud-storage is required for GCSStorage. "
                     "Install it with: pip install google-cloud-storage"
                 )
-            
+
             if self.credentials_file:
                 self._client = gcs.Client.from_service_account_json(
                     self.credentials_file,
@@ -246,31 +246,31 @@ class GCSStorage(Storage):
                 )
             else:
                 self._client = gcs.Client(project=self.project_id)
-            
+
             self._bucket = self._client.bucket(self.bucket_name)
-        
+
         return self._bucket
 
     def save(self, name: str, content: BinaryIO, **kwargs: Any) -> str:
         """Upload a file to GCS."""
         bucket = self._get_bucket()
         blob = bucket.blob(name)
-        
+
         if "content_type" in kwargs:
             blob.content_type = kwargs["content_type"]
-        
+
         blob.upload_from_file(content)
-        
+
         if self.default_acl:
             blob.acl.save_predefined(self.default_acl)
-        
+
         return name
 
     def delete(self, name: str) -> bool:
         """Delete a file from GCS."""
         bucket = self._get_bucket()
         blob = bucket.blob(name)
-        
+
         try:
             blob.delete()
             return True
@@ -287,7 +287,7 @@ class GCSStorage(Storage):
         """Get the URL for a file."""
         if self.custom_domain:
             return f"https://{self.custom_domain}/{name}"
-        
+
         return f"https://storage.googleapis.com/{self.bucket_name}/{name}"
 
     def size(self, name: str) -> int:

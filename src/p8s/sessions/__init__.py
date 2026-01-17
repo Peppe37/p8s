@@ -155,9 +155,7 @@ class RedisSessionBackend(SessionBackend):
             try:
                 import redis.asyncio as redis
             except ImportError:
-                raise ImportError(
-                    "redis is required. Install with: pip install redis"
-                )
+                raise ImportError("redis is required. Install with: pip install redis")
             self._redis = redis.from_url(self.url)
         return self._redis
 
@@ -340,9 +338,7 @@ def get_session(request: Request) -> Session:
         RuntimeError: If SessionMiddleware not installed
     """
     if not hasattr(request.state, "session"):
-        raise RuntimeError(
-            "Session not available. Add SessionMiddleware to the app."
-        )
+        raise RuntimeError("Session not available. Add SessionMiddleware to the app.")
     return request.state.session
 
 

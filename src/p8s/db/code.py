@@ -13,7 +13,7 @@ Example:
 
 from typing import Any
 
-from sqlalchemy import Text, Column
+from sqlalchemy import Column, Text
 from sqlmodel import Field
 
 
@@ -46,12 +46,14 @@ def CodeField(
         ```
     """
     json_schema_extra = kwargs.pop("json_schema_extra", {})
-    json_schema_extra.update({
-        "x-code": True,
-        "x-language": language,
-        "x-theme": theme,
-        "x-line-numbers": line_numbers,
-    })
+    json_schema_extra.update(
+        {
+            "x-code": True,
+            "x-language": language,
+            "x-theme": theme,
+            "x-line-numbers": line_numbers,
+        }
+    )
 
     return Field(
         default="",

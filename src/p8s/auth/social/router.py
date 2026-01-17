@@ -16,7 +16,7 @@ from p8s.core.settings import get_settings
 from p8s.db.session import get_session
 
 from .models import SocialAccount
-from .providers import get_provider, OAuth2UserInfo
+from .providers import OAuth2UserInfo, get_provider
 
 router = APIRouter(prefix="/auth/social", tags=["social-auth"])
 
@@ -27,6 +27,7 @@ _oauth_states: dict[str, dict[str, Any]] = {}
 
 class TokenResponse(BaseModel):
     """OAuth login response with tokens."""
+
     access_token: str
     refresh_token: str
     token_type: str = "Bearer"
@@ -68,7 +69,9 @@ async def oauth_login(
 
     # Build callback URI
     settings = get_settings()
-    callback_uri = redirect_uri or f"{settings.base_url}/auth/social/callback/{provider}"
+    callback_uri = (
+        redirect_uri or f"{settings.base_url}/auth/social/callback/{provider}"
+    )
 
     auth_url = oauth_provider.get_authorization_url(
         redirect_uri=callback_uri,
@@ -178,6 +181,7 @@ async def _get_or_create_user(
         # Update social account data
         social_account.extra_data = user_info.raw_data
         from datetime import datetime, timezone
+
         social_account.last_login = datetime.now(timezone.utc)
         session.add(social_account)
 
@@ -209,7 +213,9 @@ async def _get_or_create_user(
         username=user_info.email.split("@")[0] if user_info.email else None,
         first_name=user_info.first_name,
         last_name=user_info.last_name,
-        password_hash=secrets.token_hex(32),  # Random password (can't login with password)
+        password_hash=secrets.token_hex(
+            32
+        ),  # Random password (can't login with password)
         is_active=True,
     )
     session.add(user)
@@ -236,4 +242,5 @@ async def list_providers() -> list[str]:
         List of configured provider names
     """
     from .providers import get_all_providers
+
     return list(get_all_providers().keys())

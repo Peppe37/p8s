@@ -21,8 +21,9 @@ Example:
 
 import csv
 import io
+from collections.abc import Sequence
 from datetime import date, datetime
-from typing import Any, Sequence
+from typing import Any
 from uuid import UUID
 
 

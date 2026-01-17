@@ -102,7 +102,6 @@ def admin_action(
     return decorator
 
 
-
 def register_action(
     model_name: str,
     action_name: str,

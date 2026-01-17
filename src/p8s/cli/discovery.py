@@ -62,11 +62,13 @@ def discover_commands(
                 continue
 
             module_name = py_file.stem
-            discovered.append({
-                "name": module_name,
-                "path": str(py_file),
-                "module": f"commands.{module_name}",
-            })
+            discovered.append(
+                {
+                    "name": module_name,
+                    "path": str(py_file),
+                    "module": f"commands.{module_name}",
+                }
+            )
 
     return discovered
 
@@ -151,9 +153,11 @@ def register_command(
 
     # Create CLI function
     if asyncio.iscoroutinefunction(instance.handle):
+
         def command_func(**kwargs):
             asyncio.run(instance.handle(**kwargs))
     else:
+
         def command_func(**kwargs):
             instance.handle(**kwargs)
 
@@ -201,6 +205,7 @@ def load_commands(
                 loaded += 1
         except Exception as e:
             import logging
+
             logging.warning(f"Failed to load command {cmd_info['name']}: {e}")
 
     return loaded

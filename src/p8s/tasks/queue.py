@@ -230,9 +230,7 @@ class RedisQueue(TaskQueueBackend):
                 settings = RedisSettings.from_dsn(self._redis_url)
                 self._pool = await create_pool(settings)
             except ImportError:
-                raise ImportError(
-                    "Redis queue requires 'arq' package: pip install arq"
-                )
+                raise ImportError("Redis queue requires 'arq' package: pip install arq")
         return self._pool
 
     async def enqueue(
