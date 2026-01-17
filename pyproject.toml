@@ -178,6 +178,10 @@ warn_unused_ignores = true
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+filterwarnings = [
+    # Ignore benign SQLAlchemy warning about duplicate model class names in tests
+    "ignore:This declarative base already contains a class:sqlalchemy.exc.SAWarning",
+]
 
 # =============================================================================
 # Semantic Release Configuration
