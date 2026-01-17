@@ -6,6 +6,7 @@
 
 import React, { useState, useEffect } from 'react';
 import type { FormField, FieldMeta } from '../../types/admin';
+import { RichTextEditor, ColorPickerField, TagsInput, CodeEditor } from './fields';
 
 interface DynamicFormProps {
     fields: FormField[];
@@ -281,6 +282,43 @@ export function DynamicForm({
                     </div>
                 );
 
+            case 'richtext':
+                return (
+                    <RichTextEditor
+                        value={value as string | object}
+                        onChange={(v) => handleChange(field.name, v)}
+                        disabled={loading || submitting}
+                    />
+                );
+
+            case 'color':
+                return (
+                    <ColorPickerField
+                        value={String(value ?? '#3b82f6')}
+                        onChange={(v) => handleChange(field.name, v)}
+                        disabled={loading || submitting}
+                    />
+                );
+
+            case 'tags':
+                return (
+                    <TagsInput
+                        value={Array.isArray(value) ? value : []}
+                        onChange={(v) => handleChange(field.name, v)}
+                        disabled={loading || submitting}
+                    />
+                );
+
+            case 'code':
+                return (
+                    <CodeEditor
+                        value={String(value ?? '')}
+                        onChange={(v) => handleChange(field.name, v)}
+                        language={field.language}
+                        disabled={loading || submitting}
+                    />
+                );
+
             default:
                 return (
                     <input
@@ -423,6 +461,18 @@ export function fieldMetaToFormField(
                 options: meta.choices,
                 relation: meta.relation
             };
+
+        case 'richtext':
+            return { ...baseField, type: 'richtext' as const };
+
+        case 'color':
+            return { ...baseField, type: 'color' as const };
+
+        case 'tags':
+            return { ...baseField, type: 'tags' as const };
+
+        case 'code':
+            return { ...baseField, type: 'code' as const, language: meta.language };
 
         default:
             if (meta.choices) {
