@@ -223,15 +223,45 @@ def get_model_metadata(model: type[SQLModel]) -> dict[str, Any]:
             "label": field_info.title,  # Extracted from verbose_name
         }
 
-        # Check for AI field metadata
-        if field_info.json_schema_extra:
+        # Check for AI field metadata and custom field types
+        # Support multiple locations where SQLModel/Pydantic might store schema_extra
+        extra = None
+        if hasattr(field_info, "json_schema_extra") and field_info.json_schema_extra:
             extra = field_info.json_schema_extra
-            if isinstance(extra, dict):
-                if extra.get("x-p8s-ai-field"):
-                    field_data["ai_field"] = True
-                    field_data["ai_prompt"] = extra.get("x-p8s-ai-prompt")
-                if extra.get("x-p8s-vector-field"):
-                    field_data["vector_field"] = True
+        elif hasattr(field_info, "metadata"):
+            # Check in metadata for schema_extra dict
+            for meta in field_info.metadata:
+                if isinstance(meta, dict):
+                    extra = meta
+                    break
+
+        # SQLModel 0.0.31+ stores schema_extra keys directly in _attributes_set
+        if not extra and hasattr(field_info, "_attributes_set"):
+            attrs = field_info._attributes_set
+            if isinstance(attrs, dict):
+                extra = attrs
+
+        if extra and isinstance(extra, dict):
+            # AI fields
+            if extra.get("x-p8s-ai-field"):
+                field_data["ai_field"] = True
+                field_data["ai_prompt"] = extra.get("x-p8s-ai-prompt")
+            if extra.get("x-p8s-vector-field"):
+                field_data["vector_field"] = True
+
+            # Custom field types
+            if extra.get("x-richtext"):
+                field_data["type"] = "richtext"
+            elif extra.get("x-color"):
+                field_data["type"] = "color"
+            elif extra.get("x-tags"):
+                field_data["type"] = "tags"
+            elif extra.get("x-code"):
+                field_data["type"] = "code"
+                field_data["language"] = extra.get("x-language")
+            elif extra.get("x-slug"):
+                field_data["type"] = "slug"
+                field_data["populate_from"] = extra.get("x-populate-from")
 
         fields[field_name] = field_data
 
