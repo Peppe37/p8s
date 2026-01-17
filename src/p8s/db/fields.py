@@ -175,6 +175,43 @@ def URLField(**kwargs: Any) -> Any:
     return SQLModelField(sa_column=Column(String(2048)), **kwargs)
 
 
+def ColorField(
+    format: str = "hex",
+    default: str = "#000000",
+    **kwargs: Any,
+) -> Any:
+    """
+    Color field for storing color values.
+
+    Renders as color picker in admin UI.
+
+    Args:
+        format: Color format ("hex", "rgb", "hsl")
+        default: Default color value
+        **kwargs: Additional Field arguments
+
+    Example:
+        ```python
+        class Theme(Model, table=True):
+            primary_color: str = ColorField(default="#3B82F6")
+            background: str = ColorField(format="rgb")
+        ```
+    """
+    kwargs = _process_args(kwargs)
+    json_schema_extra = kwargs.pop("json_schema_extra", {})
+    json_schema_extra.update({
+        "x-color": True,
+        "x-format": format,
+    })
+
+    return SQLModelField(
+        default=default,
+        sa_column=Column(String(25)),
+        json_schema_extra=json_schema_extra,
+        **kwargs,
+    )
+
+
 # Relationships
 
 
