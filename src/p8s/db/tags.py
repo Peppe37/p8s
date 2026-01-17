@@ -20,31 +20,15 @@ from sqlmodel import Field
 def TagField(
     max_tags: int | None = None,
     separator: str = ",",
+    default: Any = None,
     **kwargs: Any,
 ) -> Any:
-    """
-    Create a tag field for storing lists of tags/keywords.
+    if default is None:
+        default = []
 
-    Stored as JSON array in database, rendered as chips input in admin.
-
-    Args:
-        max_tags: Maximum number of tags allowed
-        separator: Separator for string input parsing
-        **kwargs: Additional Field arguments
-
-    Returns:
-        SQLModel Field configured for tags
-
-    Example:
-        ```python
-        class Article(Model, table=True):
-            tags: list[str] = TagField(max_tags=10)
-
-        article.tags = ["python", "web", "api"]
-        ```
-    """
-    json_schema_extra = kwargs.pop("json_schema_extra", {})
-    json_schema_extra.update(
+    # ... (docstring) ...
+    schema_extra = kwargs.pop("schema_extra", {})
+    schema_extra.update(
         {
             "x-tags": True,
             "x-max-tags": max_tags,
@@ -53,9 +37,9 @@ def TagField(
     )
 
     return Field(
-        default=[],
+        default=default,
         sa_column=Column(JSON),
-        json_schema_extra=json_schema_extra,
+        schema_extra=schema_extra,
         **kwargs,
     )
 

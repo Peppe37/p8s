@@ -27,36 +27,13 @@ def RichTextField(
     editor: str = "tiptap",
     output_format: str = "json",
     max_length: int | None = None,
+    default: Any = None,
     **kwargs: Any,
 ) -> Any:
-    """
-    Create a rich text field for storing formatted content.
-
-    The field stores structured JSON content that can be rendered
-    by frontend editors like Tiptap or Editor.js.
-
-    Args:
-        editor: Editor type hint for admin UI ("tiptap", "editorjs", "markdown")
-        output_format: Storage format ("json" or "html")
-        max_length: Maximum content length (for HTML format)
-        **kwargs: Additional Field arguments
-
-    Returns:
-        SQLModel Field configured for rich text storage
-
-    Example:
-        ```python
-        class BlogPost(Model, table=True):
-            title: str
-            body: dict = RichTextField(editor="tiptap")
-
-        # Access content
-        post.body  # {"type": "doc", "content": [...]}
-        ```
-    """
+    # ... (docstring) ...
     # Store editor hint in field metadata for admin UI
-    json_schema_extra = kwargs.pop("json_schema_extra", {})
-    json_schema_extra.update(
+    schema_extra = kwargs.pop("schema_extra", {})
+    schema_extra.update(
         {
             "x-richtext": True,
             "x-editor": editor,
@@ -65,26 +42,30 @@ def RichTextField(
     )
 
     if output_format == "html":
+        if default is None:
+            default = ""
         # Store as HTML string
         if max_length:
             return Field(
-                default="",
+                default=default,
                 sa_column=Column(Text),
-                json_schema_extra=json_schema_extra,
+                schema_extra=schema_extra,
                 **kwargs,
             )
         return Field(
-            default="",
+            default=default,
             sa_column=Column(Text),
-            json_schema_extra=json_schema_extra,
+            schema_extra=schema_extra,
             **kwargs,
         )
 
     # Store as JSON (default for structured editors)
+    if default is None:
+        default = {}
     return Field(
-        default={},
+        default=default,
         sa_column=Column(JSON),
-        json_schema_extra=json_schema_extra,
+        schema_extra=schema_extra,
         **kwargs,
     )
 

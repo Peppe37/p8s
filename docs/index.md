@@ -1,5 +1,9 @@
 # p8s
 
+<p align="center">
+  <img src="assets/logo.svg" alt="P8s Logo" width="200" height="200" />
+</p>
+
 **Forge AI-native, full-stack applications with the fire of the gods.**
 
 p8s is a high-performance, async-first Python framework built on top of **FastAPI**, **SQLModel**, and **React**. It brings the "batteries-included" experience of Django to the modern async ecosystem.

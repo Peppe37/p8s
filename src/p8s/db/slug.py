@@ -24,6 +24,7 @@ def SlugField(
     unique: bool = True,
     max_length: int = 255,
     allow_unicode: bool = False,
+    default: Any = "",
     **kwargs: Any,
 ) -> Any:
     """
@@ -48,7 +49,7 @@ def SlugField(
         # Auto-generates: "hello-world" from "Hello World!"
         ```
     """
-    json_schema_extra = kwargs.pop("json_schema_extra", {})
+    json_schema_extra = kwargs.pop("schema_extra", {})
     json_schema_extra.update(
         {
             "x-slug": True,
@@ -58,9 +59,9 @@ def SlugField(
     )
 
     return Field(
-        default="",
+        default=default,
         sa_column=Column(String(max_length), unique=unique, index=True),
-        json_schema_extra=json_schema_extra,
+        schema_extra=json_schema_extra,
         **kwargs,
     )
 

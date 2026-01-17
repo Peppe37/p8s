@@ -198,8 +198,8 @@ def ColorField(
         ```
     """
     kwargs = _process_args(kwargs)
-    json_schema_extra = kwargs.pop("json_schema_extra", {})
-    json_schema_extra.update(
+    schema_extra = kwargs.pop("schema_extra", {})
+    schema_extra.update(
         {
             "x-color": True,
             "x-format": format,
@@ -209,7 +209,7 @@ def ColorField(
     return SQLModelField(
         default=default,
         sa_column=Column(String(25)),
-        json_schema_extra=json_schema_extra,
+        schema_extra=schema_extra,
         **kwargs,
     )
 
