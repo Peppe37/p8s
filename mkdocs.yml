@@ -80,6 +80,13 @@ nav:
     - Templates: templates.md
     - Sessions: sessions.md
     - Architecture: RnD/architecture.md
+  - How-To Guides:
+    - Create New Project: howto/create-project.md
+    - Create New App: howto/create-app.md
+    - Social Login: howto/social-login.md
+    - Custom Commands: howto/custom-commands.md
+    - Background Tasks: howto/background-tasks.md
+    - Admin Customization: howto/admin-customization.md
 
 
 markdown_extensions:
