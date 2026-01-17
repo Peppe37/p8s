@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v1.4.1 (2026-01-17)
+
+### Bug Fixes
+
+- Linting
+  ([`10f9d28`](https://github.com/Peppe37/p8s/commit/10f9d2826c9deb12543a6870bb524882cebfb866))
+
+
 ## v1.4.0 (2026-01-17)
 
 ### Chores
