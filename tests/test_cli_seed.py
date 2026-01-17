@@ -16,9 +16,11 @@ async def test_setup_context():
     """Test functionality of setup_context utility."""
     mock_settings = Settings(database=DatabaseSettings(url="sqlite:///:memory:"))
 
-    with patch("p8s.core.context.get_settings", return_value=mock_settings), patch(
-        "p8s.core.context.init_db"
-    ) as mock_init, patch("p8s.core.context.close_db") as mock_close:
+    with (
+        patch("p8s.core.context.get_settings", return_value=mock_settings),
+        patch("p8s.core.context.init_db") as mock_init,
+        patch("p8s.core.context.close_db") as mock_close,
+    ):
         async with setup_context():
             pass
 
@@ -38,9 +40,10 @@ def test_seed_command_script_not_found():
 def test_seed_command_success():
     """Test seed command runs script successfully."""
     # Mock existence to True
-    with patch("pathlib.Path.exists", return_value=True), patch(
-        "runpy.run_path"
-    ) as mock_run:
+    with (
+        patch("pathlib.Path.exists", return_value=True),
+        patch("runpy.run_path") as mock_run,
+    ):
         # Invoke command
         result = runner.invoke(app, ["seed", "--script", "seed.py"])
 
