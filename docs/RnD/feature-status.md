@@ -41,17 +41,20 @@ Current implementation status of P8s features as of January 2026.
 
 ## Roadmap v2 Status
 
-| Feature             | Priority | Status        |
-| ------------------- | -------- | ------------- |
-| Background Tasks    | P0       | ✅ Complete    |
-| Cache Improvements  | P0       | ✅ Complete    |
-| Admin Inlines       | P0       | 🟠 Partial     |
-| Custom Commands     | P1       | ✅ Complete    |
-| File/Media Fields   | P1       | 🟠 Partial     |
-| Security Middleware | P1       | ✅ Complete    |
-| i18n/l10n           | P2       | ❌ Not Started |
-| WebSocket Support   | P2       | ❌ Not Started |
-| Multi-Database      | P2       | ❌ Not Started |
+| Feature             | Priority | Status     | Tests |
+| ------------------- | -------- | ---------- | ----- |
+| Background Tasks    | P0       | ✅ Complete | 16    |
+| Cache Improvements  | P0       | ✅ Complete | 20    |
+| Admin Inlines       | P0       | ✅ Complete | 15    |
+| Custom Commands     | P1       | ✅ Complete | 9     |
+| File/Media Fields   | P1       | ✅ Complete | 16    |
+| Security Middleware | P1       | ✅ Complete | 18    |
+| i18n/l10n           | P2       | ✅ Complete | 22    |
+| WebSocket Support   | P2       | ✅ Complete | 15    |
+| Multi-Database      | P2       | ✅ Complete | 21    |
+| Class-Based Views   | P3       | ✅ Complete | 15    |
+| Template Engine     | P3       | ✅ Complete | 12    |
+| Session Backend     | P3       | ✅ Complete | 19    |
 
 ## Running Tests
 
@@ -65,4 +68,4 @@ pytest tests/test_cache.py -v
 pytest tests/test_admin.py -v
 ```
 
-Last verified: 222 tests passing (January 14, 2026)
+Last verified: 372 tests passing (January 16, 2026)

@@ -13,7 +13,7 @@ import logging
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 
@@ -53,7 +53,7 @@ class QueuedTask:
     args: tuple[Any, ...]
     kwargs: dict[str, Any]
     defer_until: datetime | None = None
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     options: Any = None
 
 
@@ -142,7 +142,7 @@ class InMemoryQueue(TaskQueueBackend):
         async def execute() -> None:
             # Wait if deferred
             if defer_until:
-                delay = (defer_until - datetime.utcnow()).total_seconds()
+                delay = (defer_until - datetime.now(timezone.utc)).total_seconds()
                 if delay > 0:
                     await asyncio.sleep(delay)
 
@@ -150,7 +150,7 @@ class InMemoryQueue(TaskQueueBackend):
             self._results[task_id] = TaskResult(
                 task_id=task_id,
                 status=TaskStatus.RUNNING,
-                started_at=datetime.utcnow(),
+                started_at=datetime.now(timezone.utc),
             )
 
             try:
@@ -160,7 +160,7 @@ class InMemoryQueue(TaskQueueBackend):
                     status=TaskStatus.COMPLETED,
                     result=result,
                     started_at=self._results[task_id].started_at,
-                    completed_at=datetime.utcnow(),
+                    completed_at=datetime.now(timezone.utc),
                 )
                 logger.info(f"Task {task_name} ({task_id}) completed successfully")
             except Exception as e:
@@ -170,7 +170,7 @@ class InMemoryQueue(TaskQueueBackend):
                     status=TaskStatus.FAILED,
                     error=str(e),
                     started_at=self._results[task_id].started_at,
-                    completed_at=datetime.utcnow(),
+                    completed_at=datetime.now(timezone.utc),
                 )
             finally:
                 self._running_tasks.discard(task_id)

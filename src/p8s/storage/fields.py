@@ -284,3 +284,183 @@ def get_image_dimensions(content: bytes | BytesIO) -> tuple[int, int] | None:
         return None
     except Exception:
         return None
+
+
+def resize_image(
+    content: bytes | BytesIO,
+    max_width: int | None = None,
+    max_height: int | None = None,
+    max_size: tuple[int, int] | None = None,
+    quality: int = 85,
+    format: str | None = None,
+) -> BytesIO:
+    """
+    Resize an image to fit within maximum dimensions.
+
+    The image is resized proportionally to fit within the specified
+    maximum dimensions while maintaining aspect ratio.
+
+    Example:
+        ```python
+        from p8s.storage.fields import resize_image
+
+        with open("large_photo.jpg", "rb") as f:
+            resized = resize_image(f.read(), max_size=(800, 600))
+        ```
+
+    Args:
+        content: Image content as bytes or BytesIO
+        max_width: Maximum width in pixels
+        max_height: Maximum height in pixels
+        max_size: Tuple of (max_width, max_height) - alternative to separate params
+        quality: JPEG quality (1-100), default 85
+        format: Output format ('JPEG', 'PNG', etc). Auto-detected if None.
+
+    Returns:
+        BytesIO with resized image content
+
+    Raises:
+        ImportError: If Pillow is not installed
+        ValueError: If image cannot be processed
+    """
+    try:
+        from PIL import Image
+    except ImportError:
+        raise ImportError("Pillow is required for image resize. Install with: pip install Pillow")
+
+    if isinstance(content, bytes):
+        content = BytesIO(content)
+
+    content.seek(0)
+
+    try:
+        with Image.open(content) as img:
+            original_format = img.format or "JPEG"
+            output_format = format or original_format
+
+            # Handle max_size tuple
+            if max_size:
+                max_width = max_size[0]
+                max_height = max_size[1]
+
+            # If no max dimensions specified, return original
+            if not max_width and not max_height:
+                content.seek(0)
+                return content
+
+            width, height = img.size
+
+            # Calculate new size maintaining aspect ratio
+            if max_width and max_height:
+                ratio = min(max_width / width, max_height / height)
+            elif max_width:
+                ratio = max_width / width
+            else:
+                ratio = max_height / height
+
+            # Only resize if image is larger than max
+            if ratio < 1:
+                new_width = int(width * ratio)
+                new_height = int(height * ratio)
+                img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+
+            # Convert RGBA to RGB for JPEG
+            if output_format.upper() == "JPEG" and img.mode in ("RGBA", "P"):
+                img = img.convert("RGB")
+
+            output = BytesIO()
+            img.save(output, format=output_format, quality=quality, optimize=True)
+            output.seek(0)
+            return output
+
+    except Exception as e:
+        raise ValueError(f"Failed to resize image: {e}")
+
+
+# MIME type magic bytes signatures
+MIME_SIGNATURES = {
+    # Images
+    b"\xff\xd8\xff": "image/jpeg",
+    b"\x89PNG\r\n\x1a\n": "image/png",
+    b"GIF87a": "image/gif",
+    b"GIF89a": "image/gif",
+    b"RIFF": "image/webp",  # WebP starts with RIFF...WEBP
+    b"<svg": "image/svg+xml",
+    b"<?xml": "image/svg+xml",  # SVG can start with XML declaration
+    # Documents
+    b"%PDF": "application/pdf",
+    b"PK\x03\x04": "application/zip",  # Also docx, xlsx, etc.
+    # Archives
+    b"\x1f\x8b": "application/gzip",
+    b"Rar!": "application/x-rar-compressed",
+}
+
+
+def validate_mime_type(
+    content: bytes | BytesIO,
+    allowed_types: list[str] | None = None,
+) -> str | None:
+    """
+    Detect and validate MIME type from file content.
+
+    Uses magic bytes (file signatures) to detect the actual file type,
+    regardless of file extension. This provides security against
+    disguised file uploads.
+
+    Example:
+        ```python
+        from p8s.storage.fields import validate_mime_type
+
+        with open("upload.jpg", "rb") as f:
+            mime = validate_mime_type(f.read(), allowed_types=["image/jpeg", "image/png"])
+            if mime is None:
+                raise ValueError("Invalid file type")
+        ```
+
+    Args:
+        content: File content as bytes or BytesIO
+        allowed_types: List of allowed MIME types. If None, just detect.
+
+    Returns:
+        Detected MIME type if valid, None if invalid or not allowed
+
+    Raises:
+        ValueError: If file type is not allowed
+    """
+    if isinstance(content, BytesIO):
+        content.seek(0)
+        header = content.read(32)
+        content.seek(0)
+    else:
+        header = content[:32]
+
+    detected_mime = None
+
+    # Check against known signatures
+    for signature, mime_type in MIME_SIGNATURES.items():
+        if header.startswith(signature):
+            detected_mime = mime_type
+            break
+
+    # Special case for WebP (RIFF....WEBP)
+    if header[:4] == b"RIFF" and len(header) >= 12 and header[8:12] == b"WEBP":
+        detected_mime = "image/webp"
+
+    # If no allowed_types specified, just return detected type
+    if allowed_types is None:
+        return detected_mime
+
+    # Validate against allowed types
+    if detected_mime and detected_mime in allowed_types:
+        return detected_mime
+
+    # If detection failed but we have allowed types, raise error
+    if detected_mime:
+        raise ValueError(
+            f"File type '{detected_mime}' not allowed. Allowed: {allowed_types}"
+        )
+    else:
+        raise ValueError(
+            f"Unknown file type. Allowed: {allowed_types}"
+        )
+

@@ -10,9 +10,6 @@ from p8s.tasks import TaskQueue, get_queue, periodic_task, task
 from p8s.tasks.decorators import TaskDefinition, get_periodic_tasks
 from p8s.tasks.queue import InMemoryQueue, TaskStatus
 
-# Enable pytest-asyncio for this module
-pytestmark = pytest.mark.asyncio(loop_scope="function")
-
 
 # ============================================================================
 # Test Decorators

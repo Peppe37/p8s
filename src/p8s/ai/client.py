@@ -133,6 +133,46 @@ class AIClient:
                 "LiteLLM is required for AI features. Install with: pip install p8s[ai]"
             )
 
+    async def chat(
+        self,
+        messages: list[dict[str, str]],
+        *,
+        model: str | None = None,
+        temperature: float = 0.7,
+        max_tokens: int = 1024,
+        **kwargs: Any,
+    ) -> str:
+        """
+        Chat completion using list of messages.
+
+        Args:
+            messages: List of message dicts (role, content).
+            model: Override the default model.
+            temperature: Sampling temperature.
+            max_tokens: Maximum tokens in response.
+            **kwargs: Additional provider-specific arguments.
+
+        Returns:
+            Generated response content.
+        """
+        try:
+            import litellm
+
+            response = await litellm.acompletion(
+                model=self._get_model_name(model),
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                **kwargs,
+            )
+
+            return response.choices[0].message.content
+
+        except ImportError:
+            raise ImportError(
+                "LiteLLM is required for AI features. Install with: pip install p8s[ai]"
+            )
+
     async def generate_structured(
         self,
         prompt: str,

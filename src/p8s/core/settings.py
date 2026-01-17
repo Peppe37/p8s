@@ -15,7 +15,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class DatabaseSettings(BaseSettings):
     """Database configuration."""
 
-    model_config = SettingsConfigDict(env_prefix="P8S_DB_")
+    model_config = SettingsConfigDict(
+        env_prefix="P8S_DB_",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     # Database URL (supports async drivers)
     url: str = Field(
@@ -35,7 +40,12 @@ class DatabaseSettings(BaseSettings):
 class AuthSettings(BaseSettings):
     """Authentication configuration."""
 
-    model_config = SettingsConfigDict(env_prefix="P8S_AUTH_")
+    model_config = SettingsConfigDict(
+        env_prefix="P8S_AUTH_",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     # JWT settings
     secret_key: str = Field(
@@ -67,7 +77,12 @@ class AISettings(BaseSettings):
         - Custom endpoints
     """
 
-    model_config = SettingsConfigDict(env_prefix="P8S_AI_")
+    model_config = SettingsConfigDict(
+        env_prefix="P8S_AI_",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     # =========================================================================
     # Core settings - MUST be enabled to use AI features
@@ -227,7 +242,12 @@ class AISettings(BaseSettings):
 class FrontendSettings(BaseSettings):
     """Frontend (React) configuration."""
 
-    model_config = SettingsConfigDict(env_prefix="P8S_FRONTEND_")
+    model_config = SettingsConfigDict(
+        env_prefix="P8S_FRONTEND_",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     # Paths
     build_dir: str = Field(default="frontend/dist")
@@ -244,7 +264,12 @@ class FrontendSettings(BaseSettings):
 class AdminSettings(BaseSettings):
     """Admin panel configuration."""
 
-    model_config = SettingsConfigDict(env_prefix="P8S_ADMIN_")
+    model_config = SettingsConfigDict(
+        env_prefix="P8S_ADMIN_",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     # Admin panel settings
     enabled: bool = Field(default=True)
