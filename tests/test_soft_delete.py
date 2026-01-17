@@ -17,11 +17,11 @@ class TestDeleteMethod:
     def test_delete_soft_default(self):
         """Test that delete() defaults to soft delete."""
 
-        class TestItem(Model, table=True):
+        class TestSoftDeleteItem(Model, table=True):
             __tablename__ = "test_delete_soft"
             name: str
 
-        item = TestItem(name="test")
+        item = TestSoftDeleteItem(name="test")
 
         assert item.is_deleted is False
         assert item.deleted_at is None

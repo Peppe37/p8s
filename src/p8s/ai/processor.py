@@ -33,7 +33,15 @@ def get_ai_field_metadata(model: type["SQLModel"]) -> dict[str, dict[str, Any]]:
     ai_fields = {}
 
     for field_name, field_info in model.model_fields.items():
-        extra = field_info.json_schema_extra or {}
+        extra = {}
+        if field_info.json_schema_extra and isinstance(
+            field_info.json_schema_extra, dict
+        ):
+            extra.update(field_info.json_schema_extra)
+
+        # Also check extra dict for compatibility
+        if hasattr(field_info, "extra") and isinstance(field_info.extra, dict):
+            extra.update(field_info.extra)
 
         if extra.get("x-p8s-ai-field"):
             ai_fields[field_name] = {
@@ -62,7 +70,14 @@ def get_vector_field_metadata(model: type["SQLModel"]) -> dict[str, dict[str, An
     vector_fields = {}
 
     for field_name, field_info in model.model_fields.items():
-        extra = field_info.json_schema_extra or {}
+        extra = {}
+        if field_info.json_schema_extra and isinstance(
+            field_info.json_schema_extra, dict
+        ):
+            extra.update(field_info.json_schema_extra)
+
+        if hasattr(field_info, "extra") and isinstance(field_info.extra, dict):
+            extra.update(field_info.extra)
 
         if extra.get("x-p8s-vector-field"):
             vector_fields[field_name] = {
