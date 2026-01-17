@@ -2,12 +2,13 @@
 Tests for P8s auth module.
 """
 
-import pytest
-from uuid import UUID
 from datetime import datetime, timedelta
+from uuid import UUID
 
-from p8s.auth.security import create_access_token, verify_password, get_password_hash
+import pytest
+
 from p8s.auth.models import User, UserRole
+from p8s.auth.security import create_access_token, get_password_hash, verify_password
 
 
 class TestPasswordHashing:

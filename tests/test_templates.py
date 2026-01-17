@@ -2,8 +2,9 @@
 Tests for P8s Template Engine (Jinja2 integration).
 """
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 
 class TestTemplateConfigure:
@@ -47,8 +48,8 @@ class TestGetTemplate:
 
     def test_get_template_requires_config(self):
         """Test get_template raises error if not configured."""
-        from p8s.templates import get_template
         import p8s.templates as templates_module
+        from p8s.templates import get_template
 
         # Reset the module state
         templates_module._jinja_env = None
@@ -100,8 +101,8 @@ class TestGetEnvironment:
 
     def test_get_environment_requires_config(self):
         """Test get_environment raises error if not configured."""
-        from p8s.templates import get_environment
         import p8s.templates as templates_module
+        from p8s.templates import get_environment
 
         # Reset the module state
         templates_module._jinja_env = None

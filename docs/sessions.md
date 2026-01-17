@@ -65,16 +65,16 @@ from p8s.sessions import get_session
 @app.get("/profile/")
 async def profile(request: Request):
     session = get_session(request)
-    
+
     # Read
     user_id = session.get("user_id")
-    
+
     # Write
     session["last_visit"] = datetime.now().isoformat()
-    
+
     # Delete
     del session["temp_data"]
-    
+
     # Clear
     session.clear()
 ```
@@ -112,11 +112,11 @@ class DatabaseSessionBackend(SessionBackend):
     async def get(self, session_id):
         # Load from database
         pass
-    
+
     async def set(self, session_id, data, expires):
         # Save to database
         pass
-    
+
     async def delete(self, session_id):
         # Delete from database
         pass

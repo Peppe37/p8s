@@ -214,10 +214,10 @@ class LoginForm(Form):
 async def login(request: Request):
     form_data = await request.form()
     form = LoginForm.from_data(dict(form_data))
-    
+
     if not form.is_valid():
         return {"errors": form.errors.all()}
-    
+
     # Authenticate user
     user = await authenticate(form.data["email"], form.data["password"])
     return {"token": create_token(user)}

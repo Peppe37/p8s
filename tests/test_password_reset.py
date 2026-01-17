@@ -2,9 +2,10 @@
 Tests for P8s Password Reset.
 """
 
-import pytest
 from datetime import datetime, timedelta
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import AsyncMock, MagicMock
+
+import pytest
 
 
 class TestGenerateToken:

@@ -85,7 +85,7 @@ class TestLazy:
 
     def test_lazy_decorator(self):
         """Test lazy decorator."""
-        from p8s.testing.factory import lazy, LazyAttribute
+        from p8s.testing.factory import LazyAttribute, lazy
 
         @lazy
         def gen_name(_):

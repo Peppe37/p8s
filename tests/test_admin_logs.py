@@ -28,7 +28,7 @@ class TestLogEntry:
 
     def test_logentry_properties(self):
         """Test LogEntry action properties."""
-        from p8s.admin.logs import LogEntry, ActionFlag
+        from p8s.admin.logs import ActionFlag, LogEntry
 
         entry = LogEntry(
             content_type="Product",

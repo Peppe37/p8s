@@ -10,7 +10,6 @@ from p8s.tasks import TaskQueue, get_queue, periodic_task, task
 from p8s.tasks.decorators import TaskDefinition, get_periodic_tasks
 from p8s.tasks.queue import InMemoryQueue, TaskStatus
 
-
 # ============================================================================
 # Test Decorators
 # ============================================================================

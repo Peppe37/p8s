@@ -139,16 +139,18 @@ class TestRouterChain:
 
     def test_router_chain_first_wins(self):
         """Test first router response wins."""
-        from p8s.db.routers import RouterChain, ModelRouter, ReadReplicaRouter
+        from p8s.db.routers import ModelRouter, ReadReplicaRouter, RouterChain
 
         class UserModel:
             class Admin:
                 database = "special_db"
 
-        chain = RouterChain([
-            ModelRouter(),
-            ReadReplicaRouter(),
-        ])
+        chain = RouterChain(
+            [
+                ModelRouter(),
+                ReadReplicaRouter(),
+            ]
+        )
 
         # ModelRouter should return "special_db"
         db = chain.db_for_read(UserModel)
@@ -156,15 +158,17 @@ class TestRouterChain:
 
     def test_router_chain_fallback(self):
         """Test fallback when first router returns None."""
-        from p8s.db.routers import RouterChain, ModelRouter, ReadReplicaRouter
+        from p8s.db.routers import ModelRouter, ReadReplicaRouter, RouterChain
 
         class SimpleModel:
             pass
 
-        chain = RouterChain([
-            ModelRouter(),  # Returns None
-            ReadReplicaRouter(),  # Returns "replica"
-        ])
+        chain = RouterChain(
+            [
+                ModelRouter(),  # Returns None
+                ReadReplicaRouter(),  # Returns "replica"
+            ]
+        )
 
         db = chain.db_for_read(SimpleModel)
         assert db == "replica"
@@ -183,10 +187,12 @@ class TestMultiDatabase:
         """Test MultiDatabase initialization."""
         from p8s.db.multi import MultiDatabase
 
-        db = MultiDatabase({
-            "default": "sqlite+aiosqlite:///:memory:",
-            "replica": "sqlite+aiosqlite:///:memory:",
-        })
+        db = MultiDatabase(
+            {
+                "default": "sqlite+aiosqlite:///:memory:",
+                "replica": "sqlite+aiosqlite:///:memory:",
+            }
+        )
 
         assert "default" in db.databases
         assert "replica" in db.databases
@@ -196,9 +202,11 @@ class TestMultiDatabase:
         from p8s.db.multi import MultiDatabase
 
         # SQLite is handled automatically now
-        db = MultiDatabase({
-            "default": "sqlite+aiosqlite:///:memory:",
-        })
+        db = MultiDatabase(
+            {
+                "default": "sqlite+aiosqlite:///:memory:",
+            }
+        )
 
         engine = db.get_engine("default")
         assert engine is not None
@@ -207,9 +215,11 @@ class TestMultiDatabase:
         """Test error on unknown alias."""
         from p8s.db.multi import MultiDatabase
 
-        db = MultiDatabase({
-            "default": "sqlite+aiosqlite:///:memory:",
-        })
+        db = MultiDatabase(
+            {
+                "default": "sqlite+aiosqlite:///:memory:",
+            }
+        )
 
         with pytest.raises(KeyError, match="not configured"):
             db.get_engine("unknown")
@@ -218,9 +228,11 @@ class TestMultiDatabase:
         """Test configure_databases helper."""
         from p8s.db.multi import configure_databases
 
-        db = configure_databases({
-            "default": "sqlite+aiosqlite:///:memory:",
-        })
+        db = configure_databases(
+            {
+                "default": "sqlite+aiosqlite:///:memory:",
+            }
+        )
 
         assert db is not None
 

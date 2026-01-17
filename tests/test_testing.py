@@ -2,8 +2,9 @@
 Tests for P8s testing utilities.
 """
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 class TestRequestFactory:

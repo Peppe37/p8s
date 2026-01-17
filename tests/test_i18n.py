@@ -28,14 +28,14 @@ class TestI18nCore:
 
     def test_get_language_default(self):
         """Test default language is English."""
-        from p8s.i18n import get_language, deactivate
+        from p8s.i18n import deactivate, get_language
 
         deactivate()  # Reset to default
         assert get_language() == "en"
 
     def test_activate_language(self):
         """Test language activation."""
-        from p8s.i18n import activate, get_language, deactivate
+        from p8s.i18n import activate, deactivate, get_language
 
         activate("it")
         assert get_language() == "it"
@@ -48,7 +48,8 @@ class TestI18nCore:
 
     def test_gettext_returns_original(self):
         """Test gettext returns original when no translation available."""
-        from p8s.i18n import gettext as _, activate, deactivate
+        from p8s.i18n import activate, deactivate
+        from p8s.i18n import gettext as _
 
         deactivate()
         message = _("Hello, World!")
@@ -72,7 +73,7 @@ class TestNgettext:
 
     def test_ngettext_singular(self):
         """Test ngettext returns singular for n=1."""
-        from p8s.i18n import ngettext, deactivate
+        from p8s.i18n import deactivate, ngettext
 
         deactivate()
         result = ngettext("1 item", "{n} items", 1)
@@ -80,7 +81,7 @@ class TestNgettext:
 
     def test_ngettext_plural(self):
         """Test ngettext returns plural for n>1."""
-        from p8s.i18n import ngettext, deactivate
+        from p8s.i18n import deactivate, ngettext
 
         deactivate()
         result = ngettext("1 item", "{n} items", 5)
@@ -98,7 +99,7 @@ class TestPgettext:
 
     def test_pgettext_returns_message(self):
         """Test pgettext returns original message when no translation."""
-        from p8s.i18n import pgettext, deactivate
+        from p8s.i18n import deactivate, pgettext
 
         deactivate()
         result = pgettext("month", "May")
@@ -122,7 +123,7 @@ class TestLazyString:
 
     def test_lazy_string_str(self):
         """Test LazyString converts to string."""
-        from p8s.i18n import gettext_lazy, deactivate
+        from p8s.i18n import deactivate, gettext_lazy
 
         deactivate()
         lazy = gettext_lazy("Hello")
@@ -180,8 +181,9 @@ class TestLocaleMiddleware:
 
     def test_get_language_from_request(self):
         """Test get_language_from_request utility."""
-        from p8s.i18n.middleware import get_language_from_request
         from unittest.mock import MagicMock
+
+        from p8s.i18n.middleware import get_language_from_request
 
         request = MagicMock()
         request.state.language = "it"
@@ -190,8 +192,9 @@ class TestLocaleMiddleware:
 
     def test_get_language_from_request_default(self):
         """Test get_language_from_request returns default."""
-        from p8s.i18n.middleware import get_language_from_request
         from unittest.mock import MagicMock
+
+        from p8s.i18n.middleware import get_language_from_request
 
         request = MagicMock(spec=[])
         request.state = MagicMock(spec=[])

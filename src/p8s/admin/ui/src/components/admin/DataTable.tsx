@@ -1,6 +1,6 @@
 /**
  * P8s Admin - Data Table Component
- * 
+ *
  * A reusable table component for displaying model records
  */
 

@@ -2,11 +2,12 @@
 Tests for P8s database module.
 """
 
-import pytest
-from uuid import UUID
 from datetime import datetime
+from uuid import UUID
 
-from p8s.db.base import Model, AdminConfig
+import pytest
+
+from p8s.db.base import AdminConfig, Model
 
 
 class TestModel:

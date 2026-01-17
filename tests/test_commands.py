@@ -2,8 +2,9 @@
 Tests for custom management commands.
 """
 
-import pytest
 from argparse import ArgumentParser
+
+import pytest
 
 
 class TestCommandClass:
@@ -73,7 +74,7 @@ class TestCommandRegistry:
 
     def test_register_command(self):
         """Test registering a command."""
-        from p8s.cli.commands import Command, register_command, get_registered_commands
+        from p8s.cli.commands import Command, get_registered_commands, register_command
 
         @register_command
         class MyTestCommand(Command):

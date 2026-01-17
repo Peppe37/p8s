@@ -185,7 +185,7 @@ def _get_base_styles() -> str:
             font-weight: 700;
             font-size: 1.25rem;
         }}
-        
+
         /* Production page specific */
         .production-error {{
             display: flex;
@@ -346,13 +346,13 @@ def render_debug_error(
                 <img src="/p8s.svg" alt="P8s" onerror="this.style.display='none'">
                 <span>P8s Debug</span>
             </div>
-            
+
             <div class="error-header">
                 <div class="error-code">{status_code}</div>
                 <h1 class="error-title">{html.escape(exc_type)}</h1>
                 <p class="error-message">{html.escape(exc_message)}</p>
             </div>
-            
+
             <div class="error-body">
                 <div class="section">
                     <h3 class="section-title">Traceback (most recent call first)</h3>
@@ -360,26 +360,26 @@ def render_debug_error(
                         {frames_html}
                     </div>
                 </div>
-                
+
                 <div class="section">
                     <h3 class="section-title">Request Information</h3>
                     {request_info}
                 </div>
-                
+
                 {query_html}
-                
+
                 <div class="section">
                     <h3 class="section-title">Headers</h3>
                     {headers_table}
                 </div>
-                
+
                 <div class="section">
                     <h3 class="section-title">Full Traceback</h3>
                     <pre class="code-block">{html.escape("".join(tb_lines))}</pre>
                 </div>
             </div>
         </div>
-        
+
         <div class="footer">
             P8s Framework • Debug Mode
         </div>
@@ -456,7 +456,7 @@ def render_production_error(
             <p class="production-message">{html.escape(message)}</p>
             <a href="/" class="home-link">← Back to Home</a>
         </div>
-        
+
         <div class="footer">
             Powered by P8s Framework
         </div>
@@ -485,13 +485,13 @@ def render_debug_404(request: Request) -> HTMLResponse:
                 <img src="/p8s.svg" alt="P8s" onerror="this.style.display='none'">
                 <span>P8s Debug</span>
             </div>
-            
+
             <div class="error-header">
                 <div class="error-code">404</div>
                 <h1 class="error-title">Page Not Found</h1>
                 <p class="error-message">The path <code>{html.escape(request.url.path)}</code> was not found on this server.</p>
             </div>
-            
+
             <div class="error-body">
                 <div class="section">
                     <h3 class="section-title">Request Details</h3>
@@ -504,11 +504,11 @@ def render_debug_404(request: Request) -> HTMLResponse:
                         </tbody>
                     </table>
                 </div>
-                
+
                 <a href="/" class="home-link">← Back to Home</a>
             </div>
         </div>
-        
+
         <div class="footer">
             P8s Framework • Debug Mode
         </div>

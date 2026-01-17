@@ -2,8 +2,9 @@
 Tests for P8s admin module.
 """
 
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock
 
 
 class TestAdminRegistration:
@@ -11,7 +12,7 @@ class TestAdminRegistration:
 
     def test_admin_site_import(self):
         """Test admin site can be imported."""
-        from p8s.admin.site import site, ModelAdmin
+        from p8s.admin.site import ModelAdmin, site
 
         assert site is not None
         assert ModelAdmin is not None
@@ -170,10 +171,7 @@ class TestAdminSerialization:
 
         relation_fields = {"category"}
 
-        clean_data = {
-            k: v for k, v in model_data.items()
-            if k not in relation_fields
-        }
+        clean_data = {k: v for k, v in model_data.items() if k not in relation_fields}
 
         assert "id" in clean_data
         assert "name" in clean_data
@@ -188,7 +186,12 @@ class TestAdminListDisplay:
         columns = [
             {"key": "name", "label": "Name", "sortable": True},
             {"key": "price", "label": "Price", "sortable": True, "type": "number"},
-            {"key": "created_at", "label": "Created", "sortable": True, "type": "datetime"},
+            {
+                "key": "created_at",
+                "label": "Created",
+                "sortable": True,
+                "type": "datetime",
+            },
         ]
 
         assert len(columns) == 3

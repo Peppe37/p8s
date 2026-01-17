@@ -187,7 +187,7 @@ def get_model_metadata(model: type[SQLModel]) -> dict[str, Any]:
         if default_value is PydanticUndefined:
             default_value = None
         elif not isinstance(
-            default_value, (str, int, float, bool, list, dict, type(None))
+            default_value, str | int | float | bool | list | dict | type(None)
         ):
             default_value = str(default_value) if default_value is not None else None
 

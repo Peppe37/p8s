@@ -2,11 +2,12 @@
 Tests for P8s enhanced soft delete system.
 """
 
-import pytest
-from uuid import UUID
 from datetime import datetime
+from uuid import UUID
 
+import pytest
 from sqlmodel import Field, Relationship, select
+
 from p8s.db.base import Model
 
 
@@ -38,7 +39,7 @@ class TestDeleteMethod:
             name: str
 
         item = TestItem(name="test")
-        item.delete(mode='soft')
+        item.delete(mode="soft")
 
         assert item.is_deleted is True
         assert item.deleted_at is not None
@@ -51,7 +52,7 @@ class TestDeleteMethod:
             name: str
 
         item = TestItem(name="test")
-        item.delete(mode='hard')
+        item.delete(mode="hard")
 
         # Hard delete marks the item for deletion
         assert item._pending_hard_delete is True
@@ -68,7 +69,7 @@ class TestDeleteMethod:
         item = TestItem(name="test")
 
         with pytest.raises(ValueError) as exc_info:
-            item.delete(mode='invalid')
+            item.delete(mode="invalid")
 
         assert "Invalid delete mode" in str(exc_info.value)
 
@@ -99,9 +100,9 @@ class TestQueryHelpers:
         stmt = TestItem.active()
 
         # Should be a SQLAlchemy Select statement
-        assert hasattr(stmt, 'where')
+        assert hasattr(stmt, "where")
         # Check it filters by deleted_at
-        assert 'deleted_at' in str(stmt)
+        assert "deleted_at" in str(stmt)
 
     def test_deleted_returns_select(self):
         """Test that deleted() returns a Select statement."""
@@ -112,8 +113,8 @@ class TestQueryHelpers:
 
         stmt = TestItem.deleted()
 
-        assert hasattr(stmt, 'where')
-        assert 'deleted_at' in str(stmt)
+        assert hasattr(stmt, "where")
+        assert "deleted_at" in str(stmt)
 
     def test_all_with_deleted_returns_select(self):
         """Test that all_with_deleted() returns a Select statement."""
@@ -124,7 +125,7 @@ class TestQueryHelpers:
 
         stmt = TestItem.all_with_deleted()
 
-        assert hasattr(stmt, 'where')
+        assert hasattr(stmt, "where")
 
     def test_active_can_chain(self):
         """Test that active() can be chained with additional where."""
@@ -138,8 +139,8 @@ class TestQueryHelpers:
 
         # Should have both conditions
         stmt_str = str(stmt)
-        assert 'deleted_at' in stmt_str
-        assert 'category' in stmt_str
+        assert "deleted_at" in stmt_str
+        assert "category" in stmt_str
 
     def test_deleted_can_chain(self):
         """Test that deleted() can be chained with order_by."""
@@ -187,19 +188,19 @@ class TestModelIntegration:
             price: float = 0.0
 
         # Check delete method exists
-        assert hasattr(Product, 'delete')
+        assert hasattr(Product, "delete")
 
         # Check query helpers exist
-        assert hasattr(Product, 'active')
-        assert hasattr(Product, 'deleted')
-        assert hasattr(Product, 'all_with_deleted')
+        assert hasattr(Product, "active")
+        assert hasattr(Product, "deleted")
+        assert hasattr(Product, "all_with_deleted")
 
         # Check instance methods
         product = Product(name="Test", price=10.0)
-        assert hasattr(product, 'delete')
-        assert hasattr(product, 'soft_delete')
-        assert hasattr(product, 'restore')
-        assert hasattr(product, 'is_deleted')
+        assert hasattr(product, "delete")
+        assert hasattr(product, "soft_delete")
+        assert hasattr(product, "restore")
+        assert hasattr(product, "is_deleted")
 
     def test_query_helper_types(self):
         """Test that query helpers return proper types."""
@@ -214,6 +215,7 @@ class TestModelIntegration:
 
         # All should be Select statements
         from sqlalchemy.sql.selectable import Select
+
         assert isinstance(active_stmt, Select)
         assert isinstance(deleted_stmt, Select)
         assert isinstance(all_stmt, Select)

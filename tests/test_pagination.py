@@ -2,8 +2,9 @@
 Tests for P8s pagination module.
 """
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 
 class TestPaginationImport:
@@ -12,6 +13,7 @@ class TestPaginationImport:
     def test_module_imports(self):
         """Test that pagination module can be imported."""
         from p8s import pagination
+
         assert pagination is not None
 
 
@@ -22,6 +24,7 @@ class TestPaginationClasses:
         """Test Paginator class exists (if implemented)."""
         try:
             from p8s.pagination import Paginator
+
             assert Paginator is not None
         except ImportError:
             pytest.skip("Paginator not implemented yet")
@@ -30,6 +33,7 @@ class TestPaginationClasses:
         """Test Page class exists (if implemented)."""
         try:
             from p8s.pagination import Page
+
             assert Page is not None
         except ImportError:
             pytest.skip("Page class not implemented yet")
@@ -108,6 +112,7 @@ class TestPaginationMetadata:
             page_size: int,
         ) -> dict:
             import math
+
             total_pages = math.ceil(total / page_size) if total > 0 else 0
             return {
                 "total": total,

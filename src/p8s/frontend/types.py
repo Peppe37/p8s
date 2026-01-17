@@ -82,7 +82,7 @@ def python_type_to_typescript(python_type: Any) -> str:
 
     # Handle Pydantic/SQLModel classes
     if inspect.isclass(python_type):
-        if issubclass(python_type, (BaseModel, SQLModel)):
+        if issubclass(python_type, BaseModel | SQLModel):
             return python_type.__name__
 
     # Fallback
@@ -251,13 +251,13 @@ export const api = {
             param_args = ", ".join([f"{p}: string" for p in params])
             path_template = path.replace("{", "${")
 
-            client_code += f'''  {name}: ({param_args}) =>
+            client_code += f"""  {name}: ({param_args}) =>
     request("{method.upper()}", `{path_template}`),
-'''
+"""
         else:
-            client_code += f'''  {name}: () =>
+            client_code += f"""  {name}: () =>
     request("{method.upper()}", "{path}"),
-'''
+"""
 
     client_code += "};\n"
 

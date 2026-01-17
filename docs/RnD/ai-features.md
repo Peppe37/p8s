@@ -70,13 +70,13 @@ from p8s import Model, AIField
 class Review(Model, table=True):
     title: str
     content: str
-    
+
     # Auto-generated on save
     sentiment: str = AIField(
         prompt="Analyze the sentiment of this review and return only one word: positive, negative, or neutral",
         source_fields=["content"]
     )
-    
+
     summary: str = AIField(
         prompt="Summarize this review in one sentence",
         source_fields=["title", "content"]
@@ -102,7 +102,7 @@ from p8s import Model, VectorField
 
 class Document(Model, table=True):
     content: str
-    
+
     # Auto-generated embedding
     embedding: list[float] = VectorField(
         source_field="content",

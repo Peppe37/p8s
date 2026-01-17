@@ -21,7 +21,7 @@ class TestCheckMessage:
 
     def test_check_message_import(self):
         """Test CheckMessage can be imported."""
-        from p8s.cli.check import CheckMessage, CheckLevel
+        from p8s.cli.check import CheckLevel, CheckMessage
 
         msg = CheckMessage(
             level=CheckLevel.ERROR,
@@ -34,7 +34,7 @@ class TestCheckMessage:
 
     def test_warning_message(self):
         """Test warning classification."""
-        from p8s.cli.check import CheckMessage, CheckLevel
+        from p8s.cli.check import CheckLevel, CheckMessage
 
         msg = CheckMessage(
             level=CheckLevel.WARNING,
@@ -56,7 +56,7 @@ class TestRegisterCheck:
 
     def test_register_and_get_checks(self):
         """Test registering and getting checks."""
-        from p8s.cli.check import register_check, get_checks
+        from p8s.cli.check import get_checks, register_check
 
         @register_check("test")
         def test_check():
@@ -96,7 +96,7 @@ class TestFormatResults:
 
     def test_format_with_errors(self):
         """Test formatting with errors."""
-        from p8s.cli.check import format_check_results, CheckMessage, CheckLevel
+        from p8s.cli.check import CheckLevel, CheckMessage, format_check_results
 
         messages = [
             CheckMessage(level=CheckLevel.ERROR, message="Error 1"),

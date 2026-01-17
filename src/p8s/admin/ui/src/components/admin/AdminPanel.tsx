@@ -1,6 +1,6 @@
 /**
  * P8s Admin Panel - Main Component
- * 
+ *
  * The main admin panel that brings together all components
  */
 
@@ -141,8 +141,8 @@ export function AdminPanel({ }: AdminPanelProps) {
     };
 
     // Define functions before use or use function declaration for hoisting
-    // Using const here, but defining BEFORE usage in future if feasible. 
-    // However, loadRecords is used in useEffect above. 
+    // Using const here, but defining BEFORE usage in future if feasible.
+    // However, loadRecords is used in useEffect above.
     // To allow hoisting, we use function declaration for these helpers.
 
     async function loadModels() {
@@ -275,7 +275,7 @@ export function AdminPanel({ }: AdminPanelProps) {
             } else if (action === 'save_continue') {
                 if (viewMode === 'create' && newRecord) {
                     // Update verification: manually add to records or reload
-                    // To be safe and simple, we reload records and verify id exists, 
+                    // To be safe and simple, we reload records and verify id exists,
                     // but for immediate UI feedback we just set state.
                     // We need the new record in 'records' for getEditValues() to work.
                     setRecords(prev => [...prev, newRecord!]);
@@ -960,4 +960,3 @@ function ChangePasswordModal({ userId, onSuccess, onError }: { userId: string | 
 }
 
 export default AdminPanel;
-

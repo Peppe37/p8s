@@ -1,6 +1,6 @@
 /**
  * P8s Admin - Dynamic Form Component
- * 
+ *
  * A form component that generates fields based on model schema
  */
 

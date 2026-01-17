@@ -88,9 +88,7 @@ class TestGitHubProvider:
             client_secret="gh-secret",
         )
 
-        url = provider.get_authorization_url(
-            redirect_uri="http://localhost/callback"
-        )
+        url = provider.get_authorization_url(redirect_uri="http://localhost/callback")
 
         assert "github.com" in url
         assert "client_id=gh-client" in url
@@ -113,8 +111,8 @@ class TestProviderRegistry:
         """Test registering and getting providers."""
         from p8s.auth.social import (
             GoogleProvider,
-            register_provider,
             get_provider,
+            register_provider,
         )
 
         provider = GoogleProvider(

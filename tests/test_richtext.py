@@ -115,9 +115,7 @@ class TestRenderRichtext:
         from p8s.db.richtext import render_richtext
 
         content = {
-            "blocks": [
-                {"type": "paragraph", "data": {"text": "Hello Editor.js"}}
-            ]
+            "blocks": [{"type": "paragraph", "data": {"text": "Hello Editor.js"}}]
         }
 
         result = render_richtext(content, output="html")

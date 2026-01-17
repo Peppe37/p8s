@@ -2,8 +2,9 @@
 Tests for P8s middleware module.
 """
 
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
 
 
 class TestMiddlewareImport:
@@ -12,6 +13,7 @@ class TestMiddlewareImport:
     def test_module_imports(self):
         """Test that middleware module can be imported."""
         from p8s import middleware
+
         assert middleware is not None
 
 

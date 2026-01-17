@@ -4,8 +4,8 @@ Tests for P8s AI module.
 
 import pytest
 
-from p8s.ai.fields import AIField, VectorField
 from p8s.ai.config import AIConfig
+from p8s.ai.fields import AIField, VectorField
 
 
 class TestAIField:
@@ -23,8 +23,9 @@ class TestAIField:
 
     def test_ai_field_metadata(self):
         """Test AIField includes correct metadata."""
-        from p8s.db.base import Model
         from sqlmodel import Field
+
+        from p8s.db.base import Model
 
         class Product(Model):
             name: str = Field(default="")

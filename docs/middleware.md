@@ -11,9 +11,9 @@ class MyMiddleware(Middleware):
     async def process_request(self, request, call_next):
         # Before request processing
         print(f"Request: {request.url}")
-        
+
         response = await call_next(request)
-        
+
         # After response
         response.headers["X-Custom"] = "value"
         return response

@@ -2,8 +2,9 @@
 Tests for P8s Session Backend.
 """
 
-import pytest
 from datetime import datetime, timedelta
+
+import pytest
 
 
 class TestSessionBackend:
@@ -158,7 +159,7 @@ class TestSessionMiddleware:
 
     def test_middleware_defaults(self):
         """Test SessionMiddleware default settings."""
-        from p8s.sessions import SessionMiddleware, InMemorySessionBackend
+        from p8s.sessions import InMemorySessionBackend, SessionMiddleware
 
         middleware = SessionMiddleware(app=None)
 
@@ -180,8 +181,9 @@ class TestGetSession:
 
     def test_get_session_requires_middleware(self):
         """Test get_session raises error without middleware."""
-        from p8s.sessions import get_session
         from unittest.mock import MagicMock
+
+        from p8s.sessions import get_session
 
         request = MagicMock()
         request.state = MagicMock(spec=[])

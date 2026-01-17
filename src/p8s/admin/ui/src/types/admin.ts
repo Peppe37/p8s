@@ -1,6 +1,6 @@
 /**
  * P8s Admin Panel - Type Definitions
- * 
+ *
  * Types for the admin panel components and API
  */
 
