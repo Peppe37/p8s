@@ -1,6 +1,34 @@
 # CHANGELOG
 
 
+## v1.4.0 (2026-01-17)
+
+### Chores
+
+- Remove tracked node_modules file
+  ([`eab7846`](https://github.com/Peppe37/p8s/commit/eab7846ccc166ffc2483e65c859f8d436cb303fd))
+
+### Code Style
+
+- Fix linting and formatting issues
+  ([`54ed190`](https://github.com/Peppe37/p8s/commit/54ed1904bd3403380895ac7d59e59ac0ea329d27))
+
+### Continuous Integration
+
+- Add pre-commit hooks and fix linting issues
+  ([`e7478a1`](https://github.com/Peppe37/p8s/commit/e7478a11b0bd14ac436f8a502837cfe305332246))
+
+### Documentation
+
+- Add how-to guides and update navigation
+  ([`696e626`](https://github.com/Peppe37/p8s/commit/696e626a9810790f502a6548adb39e38565c7b00))
+
+### Features
+
+- **admin**: Add advanced field components (richtext, color, tags, code)
+  ([`0e7a880`](https://github.com/Peppe37/p8s/commit/0e7a8808554d4350e6315fd3013696a234c94509))
+
+
 ## v1.3.0 (2026-01-17)
 
 ### Documentation
