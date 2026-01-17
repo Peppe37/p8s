@@ -1,7 +1,7 @@
 /**
  * P8s Admin - Inline Editor Component
  *
- * Renders inline related models (TabularInline, StackedInline) 
+ * Renders inline related models (TabularInline, StackedInline)
  * similar to Django admin inlines.
  */
 

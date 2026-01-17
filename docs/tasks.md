@@ -266,11 +266,11 @@ async def test_task_execution(task_queue):
 
 async def test_task_enqueue(task_queue):
     task_id = await my_task.enqueue(value=5)
-    
+
     # Wait for completion (in-memory executes immediately)
     import asyncio
     await asyncio.sleep(0.1)
-    
+
     result = await task_queue.get_result(task_id)
     assert result.result == 10
 ```
@@ -290,15 +290,15 @@ async def test_task_enqueue(task_queue):
 async def idempotent_task(order_id: int):
     """Idempotent task - safe to retry."""
     order = await Order.get(order_id)
-    
+
     # Check if already processed
     if order.status == "processed":
         return {"skipped": True}
-    
+
     # Process and mark as done
     await process_order(order)
     order.status = "processed"
     await order.save()
-    
+
     return {"processed": True}
 ```

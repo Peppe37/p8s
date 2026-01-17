@@ -2,9 +2,10 @@
 Tests for P8s CLI Discovery.
 """
 
-import pytest
-from pathlib import Path
 import tempfile
+from pathlib import Path
+
+import pytest
 
 
 class TestDiscoverCommands:
@@ -37,9 +38,7 @@ class TestLoadCommandModule:
         """Test loading a valid Python file."""
         from p8s.cli.discovery import load_command_module
 
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".py", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write("class TestCommand:\n    def handle(self): pass\n")
             f.flush()
 
@@ -60,9 +59,7 @@ class TestFindCommandClass:
         """Test finding class with handle method."""
         from p8s.cli.discovery import find_command_class, load_command_module
 
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".py", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write("class ImportCommand:\n    def handle(self): pass\n")
             f.flush()
 

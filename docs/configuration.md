@@ -92,32 +92,32 @@ from p8s.core.settings import Settings, AdminSettings, AISettings
 
 class AppSettings(Settings):
     """Custom application settings."""
-    
+
     # Override app name
     app_name: str = "My Awesome App"
-    
+
     # Debug mode
     debug: bool = True
-    
+
     # Installed apps (Django-style)
     installed_apps: list[str] = [
         "backend.apps.products",
         "backend.apps.orders",
     ]
-    
+
     # CORS origins
     cors_origins: list[str] = [
         "http://localhost:5173",
         "http://localhost:8000",
     ]
-    
+
     # Admin configuration
     admin: AdminSettings = AdminSettings(
         enabled=True,
         path="/admin",
         title="My App Admin",
     )
-    
+
     # AI configuration
     ai: AISettings = AISettings(
         enabled=True,

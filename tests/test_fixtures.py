@@ -2,10 +2,11 @@
 Tests for P8s Fixtures.
 """
 
-import pytest
 import json
 from datetime import datetime
 from uuid import uuid4
+
+import pytest
 
 
 class TestJSONEncoder:

@@ -2,8 +2,9 @@
 Tests for P8s storage fields: resize_image and validate_mime_type.
 """
 
-import pytest
 from io import BytesIO
+
+import pytest
 
 
 class TestResizeImage:
@@ -45,6 +46,7 @@ class TestResizeImage:
         """Test that large images are resized."""
         try:
             from PIL import Image
+
             from p8s.storage.fields import resize_image
 
             # Create 1000x800 test image
@@ -70,6 +72,7 @@ class TestResizeImage:
         """Test resize with only max_width specified."""
         try:
             from PIL import Image
+
             from p8s.storage.fields import resize_image
 
             img = Image.new("RGB", (1000, 500), color="green")
@@ -90,6 +93,7 @@ class TestResizeImage:
         """Test resize with only max_height specified."""
         try:
             from PIL import Image
+
             from p8s.storage.fields import resize_image
 
             img = Image.new("RGB", (500, 1000), color="yellow")

@@ -2,8 +2,9 @@
 Tests for P8s admin inlines functionality.
 """
 
-import pytest
 from dataclasses import dataclass
+
+import pytest
 
 
 class TestInlineConfig:

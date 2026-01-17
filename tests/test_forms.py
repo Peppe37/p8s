@@ -2,8 +2,9 @@
 Tests for P8s forms module.
 """
 
-import pytest
 from datetime import date
+
+import pytest
 from pydantic import EmailStr
 
 
@@ -90,7 +91,7 @@ class TestFormFields:
 
     def test_char_field(self):
         """Test CharField."""
-        from p8s.forms import Form, CharField
+        from p8s.forms import CharField, Form
 
         class TestForm(Form):
             name: str = CharField(max_length=100, placeholder="Your name")
@@ -100,7 +101,7 @@ class TestFormFields:
 
     def test_email_field(self):
         """Test EmailField."""
-        from p8s.forms import Form, EmailField
+        from p8s.forms import EmailField, Form
 
         class TestForm(Form):
             email: str = EmailField()
@@ -120,7 +121,7 @@ class TestFormFields:
 
     def test_boolean_field(self):
         """Test BooleanField."""
-        from p8s.forms import Form, BooleanField
+        from p8s.forms import BooleanField, Form
 
         class TestForm(Form):
             active: bool = BooleanField()
@@ -153,13 +154,15 @@ class TestFormFields:
 
     def test_choice_field(self):
         """Test ChoiceField."""
-        from p8s.forms import Form, ChoiceField
+        from p8s.forms import ChoiceField, Form
 
         class TestForm(Form):
-            status: str = ChoiceField(choices=[
-                ("draft", "Draft"),
-                ("published", "Published"),
-            ])
+            status: str = ChoiceField(
+                choices=[
+                    ("draft", "Draft"),
+                    ("published", "Published"),
+                ]
+            )
 
         form = TestForm(status="draft")
         assert form.status == "draft"
@@ -220,9 +223,10 @@ class TestModelForm:
 
     def test_model_form_basic(self):
         """Test basic ModelForm usage."""
-        from p8s.forms import ModelForm
-        from p8s.db.base import Model
         from sqlmodel import Field
+
+        from p8s.db.base import Model
+        from p8s.forms import ModelForm
 
         class Product(Model, table=True):
             __tablename__ = "products_form_test"

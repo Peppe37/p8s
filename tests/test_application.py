@@ -2,8 +2,9 @@
 Tests for P8s application core module.
 """
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 class TestP8sAppImport:
@@ -69,11 +70,11 @@ class TestExports:
     def test_all_core_exports(self):
         """Test all core exports are available."""
         from p8s import (
+            Model,
             P8sApp,
             Settings,
-            Model,
-            get_session,
             Signal,
+            get_session,
             receiver,
         )
 
@@ -86,7 +87,7 @@ class TestExports:
 
     def test_auth_exports(self):
         """Test auth exports are available."""
-        from p8s import Permission, Group
+        from p8s import Group, Permission
 
         assert Permission is not None
         assert Group is not None
@@ -101,14 +102,14 @@ class TestExports:
     def test_field_exports(self):
         """Test field exports are available."""
         from p8s import (
-            CharField,
-            TextField,
             BooleanField,
-            IntegerField,
-            FloatField,
+            CharField,
             DateField,
             DateTimeField,
+            FloatField,
+            IntegerField,
             JSONField,
+            TextField,
         )
 
         # All should be importable
@@ -159,8 +160,9 @@ class TestRouting:
 
     def test_include_router(self):
         """Test including routers."""
-        from p8s import P8sApp
         from fastapi import APIRouter
+
+        from p8s import P8sApp
 
         app = P8sApp(title="Test App")
         router = APIRouter(prefix="/api")

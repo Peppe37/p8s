@@ -214,4 +214,3 @@ Auto-discover commands from `management/commands/`
 - [x] 5/7 P0-P1 features complete
 - [x] 429 tests passing
 - [ ] Full Django parity documentation
-

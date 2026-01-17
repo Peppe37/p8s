@@ -97,11 +97,11 @@ from sqlmodel import select
 async with get_session() as session:
     # Get by ID
     result = await session.get(Product, product_id)
-    
+
     # Query all
     result = await session.execute(select(Product))
     products = result.scalars().all()
-    
+
     # Filter
     result = await session.execute(
         select(Product).where(Product.is_active == True)

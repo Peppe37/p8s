@@ -10,7 +10,7 @@ class AppSettings(Settings):
     static_url = "/static/"
     static_root = "staticfiles"
     staticfiles_dirs = ["frontend/dist", "assets"]
-    
+
     media_url = "/media/"
     media_root = "media"
 ```

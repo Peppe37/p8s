@@ -191,7 +191,7 @@ class AppSettings(Settings):
         (dest / "backend" / "settings.py").write_text(settings_content)
 
         # Write pyproject.toml
-        pyproject_content = f'''[project]
+        pyproject_content = f"""[project]
 name = "{name}"
 version = "0.1.0"
 description = "A P8s application"
@@ -208,7 +208,7 @@ dev = [
 
 [tool.setuptools.packages.find]
 include = ["backend*"]
-'''
+"""
         (dest / "pyproject.toml").write_text(pyproject_content)
 
         # Write .env.example
@@ -259,7 +259,7 @@ frontend/dist/
         progress.update(task, description="Setting up frontend...")
 
         # Write frontend package.json
-        package_json = f'''{{
+        package_json = f"""{{
   "name": "{name}-frontend",
   "private": true,
   "version": "0.1.0",
@@ -285,7 +285,7 @@ frontend/dist/
     "vite": "^5.0.0"
   }}
 }}
-'''
+"""
         (dest / "frontend" / "package.json").write_text(package_json)
 
         # Write vite.config.ts
@@ -852,9 +852,6 @@ def shell():
     }
 
     code.interact(local=local_vars)
-
-
-
 
 
 # ============================================================================
@@ -1621,7 +1618,8 @@ def dumpdata(
                             if hasattr(value, "isoformat"):
                                 value = value.isoformat()
                             elif hasattr(value, "__str__") and not isinstance(
-                                value, (str, int, float, bool, list, dict, type(None))
+                                value,
+                                str | int | float | bool | list | dict | type(None),
                             ):
                                 value = str(value)
 

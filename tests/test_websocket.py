@@ -2,8 +2,9 @@
 Tests for P8s WebSocket support.
 """
 
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock
 
 
 class TestWebSocketEndpoint:

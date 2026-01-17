@@ -5,7 +5,7 @@ Tests for P8s core module.
 import pytest
 from pydantic import ValidationError
 
-from p8s.core.settings import Settings, DatabaseSettings, AISettings
+from p8s.core.settings import AISettings, DatabaseSettings, Settings
 
 
 class TestSettings:
@@ -38,14 +38,13 @@ class TestSettings:
 
     def test_cors_origins_parsing(self):
         """Test CORS origins can be parsed from JSON string."""
-        import os
         import json
+        import os
 
         # pydantic-settings requires JSON format for list fields
-        os.environ["P8S_CORS_ORIGINS"] = json.dumps([
-            "http://localhost:3000",
-            "http://localhost:5173"
-        ])
+        os.environ["P8S_CORS_ORIGINS"] = json.dumps(
+            ["http://localhost:3000", "http://localhost:5173"]
+        )
 
         settings = Settings()
 

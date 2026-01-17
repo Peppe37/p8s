@@ -136,7 +136,7 @@ p8s makemigrations -m "Add product description"
 Generates:
 ```python
 def upgrade():
-    op.add_column('product', 
+    op.add_column('product',
         sa.Column('description', sa.String(), nullable=True))
 ```
 

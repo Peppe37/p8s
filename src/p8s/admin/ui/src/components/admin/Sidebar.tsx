@@ -1,6 +1,6 @@
 /**
  * P8s Admin - Sidebar Component
- * 
+ *
  * Navigation sidebar with model list
  */
 

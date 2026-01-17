@@ -121,7 +121,7 @@ export function {name}() {{
 
 export function {name}() {{
   const queryClient = useQueryClient();
-  
+
   return useMutation({{
     mutationFn: async (data: unknown) => {{
       const response = await fetch('{endpoint}', {{

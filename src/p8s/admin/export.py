@@ -47,7 +47,7 @@ def serialize_value(value: Any) -> str:
         return value.isoformat()
     if isinstance(value, UUID):
         return str(value)
-    if isinstance(value, (list, tuple)):
+    if isinstance(value, list | tuple):
         return ", ".join(serialize_value(v) for v in value)
     if isinstance(value, dict):
         return str(value)

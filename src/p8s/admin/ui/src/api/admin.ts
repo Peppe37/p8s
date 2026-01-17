@@ -1,6 +1,6 @@
 /**
  * P8s Admin API Client
- * 
+ *
  * Functions to interact with the admin API endpoints
  */
 

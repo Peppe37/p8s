@@ -111,7 +111,7 @@ class TestProductAPI:
         response = client.get("/api/products")
         assert_status_code(response, 200)
         assert isinstance(response.json(), list)
-    
+
     def test_create_product(self, client):
         response = client.post("/api/products", json={
             "name": "Test Product",
@@ -120,7 +120,7 @@ class TestProductAPI:
         assert_status_code(response, 201)
         assert_json_contains(response, "id")
         assert_json_contains(response, "name", "Test Product")
-    
+
     def test_get_product_not_found(self, client):
         response = client.get("/api/products/nonexistent-id")
         assert_status_code(response, 404)
@@ -179,18 +179,18 @@ async def db_session():
     engine = create_async_engine("sqlite+aiosqlite:///:memory:")
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
-    
+
     async with AsyncSession(engine) as session:
         yield session
-    
+
     await engine.dispose()
 
 async def test_create_user(db_session):
     from backend.apps.users.models import User
-    
+
     user = User(email="test@example.com", password_hash="...")
     db_session.add(user)
     await db_session.commit()
-    
+
     assert user.id is not None
 ```

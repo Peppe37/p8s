@@ -48,7 +48,7 @@ class Product(Model, table=True):
     name: str = Field(index=True)
     price: float
     is_active: bool = True
-    
+
     class Admin:
         list_display = ["name", "price", "is_active"]
         search_fields = ["name"]
@@ -113,7 +113,7 @@ class Article(Model, table=True):
     content: str
     published: bool = False
     author_id: UUID | None = None
-    
+
     class Admin:
         list_display = ["title", "published", "created_at"]
         search_fields = ["title", "content"]
