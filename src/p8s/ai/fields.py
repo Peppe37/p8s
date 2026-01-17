@@ -6,8 +6,8 @@ These fields automatically generate content using LLMs.
 
 from typing import Any
 
-from pydantic import Field
 from pydantic.fields import FieldInfo
+from sqlmodel import Field
 
 
 class AIFieldInfo(FieldInfo):
@@ -91,10 +91,11 @@ def AIField(
     Returns:
         A Pydantic field with AI generation capabilities.
     """
-    return Field(
+    # Create the field
+    field_info = Field(
         default=default,
         description=description or f"AI-generated field using prompt: {prompt[:50]}...",
-        json_schema_extra={
+        schema_extra={
             "x-p8s-ai-field": True,
             "x-p8s-ai-prompt": prompt,
             "x-p8s-ai-source-fields": source_fields or [],
@@ -104,6 +105,25 @@ def AIField(
         },
         **kwargs,
     )
+
+    # Force alignment of json_schema_extra for Pydantic V2 compatibility
+    # This addresses issues where SQLModel Field() might not correctly map schema_extra
+    if not field_info.json_schema_extra:
+        field_info.json_schema_extra = {}
+
+    if isinstance(field_info.json_schema_extra, dict):
+        field_info.json_schema_extra.update(
+            {
+                "x-p8s-ai-field": True,
+                "x-p8s-ai-prompt": prompt,
+                "x-p8s-ai-source-fields": source_fields or [],
+                "x-p8s-ai-model": model,
+                "x-p8s-ai-cache": cache,
+                "x-p8s-ai-regenerate": regenerate_on_change,
+            }
+        )
+
+    return field_info
 
 
 class VectorFieldInfo(FieldInfo):
@@ -168,11 +188,11 @@ def VectorField(
     """
     from sqlalchemy import JSON, Column
 
-    return Field(
+    field_info = Field(
         default=None,
         description=description or f"Vector embedding from {source_field}",
         sa_column=Column(JSON),
-        json_schema_extra={
+        schema_extra={
             "x-p8s-vector-field": True,
             "x-p8s-vector-source": source_field,
             "x-p8s-vector-dimensions": dimensions,
@@ -180,6 +200,22 @@ def VectorField(
         },
         **kwargs,
     )
+
+    # Force alignment of json_schema_extra for Pydantic V2 compatibility
+    if not field_info.json_schema_extra:
+        field_info.json_schema_extra = {}
+
+    if isinstance(field_info.json_schema_extra, dict):
+        field_info.json_schema_extra.update(
+            {
+                "x-p8s-vector-field": True,
+                "x-p8s-vector-source": source_field,
+                "x-p8s-vector-dimensions": dimensions,
+                "x-p8s-vector-model": model,
+            }
+        )
+
+    return field_info
 
 
 async def generate_ai_field(
