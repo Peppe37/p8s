@@ -28,13 +28,13 @@ Example:
 import hashlib
 import hmac
 import secrets
+from base64 import urlsafe_b64decode, urlsafe_b64encode
+from collections.abc import Callable, Coroutine
 from datetime import datetime, timedelta, timezone
-from typing import Any, Callable, Coroutine
-from base64 import urlsafe_b64encode, urlsafe_b64decode
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
 
 # Token settings
 TOKEN_EXPIRY_HOURS = 24
@@ -57,11 +57,7 @@ def hash_token(token: str, secret_key: str) -> str:
     Returns:
         Hashed token
     """
-    return hmac.new(
-        secret_key.encode(),
-        token.encode(),
-        hashlib.sha256
-    ).hexdigest()
+    return hmac.new(secret_key.encode(), token.encode(), hashlib.sha256).hexdigest()
 
 
 def create_timestamped_token(user_id: str, secret_key: str) -> str:
@@ -81,9 +77,7 @@ def create_timestamped_token(user_id: str, secret_key: str) -> str:
     # Create signature
     data = f"{user_id}:{timestamp}:{token}"
     signature = hmac.new(
-        secret_key.encode(),
-        data.encode(),
-        hashlib.sha256
+        secret_key.encode(), data.encode(), hashlib.sha256
     ).hexdigest()[:16]
 
     # Encode token
@@ -125,9 +119,7 @@ def verify_timestamped_token(
         # Verify signature
         data = f"{user_id}:{timestamp}:{token}"
         expected_sig = hmac.new(
-            secret_key.encode(),
-            data.encode(),
-            hashlib.sha256
+            secret_key.encode(), data.encode(), hashlib.sha256
         ).hexdigest()[:16]
 
         if not hmac.compare_digest(signature, expected_sig):
@@ -282,9 +274,7 @@ If you did not request this reset, please ignore this email.
             return False
 
         # Find user
-        query = select(self.user_model).where(
-            self.user_model.id == user_id
-        )
+        query = select(self.user_model).where(self.user_model.id == user_id)
         result = await session.execute(query)
         user = result.scalar_one_or_none()
 

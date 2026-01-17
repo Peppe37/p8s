@@ -17,15 +17,17 @@ Example:
 
 import gettext as python_gettext
 import os
+from collections.abc import Callable
 from contextvars import ContextVar
 from pathlib import Path
-from typing import Callable
 
 # Context variable for current language
 _current_language: ContextVar[str] = ContextVar("current_language", default="en")
 
 # Loaded translation catalogs
-_translations: dict[str, python_gettext.GNUTranslations | python_gettext.NullTranslations] = {}
+_translations: dict[
+    str, python_gettext.GNUTranslations | python_gettext.NullTranslations
+] = {}
 
 # Default locale directory
 _locale_dir: Path | None = None
@@ -76,7 +78,9 @@ def deactivate() -> None:
     _current_language.set("en")
 
 
-def get_translation(language: str, domain: str = "messages") -> python_gettext.GNUTranslations | python_gettext.NullTranslations:
+def get_translation(
+    language: str, domain: str = "messages"
+) -> python_gettext.GNUTranslations | python_gettext.NullTranslations:
     """
     Get a translation catalog for a language.
 

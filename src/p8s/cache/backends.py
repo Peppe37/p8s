@@ -184,7 +184,9 @@ class MemoryCache(CacheBackend):
                     expires_at = None
                     new_value = delta
                 elif not isinstance(value, int):
-                    raise ValueError(f"Value at '{key}' is not an integer: {type(value)}")
+                    raise ValueError(
+                        f"Value at '{key}' is not an integer: {type(value)}"
+                    )
                 else:
                     new_value = value + delta
             self._cache[key] = (new_value, expires_at)

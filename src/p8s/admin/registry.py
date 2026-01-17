@@ -15,7 +15,7 @@ ModelType = TypeVar("ModelType", bound=SQLModel)
 def pluralize(word: str) -> str:
     """
     Intelligently pluralize a word following English rules.
-    
+
     Examples:
         Category -> Categories
         Package -> Packages
@@ -25,7 +25,7 @@ def pluralize(word: str) -> str:
     """
     if not word:
         return word
-    
+
     # Common irregular plurals
     irregulars = {
         "person": "people",
@@ -44,39 +44,39 @@ def pluralize(word: str) -> str:
         "crisis": "crises",
         "thesis": "theses",
     }
-    
+
     lower = word.lower()
     if lower in irregulars:
         # Preserve original capitalization
         if word[0].isupper():
             return irregulars[lower].capitalize()
         return irregulars[lower]
-    
+
     # Words ending in consonant + y -> ies
-    if len(word) > 1 and word[-1] in 'yY' and word[-2].lower() not in 'aeiou':
-        return word[:-1] + ('ies' if word[-1] == 'y' else 'Ies')
-    
+    if len(word) > 1 and word[-1] in "yY" and word[-2].lower() not in "aeiou":
+        return word[:-1] + ("ies" if word[-1] == "y" else "Ies")
+
     # Words ending in s, x, z, ch, sh -> es
-    if word.endswith(('s', 'x', 'z', 'S', 'X', 'Z')):
-        return word + 'es'
-    if word.endswith(('ch', 'sh', 'Ch', 'Sh', 'CH', 'SH')):
-        return word + 'es'
-    
+    if word.endswith(("s", "x", "z", "S", "X", "Z")):
+        return word + "es"
+    if word.endswith(("ch", "sh", "Ch", "Sh", "CH", "SH")):
+        return word + "es"
+
     # Words ending in o preceded by consonant -> es (with exceptions)
-    o_exceptions = {'photo', 'piano', 'halo', 'auto', 'memo', 'video', 'solo'}
-    if word.endswith(('o', 'O')) and len(word) > 1:
-        if lower not in o_exceptions and word[-2].lower() not in 'aeiou':
-            return word + 'es'
-    
+    o_exceptions = {"photo", "piano", "halo", "auto", "memo", "video", "solo"}
+    if word.endswith(("o", "O")) and len(word) > 1:
+        if lower not in o_exceptions and word[-2].lower() not in "aeiou":
+            return word + "es"
+
     # Words ending in f or fe -> ves
-    f_exceptions = {'roof', 'proof', 'chief', 'chef', 'cliff', 'belief'}
-    if word.endswith(('f', 'F')) and lower not in f_exceptions:
-        return word[:-1] + ('ves' if word[-1] == 'f' else 'Ves')
-    if word.endswith(('fe', 'Fe', 'fE', 'FE')):
-        return word[:-2] + 'ves'
-    
+    f_exceptions = {"roof", "proof", "chief", "chef", "cliff", "belief"}
+    if word.endswith(("f", "F")) and lower not in f_exceptions:
+        return word[:-1] + ("ves" if word[-1] == "f" else "Ves")
+    if word.endswith(("fe", "Fe", "fE", "FE")):
+        return word[:-2] + "ves"
+
     # Default: add s
-    return word + 's'
+    return word + "s"
 
 
 def register_model(model: type[ModelType]) -> type[ModelType]:
@@ -392,11 +392,17 @@ def auto_discover_models() -> None:
             # Log error if it's not just a missing models module
             # If e.name is the module we tried to import, it's missing -> fine.
             # If e.name is something else, it's a dependency failure -> bad.
-            if e.name and e.name != f"{app_name}.models" and not f"{app_name}.models".endswith(e.name):
+            if (
+                e.name
+                and e.name != f"{app_name}.models"
+                and not f"{app_name}.models".endswith(e.name)
+            ):
                 import logging
+
                 logging.error(f"Failed to import {app_name}.models: {e}")
         except Exception as e:
             import logging
+
             logging.error(f"Failed to import {app_name}.models: {e}")
 
         # 2. Import admin.py
@@ -406,5 +412,5 @@ def auto_discover_models() -> None:
             pass
         except Exception as e:
             import logging
-            logging.error(f"Failed to import {app_name}.admin: {e}")
 
+            logging.error(f"Failed to import {app_name}.admin: {e}")

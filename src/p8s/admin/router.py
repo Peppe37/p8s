@@ -531,6 +531,7 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
                 # but hash the new password value
                 if key == "password_hash" and model_name == "User" and value:
                     from p8s.auth.security import get_password_hash
+
                     setattr(item, key, get_password_hash(value))
                 continue
             if key in relation_fields:
@@ -648,9 +649,7 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         # Query inline items by FK
         fk_field = inline_config.get("fk_field", f"{model_name.lower()}_id")
         if hasattr(child_model, fk_field):
-            query = select(child_model).where(
-                getattr(child_model, fk_field) == item_id
-            )
+            query = select(child_model).where(getattr(child_model, fk_field) == item_id)
             result = await session.execute(query)
             items = result.scalars().all()
 
@@ -731,7 +730,11 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
             if is_deleted and item_id_inline:
                 # Delete existing item
                 try:
-                    inline_uuid = UUID(item_id_inline) if isinstance(item_id_inline, str) else item_id_inline
+                    inline_uuid = (
+                        UUID(item_id_inline)
+                        if isinstance(item_id_inline, str)
+                        else item_id_inline
+                    )
                     result = await session.execute(
                         select(child_model).where(child_model.id == inline_uuid)
                     )
@@ -754,7 +757,11 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
             elif item_id_inline:
                 # Update existing item
                 try:
-                    inline_uuid = UUID(item_id_inline) if isinstance(item_id_inline, str) else item_id_inline
+                    inline_uuid = (
+                        UUID(item_id_inline)
+                        if isinstance(item_id_inline, str)
+                        else item_id_inline
+                    )
                     result = await session.execute(
                         select(child_model).where(child_model.id == inline_uuid)
                     )
@@ -787,10 +794,12 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
 
         import csv
         import io
+
         from fastapi.responses import StreamingResponse
 
         # Get all fields
         from sqlalchemy.inspection import inspect
+
         mapper = inspect(model)
         field_names = [c.key for c in mapper.columns]
 
@@ -822,7 +831,9 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         return StreamingResponse(
             iter([output.getvalue()]),
             media_type="text/csv",
-            headers={"Content-Disposition": f"attachment; filename={model_name}_export.csv"}
+            headers={
+                "Content-Disposition": f"attachment; filename={model_name}_export.csv"
+            },
         )
 
     @router.post("/{model_name}/import/csv")
@@ -848,7 +859,7 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         file = form.get("file")
 
         if not file:
-             raise HTTPException(status_code=400, detail="No file uploaded")
+            raise HTTPException(status_code=400, detail="No file uploaded")
 
         content = await file.read()
         text = content.decode("utf-8")
@@ -865,15 +876,17 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
                 clean_row = {}
                 for k, v in row.items():
                     if v == "" and k not in model.model_fields:
-                         # Skip extra fields or handle empty strings?
-                         # For now let's pass as is, pydantic might coerce
-                         clean_row[k] = v
+                        # Skip extra fields or handle empty strings?
+                        # For now let's pass as is, pydantic might coerce
+                        clean_row[k] = v
                     else:
                         clean_row[k] = v
 
                     # Handle boolean
-                    if v.lower() == 'true': clean_row[k] = True
-                    if v.lower() == 'false': clean_row[k] = False
+                    if v.lower() == "true":
+                        clean_row[k] = True
+                    if v.lower() == "false":
+                        clean_row[k] = False
 
                 # Create instance
                 # Remove ID if present to avoid conflicts (or use it to update?)
@@ -885,15 +898,12 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
                 session.add(item)
                 created_count += 1
             except Exception as e:
-                errors.append(f"Row {i+1}: {str(e)}")
+                errors.append(f"Row {i + 1}: {str(e)}")
 
         if created_count > 0:
             await session.commit()
 
-        return {
-            "created": created_count,
-            "errors": errors
-        }
+        return {"created": created_count, "errors": errors}
 
         await session.flush()
 

@@ -10,20 +10,20 @@ Provides:
 
 # Re-export from client module
 from p8s.testing.client import (
-    TestClient,
     RequestFactory,
-    assert_status_code,
+    TestClient,
     assert_json_contains,
     assert_redirect,
+    assert_status_code,
 )
 
 # Re-export from factory module
 from p8s.testing.factory import (
-    ModelFactory,
-    FieldGenerator,
     Fake,
-    lazy,
+    FieldGenerator,
     LazyAttribute,
+    ModelFactory,
+    lazy,
 )
 
 __all__ = [

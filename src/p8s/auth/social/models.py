@@ -40,9 +40,7 @@ class SocialAccount(Model, table=True):
     extra_data: dict[str, Any] = Field(default={}, sa_column=Column(JSON))
 
     # Timestamps
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     last_login: datetime | None = Field(default=None)
 
     # Note: Relationship to User removed to avoid circular dependency.

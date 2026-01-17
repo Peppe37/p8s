@@ -273,5 +273,4 @@ async def change_password(
     session.add(user)
     await session.flush()
 
-
     return {"message": "Password changed successfully"}

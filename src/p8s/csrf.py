@@ -22,12 +22,11 @@ Example:
 import hashlib
 import hmac
 import secrets
-from typing import Callable
+from collections.abc import Callable
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from starlette.responses import Response, JSONResponse
-
+from starlette.responses import JSONResponse, Response
 
 # Safe HTTP methods that don't require CSRF protection
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS", "TRACE"}
@@ -175,7 +174,9 @@ class CSRFMiddleware(BaseHTTPMiddleware):
             return token
 
         # Try form data
-        if request.headers.get("content-type", "").startswith("application/x-www-form-urlencoded"):
+        if request.headers.get("content-type", "").startswith(
+            "application/x-www-form-urlencoded"
+        ):
             try:
                 form = await request.form()
                 token = form.get(self.field_name)

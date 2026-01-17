@@ -21,8 +21,9 @@ Example:
     ```
 """
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import Any, AsyncGenerator
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
@@ -191,7 +192,9 @@ def get_database(alias: str = "default") -> MultiDatabase:
         RuntimeError: If not configured
     """
     if _multi_db is None:
-        raise RuntimeError("Multi-database not configured. Call configure_databases() first.")
+        raise RuntimeError(
+            "Multi-database not configured. Call configure_databases() first."
+        )
     return _multi_db
 
 

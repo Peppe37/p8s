@@ -121,8 +121,12 @@ def get_inline_metadata(inline: InlineConfig) -> dict[str, Any]:
         return {
             "model": model,
             "fk_field": inline.fk_field,
-            "fields": [{"name": f, "type": "str", "required": False, "readonly": False} 
-                      for f in inline.fields] if inline.fields else [],
+            "fields": [
+                {"name": f, "type": "str", "required": False, "readonly": False}
+                for f in inline.fields
+            ]
+            if inline.fields
+            else [],
             "template": getattr(inline, "template", "tabular"),
             "extra": inline.extra,
             "max_num": inline.max_num,

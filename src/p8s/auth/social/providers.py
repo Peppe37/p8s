@@ -15,6 +15,7 @@ import httpx
 @dataclass
 class OAuth2Token:
     """OAuth2 token response."""
+
     access_token: str
     token_type: str = "Bearer"
     expires_in: int | None = None
@@ -26,6 +27,7 @@ class OAuth2Token:
 @dataclass
 class OAuth2UserInfo:
     """Standardized user info from OAuth2 provider."""
+
     id: str
     email: str
     name: str | None = None

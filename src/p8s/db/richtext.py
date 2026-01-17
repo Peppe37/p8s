@@ -56,11 +56,13 @@ def RichTextField(
     """
     # Store editor hint in field metadata for admin UI
     json_schema_extra = kwargs.pop("json_schema_extra", {})
-    json_schema_extra.update({
-        "x-richtext": True,
-        "x-editor": editor,
-        "x-format": output_format,
-    })
+    json_schema_extra.update(
+        {
+            "x-richtext": True,
+            "x-editor": editor,
+            "x-format": output_format,
+        }
+    )
 
     if output_format == "html":
         # Store as HTML string
@@ -273,7 +275,9 @@ def _render_editorjs_blocks(blocks: list, output: str) -> str:
             url = data.get("file", {}).get("url", data.get("url", ""))
             caption = data.get("caption", "")
             if output == "html":
-                result.append(f'<figure><img src="{url}" /><figcaption>{caption}</figcaption></figure>')
+                result.append(
+                    f'<figure><img src="{url}" /><figcaption>{caption}</figcaption></figure>'
+                )
             elif output == "markdown":
                 result.append(f"![{caption}]({url})")
 
@@ -281,7 +285,9 @@ def _render_editorjs_blocks(blocks: list, output: str) -> str:
             text = data.get("text", "")
             caption = data.get("caption", "")
             if output == "html":
-                result.append(f"<blockquote><p>{text}</p><cite>{caption}</cite></blockquote>")
+                result.append(
+                    f"<blockquote><p>{text}</p><cite>{caption}</cite></blockquote>"
+                )
             elif output == "markdown":
                 result.append(f"> {text}\n> — {caption}\n")
             else:
@@ -293,6 +299,7 @@ def _render_editorjs_blocks(blocks: list, output: str) -> str:
 def _strip_html(html: str) -> str:
     """Strip HTML tags from string."""
     import re
+
     clean = re.sub(r"<[^>]+>", "", html)
     return clean.strip()
 

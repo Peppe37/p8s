@@ -326,7 +326,9 @@ def resize_image(
     try:
         from PIL import Image
     except ImportError:
-        raise ImportError("Pillow is required for image resize. Install with: pip install Pillow")
+        raise ImportError(
+            "Pillow is required for image resize. Install with: pip install Pillow"
+        )
 
     if isinstance(content, bytes):
         content = BytesIO(content)
@@ -460,7 +462,4 @@ def validate_mime_type(
             f"File type '{detected_mime}' not allowed. Allowed: {allowed_types}"
         )
     else:
-        raise ValueError(
-            f"Unknown file type. Allowed: {allowed_types}"
-        )
-
+        raise ValueError(f"Unknown file type. Allowed: {allowed_types}")

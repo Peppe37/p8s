@@ -13,10 +13,11 @@ import asyncio
 import importlib
 import logging
 import sys
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import timedelta
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +132,9 @@ class WorkerSettings:
             # Create ARQ-compatible wrapper that accepts ctx
             original_func = task_def.func
 
-            async def cron_wrapper(ctx: dict[str, Any], _fn: Any = original_func) -> Any:
+            async def cron_wrapper(
+                ctx: dict[str, Any], _fn: Any = original_func
+            ) -> Any:
                 return await _fn()
 
             cron_wrapper.__name__ = task_def.name
@@ -177,7 +180,7 @@ class WorkerSettings:
         if "/" in field:
             # Step values like */5
             _, step = field.split("/")
-            return {x for x in range(0, 60, int(step))}
+            return set(range(0, 60, int(step)))
         return None
 
 

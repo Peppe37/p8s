@@ -854,30 +854,7 @@ def shell():
     code.interact(local=local_vars)
 
 
-# ============================================================================
-# TYPES command
-# ============================================================================
 
-
-@app.command()
-def types(
-    output: Path = typer.Option(
-        Path("frontend/src/types"),
-        "--output",
-        "-o",
-    ),
-):
-    """
-    Generate TypeScript types from Python models.
-
-    Example:
-        p8s types
-        p8s types -o ./types
-    """
-    console.print("[bold]Generating TypeScript types...[/bold]")
-
-    # TODO: Implement type generation
-    console.print("[yellow]Type generation coming soon![/yellow]")
 
 
 # ============================================================================
@@ -1342,9 +1319,7 @@ def createsuperuser(
                 await session.commit()
                 await session.refresh(user)
 
-                console.print(
-                    "[green]✓[/green] Superuser created successfully!"
-                )
+                console.print("[green]✓[/green] Superuser created successfully!")
                 console.print(f"  ID: {user.id}")
                 console.print(f"  Email: {user.email}")
                 if user.username:
@@ -1381,9 +1356,9 @@ def seed(
         p8s seed
         p8s seed --script seeds/initial_data.py
     """
+    import os
     import runpy
     import sys
-    import os
 
     # Ensure settings module is loaded from project
     ensure_settings_module()
@@ -1400,14 +1375,14 @@ def seed(
             if p.exists():
                 script_path = p
                 break
-    
+
     if not script_path.exists():
         console.print(f"[red]Error:[/red] Seed script '{script}' not found.")
         console.print("Please create a seed script (e.g., 'seed_db.py') first.")
         raise typer.Exit(1)
-        
+
     console.print(f"[bold blue]Running seed script:[/bold blue] {script_path}")
-    
+
     # Ensure Current Directory is in sys.path so imports work
     cwd = str(Path.cwd())
     if cwd not in sys.path:
@@ -1422,7 +1397,6 @@ def seed(
         raise typer.Exit(1)
 
 
-
 # ============================================================================
 # TYPES - TypeScript generation
 # ============================================================================
@@ -1431,38 +1405,42 @@ def seed(
 @app.command()
 def types(
     output: Path = typer.Option(
-        Path("frontend/src/types/api.ts"), "--output", "-o", help="Output TypeScript file"
+        Path("frontend/src/types/api.ts"),
+        "--output",
+        "-o",
+        help="Output TypeScript file",
     ),
 ):
     """
     Generate TypeScript definitions from OpenAPI schema.
-    
+
     Uses 'npx openapi-typescript' to generate types.
     Requires 'backend.main:app' to be importable.
     """
     import json
     import subprocess
     import sys
-    
+
     print_banner()
     console.print("[bold]Generating TypeScript types...[/bold]")
-    
+
     # 1. Extract Schema
     try:
         if str(Path.cwd()) not in sys.path:
             sys.path.insert(0, str(Path.cwd()))
-            
+
         from backend.main import app as fastapi_app
+
         schema = fastapi_app.openapi()
     except (ImportError, AttributeError) as e:
         console.print(f"[red]Error:[/red] Could not load 'backend.main:app'. {e}")
         console.print("Make sure you are in the project root.")
         raise typer.Exit(1)
-        
+
     # 2. Save temp file
     temp_file = Path("openapi.json")
     temp_file.write_text(json.dumps(schema, indent=2))
-    
+
     # 3. Run generator
     try:
         # Check if output dir exists

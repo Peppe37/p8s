@@ -349,7 +349,8 @@ async def async_paginate(
             "has_previous": False,
         }
     """
-    from sqlalchemy import func, select as sa_select
+    from sqlalchemy import func
+    from sqlalchemy import select as sa_select
 
     # Ensure valid page number
     if page < 1:
@@ -383,4 +384,3 @@ async def async_paginate(
         "has_next": page < pages,
         "has_previous": page > 1,
     }
-

@@ -64,7 +64,7 @@ def get_hotp_token(secret: str, counter: int) -> str:
 
     # Dynamic truncation
     offset = hmac_digest[-1] & 0x0F
-    binary = struct.unpack(">I", hmac_digest[offset:offset + 4])[0] & 0x7FFFFFFF
+    binary = struct.unpack(">I", hmac_digest[offset : offset + 4])[0] & 0x7FFFFFFF
 
     # 6 digits
     return str(binary % 1000000).zfill(6)

@@ -27,6 +27,7 @@ Example:
 
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
+from pathlib import Path
 from typing import Any
 
 from rich.console import Console

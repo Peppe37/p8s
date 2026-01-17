@@ -13,13 +13,15 @@ Example:
     ```
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable
+from typing import Any
 
 
 class CheckLevel(str, Enum):
     """Check severity level."""
+
     DEBUG = "debug"
     INFO = "info"
     WARNING = "warning"
@@ -30,6 +32,7 @@ class CheckLevel(str, Enum):
 @dataclass
 class CheckMessage:
     """A check result message."""
+
     level: CheckLevel
     message: str
     hint: str | None = None
@@ -75,9 +78,11 @@ def register_check(
                 )]
         ```
     """
+
     def decorator(func: Callable) -> Callable:
         _checks.append((func, list(tags)))
         return func
+
     return decorator
 
 
@@ -130,10 +135,12 @@ async def run_checks(
             elif result:
                 messages.append(result)
         except Exception as e:
-            messages.append(CheckMessage(
-                level=CheckLevel.ERROR,
-                message=f"Check '{func.__name__}' raised exception: {e}",
-            ))
+            messages.append(
+                CheckMessage(
+                    level=CheckLevel.ERROR,
+                    message=f"Check '{func.__name__}' raised exception: {e}",
+                )
+            )
 
     return messages
 
@@ -186,23 +193,28 @@ def check_secret_key() -> list[CheckMessage]:
 
     try:
         from p8s.core.settings import get_settings
+
         settings = get_settings()
 
         secret = getattr(settings, "secret_key", None)
         if not secret:
-            messages.append(CheckMessage(
-                level=CheckLevel.ERROR,
-                message="SECRET_KEY is not set",
-                hint="Set SECRET_KEY in your settings or environment",
-                id="settings.E001",
-            ))
+            messages.append(
+                CheckMessage(
+                    level=CheckLevel.ERROR,
+                    message="SECRET_KEY is not set",
+                    hint="Set SECRET_KEY in your settings or environment",
+                    id="settings.E001",
+                )
+            )
         elif secret == "changeme" or len(secret) < 32:
-            messages.append(CheckMessage(
-                level=CheckLevel.WARNING,
-                message="SECRET_KEY appears insecure",
-                hint="Use a long, random string for SECRET_KEY",
-                id="settings.W001",
-            ))
+            messages.append(
+                CheckMessage(
+                    level=CheckLevel.WARNING,
+                    message="SECRET_KEY appears insecure",
+                    hint="Use a long, random string for SECRET_KEY",
+                    id="settings.W001",
+                )
+            )
     except Exception:
         pass  # Settings not configured
 
@@ -216,15 +228,18 @@ def check_debug_mode() -> list[CheckMessage]:
 
     try:
         from p8s.core.settings import get_settings
+
         settings = get_settings()
 
         if getattr(settings, "debug", False):
-            messages.append(CheckMessage(
-                level=CheckLevel.WARNING,
-                message="DEBUG mode is enabled",
-                hint="Set DEBUG=False in production",
-                id="settings.W002",
-            ))
+            messages.append(
+                CheckMessage(
+                    level=CheckLevel.WARNING,
+                    message="DEBUG mode is enabled",
+                    hint="Set DEBUG=False in production",
+                    id="settings.W002",
+                )
+            )
     except Exception:
         pass
 
