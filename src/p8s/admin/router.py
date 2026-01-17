@@ -597,8 +597,180 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         else:
             item.soft_delete()
             session.add(item)
-            
+
         return {"detail": "Item deleted"}
+
+    # =========================================================================
+    # Inline CRUD Endpoints - For TabularInline/StackedInline editing
+    # =========================================================================
+
+    @router.get("/{model_name}/{item_id}/inlines/{inline_model}")
+    async def list_inline_items(
+        model_name: str,
+        item_id: UUID,
+        inline_model: str,
+        session: AsyncSession = Depends(get_session),
+        user: User = Depends(require_admin),
+    ) -> dict[str, Any]:
+        """
+        List inline items for a parent model.
+
+        Args:
+            model_name: Parent model name.
+            item_id: Parent item UUID.
+            inline_model: Related inline model name.
+
+        Returns:
+            List of inline items.
+        """
+        from p8s.admin.inlines import get_model_inlines
+
+        parent_model = get_model(model_name)
+        if not parent_model:
+            raise HTTPException(status_code=404, detail="Parent model not found")
+
+        # Get inline configuration
+        inlines = get_model_inlines(parent_model)
+        inline_config = None
+        for inline in inlines:
+            if inline.get("model") == inline_model:
+                inline_config = inline
+                break
+
+        if not inline_config:
+            raise HTTPException(status_code=404, detail="Inline not found")
+
+        # Get the inline model class
+        child_model = get_model(inline_model)
+        if not child_model:
+            raise HTTPException(status_code=404, detail="Inline model not found")
+
+        # Query inline items by FK
+        fk_field = inline_config.get("fk_field", f"{model_name.lower()}_id")
+        if hasattr(child_model, fk_field):
+            query = select(child_model).where(
+                getattr(child_model, fk_field) == item_id
+            )
+            result = await session.execute(query)
+            items = result.scalars().all()
+
+            # Serialize items
+            serialized = []
+            for item in items:
+                try:
+                    data = item.model_dump()
+                    # Convert UUIDs to strings
+                    for key, val in data.items():
+                        if isinstance(val, UUID):
+                            data[key] = str(val)
+                    serialized.append(data)
+                except Exception:
+                    serialized.append({"id": str(item.id)})
+
+            return {"items": serialized, "config": inline_config}
+
+        return {"items": [], "config": inline_config}
+
+    @router.post("/{model_name}/{item_id}/inlines")
+    async def save_inline_items(
+        model_name: str,
+        item_id: UUID,
+        data: dict[str, Any],
+        session: AsyncSession = Depends(get_session),
+        user: User = Depends(require_admin),
+    ) -> dict[str, Any]:
+        """
+        Batch save inline items (create, update, delete).
+
+        Args:
+            model_name: Parent model name.
+            item_id: Parent item UUID.
+            data: Dict with 'inline_model' and 'items' list.
+                  Each item can have '_new', '_deleted' flags.
+
+        Returns:
+            Summary of operations.
+        """
+        from p8s.admin.inlines import get_model_inlines
+
+        parent_model = get_model(model_name)
+        if not parent_model:
+            raise HTTPException(status_code=404, detail="Parent model not found")
+
+        inline_model_name = data.get("inline_model")
+        items = data.get("items", [])
+
+        if not inline_model_name:
+            raise HTTPException(status_code=400, detail="inline_model required")
+
+        # Get inline configuration
+        inlines = get_model_inlines(parent_model)
+        inline_config = None
+        for inline in inlines:
+            if inline.get("model") == inline_model_name:
+                inline_config = inline
+                break
+
+        if not inline_config:
+            raise HTTPException(status_code=404, detail="Inline not found")
+
+        child_model = get_model(inline_model_name)
+        if not child_model:
+            raise HTTPException(status_code=404, detail="Inline model not found")
+
+        fk_field = inline_config.get("fk_field", f"{model_name.lower()}_id")
+        created = 0
+        updated = 0
+        deleted = 0
+
+        for item_data in items:
+            is_new = item_data.pop("_new", False)
+            is_deleted = item_data.pop("_deleted", False)
+            item_id_inline = item_data.get("id")
+
+            if is_deleted and item_id_inline:
+                # Delete existing item
+                try:
+                    inline_uuid = UUID(item_id_inline) if isinstance(item_id_inline, str) else item_id_inline
+                    result = await session.execute(
+                        select(child_model).where(child_model.id == inline_uuid)
+                    )
+                    existing = result.scalar_one_or_none()
+                    if existing:
+                        await session.delete(existing)
+                        deleted += 1
+                except Exception:
+                    pass
+            elif is_new:
+                # Create new item
+                try:
+                    item_data.pop("id", None)  # Remove any placeholder ID
+                    item_data[fk_field] = item_id  # Set parent FK
+                    new_item = child_model(**item_data)
+                    session.add(new_item)
+                    created += 1
+                except Exception:
+                    pass
+            elif item_id_inline:
+                # Update existing item
+                try:
+                    inline_uuid = UUID(item_id_inline) if isinstance(item_id_inline, str) else item_id_inline
+                    result = await session.execute(
+                        select(child_model).where(child_model.id == inline_uuid)
+                    )
+                    existing = result.scalar_one_or_none()
+                    if existing:
+                        for key, value in item_data.items():
+                            if key not in ["id", fk_field] and hasattr(existing, key):
+                                setattr(existing, key, value)
+                        session.add(existing)
+                        updated += 1
+                except Exception:
+                    pass
+
+        await session.flush()
+
+        return {"created": created, "updated": updated, "deleted": deleted}
 
     @router.get("/{model_name}/export/csv")
     async def export_csv(
@@ -629,10 +801,10 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
 
         output = io.StringIO()
         writer = csv.writer(output)
-        
+
         # Write header
         writer.writerow(field_names)
-        
+
         # Write rows
         for item in items:
             row = []
@@ -644,9 +816,9 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
                     val = str(val)
                 row.append(val)
             writer.writerow(row)
-            
+
         output.seek(0)
-        
+
         return StreamingResponse(
             iter([output.getvalue()]),
             media_type="text/csv",
@@ -667,57 +839,57 @@ def create_admin_router(settings: AdminSettings) -> APIRouter:
         model = get_model(model_name)
         if not model:
             raise HTTPException(status_code=404, detail="Model not found")
-            
+
         import csv
         import io
-        
+
         # Get/Read file from form data
         form = await request.form()
         file = form.get("file")
-        
+
         if not file:
              raise HTTPException(status_code=400, detail="No file uploaded")
-             
+
         content = await file.read()
         text = content.decode("utf-8")
-        
+
         reader = csv.DictReader(io.StringIO(text))
-        
+
         created_count = 0
         errors = []
-        
+
         for i, row in enumerate(reader):
             try:
                 # Clean empty strings to None for optional fields if needed
                 # But mostly just try to pass to model
                 clean_row = {}
                 for k, v in row.items():
-                    if v == "" and k not in model.model_fields: 
+                    if v == "" and k not in model.model_fields:
                          # Skip extra fields or handle empty strings?
                          # For now let's pass as is, pydantic might coerce
                          clean_row[k] = v
                     else:
                         clean_row[k] = v
-                        
+
                     # Handle boolean
                     if v.lower() == 'true': clean_row[k] = True
                     if v.lower() == 'false': clean_row[k] = False
-                
+
                 # Create instance
                 # Remove ID if present to avoid conflicts (or use it to update?)
                 # This simple version creates new items
                 if "id" in clean_row:
                     del clean_row["id"]
-                    
+
                 item = model(**clean_row)
                 session.add(item)
                 created_count += 1
             except Exception as e:
                 errors.append(f"Row {i+1}: {str(e)}")
-        
+
         if created_count > 0:
             await session.commit()
-            
+
         return {
             "created": created_count,
             "errors": errors
