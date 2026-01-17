@@ -1,6 +1,49 @@
 # CHANGELOG
 
 
+## v1.5.0 (2026-01-17)
+
+### Bug Fixes
+
+- Suppress duplicate model warnings and finalize test suite stability
+  ([`431919f`](https://github.com/Peppe37/p8s/commit/431919f189b34ddc2123dadddc620a2399382f39))
+
+- **admin**: Register advanced field types and update build assets
+  ([`638f508`](https://github.com/Peppe37/p8s/commit/638f50869280e90f74334ef353fc09126669bc5e))
+
+- Update registry.py to detect richtext, color, tags, code, and slug fields.
+
+- Update static/index.html with new asset hashes.
+
+### Chores
+
+- Finalize project state (CI parity, Tests, Fixes)
+  ([`0c19adf`](https://github.com/Peppe37/p8s/commit/0c19adfa1de05afa18633f2467a288b56741526a))
+
+- ci: use pre-commit action for linting parity
+
+- test: add integration tests for advanced fields
+
+- fix: resolve Pydantic V2 metadata issues and SAWarning
+
+- docs: add mkdocs-material dependency
+
+### Features
+
+- **admin**: Enhance RichTextEditor and fix UI spacing
+  ([`4d25ed4`](https://github.com/Peppe37/p8s/commit/4d25ed4ddc6cb8eb3400a0f7a582c8f6db6498d0))
+
+- Add Font/Color/Size controls to RichTextEditor.
+
+- Fix content parsing bug in RichTextEditor.
+
+- Implement unified Image popup.
+
+- Fix Admin button spacing.
+
+- Rebuild admin UI assets.
+
+
 ## v1.4.1 (2026-01-17)
 
 ### Bug Fixes
