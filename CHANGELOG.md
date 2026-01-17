@@ -1,24 +1,79 @@
 # CHANGELOG
 
 
-## v1.5.0 (2026-01-17)
+## v1.5.2 (2026-01-17)
 
 ### Bug Fixes
 
+- **ci**: Add fetch-tags to resolve semantic-release merge-base error
+  ([`1504db5`](https://github.com/Peppe37/p8s/commit/1504db52deb7285d9a97c8862e54ceec4b7c0599))
+
+
+## v1.5.1 (2026-01-17)
+
+### Bug Fixes
+
+- **security**: Update vite to resolve esbuild vulnerability
+  ([`dfc0349`](https://github.com/Peppe37/p8s/commit/dfc0349484cf7206e47279a040ca5f44ba801c83))
+
+- Resolves GHSA-67mh-4wv8-2f99 in esbuild <=0.24.2
+
+- **security**: Replace vulnerable python-jose with PyJWT
+  ([`9f98c1c`](https://github.com/Peppe37/p8s/commit/9f98c1c0efe63ae20e7cb8f5ecdd5f1bd08a2de5))
+
+- Removes CVE-2024-23342 (ecdsa) involved in python-jose dependency tree
+
+- Updates auth/security.py to use PyJWT
+
 - Suppress duplicate model warnings and finalize test suite stability
-  ([`431919f`](https://github.com/Peppe37/p8s/commit/431919f189b34ddc2123dadddc620a2399382f39))
+  ([`50df239`](https://github.com/Peppe37/p8s/commit/50df239f04a873dcd331529ba8aa2855305dcf95))
 
 - **admin**: Register advanced field types and update build assets
-  ([`638f508`](https://github.com/Peppe37/p8s/commit/638f50869280e90f74334ef353fc09126669bc5e))
+  ([`b02d659`](https://github.com/Peppe37/p8s/commit/b02d659b60993b920088bb9cee646398455b9594))
 
 - Update registry.py to detect richtext, color, tags, code, and slug fields.
 
 - Update static/index.html with new asset hashes.
 
+- Linting
+  ([`d352edf`](https://github.com/Peppe37/p8s/commit/d352edf9923f1b71bd31fce4c218d99bd7a37061))
+
+- Author surname
+  ([`e751d5b`](https://github.com/Peppe37/p8s/commit/e751d5b8c5b1232746cb4b45c92f937ab0e8a52f))
+
+- Update project metadata and remove deprecated action
+  ([`da9e011`](https://github.com/Peppe37/p8s/commit/da9e011eab81d681c6e992eb6db352e89810af84))
+
+- Use Trusted Publishing instead of API token for PyPI
+  ([`25447e9`](https://github.com/Peppe37/p8s/commit/25447e93e4452d49ba3220731f64ca29d3e67dbf))
+
+- Trigger first PyPI release
+  ([`451219c`](https://github.com/Peppe37/p8s/commit/451219c698a93c11c68654348e8fb7887387e78d))
+
+- Clean dist directory before build to avoid permission errors
+  ([`bd24810`](https://github.com/Peppe37/p8s/commit/bd248105438f3ec43a13767a18cec67d71dbc083))
+
+- Linting and build pipeline
+  ([`c8c7eea`](https://github.com/Peppe37/p8s/commit/c8c7eea8d760680ec7bf8a8c8c812869a1862f00))
+
+- Updated pyproject.toml to use new ruff lint section syntax - Formatted all 50+ source files with
+  ruff format - Fixed missing model lookup in admin router get_item - Added node_modules exclusion
+  to hatch build config - Updated CI workflow to Python 3.11-3.13 - Added comprehensive lint ignore
+  rules for edge cases
+
+- Test suite
+  ([`4113d97`](https://github.com/Peppe37/p8s/commit/4113d970295a5951ef3efde4c50b1d92ee7a2ac4))
+
+- Routing
+  ([`0d4fc98`](https://github.com/Peppe37/p8s/commit/0d4fc98b58b0430ad912f06d513506787765324f))
+
+- Admin update
+  ([`cabb9c8`](https://github.com/Peppe37/p8s/commit/cabb9c88d4dc189cfc57c2e3700dc487220c2552))
+
 ### Chores
 
 - Finalize project state (CI parity, Tests, Fixes)
-  ([`0c19adf`](https://github.com/Peppe37/p8s/commit/0c19adfa1de05afa18633f2467a288b56741526a))
+  ([`82f5e52`](https://github.com/Peppe37/p8s/commit/82f5e52351bd984f863a7945eedd3bfa22d66998))
 
 - ci: use pre-commit action for linting parity
 
@@ -28,10 +83,48 @@
 
 - docs: add mkdocs-material dependency
 
+### Code Style
+
+- Fix linting and formatting issues
+  ([`9a0e757`](https://github.com/Peppe37/p8s/commit/9a0e75765a1ad3afecb2c07e8e320d863e121f45))
+
+### Continuous Integration
+
+- Add pre-commit hooks and fix linting issues
+  ([`1e13758`](https://github.com/Peppe37/p8s/commit/1e13758ac6638c051669ac357677cb1570add9a9))
+
+- Remove duplicate build step (semantic-release handles it)
+  ([`06c4c9b`](https://github.com/Peppe37/p8s/commit/06c4c9b958640d4f5831fc99f89a373207b56804))
+
+### Documentation
+
+- Add how-to guides and update navigation
+  ([`84fbb3c`](https://github.com/Peppe37/p8s/commit/84fbb3c7e20acdda0d77d12cf2ffdaa5856bd0c7))
+
+- Update roadmap, status reports and core project configuration
+  ([`4ee83ca`](https://github.com/Peppe37/p8s/commit/4ee83ca742d01c126ceb5c309f3ce3726570614e))
+
+- Roadmap jenuary 2026
+  ([`92c26a1`](https://github.com/Peppe37/p8s/commit/92c26a1552b47cc637ca783cb611f974f885f89d))
+
+- Cleanup and professionalize documentation and usage
+  ([`58f8ece`](https://github.com/Peppe37/p8s/commit/58f8ece438438527b2af0bf82a15afd1c38e5797))
+
+- Remove emojis from README, CLI, and docs for professional tone - Update README with absolute links
+  and better formatting - Ensure consistent author attribution - Finalize MkDocs configuration setup
+
+- Documentation and readme update
+  ([`0497a8e`](https://github.com/Peppe37/p8s/commit/0497a8e6db21bca7b4c890fc160bfe0227bedf81))
+
+- Revise README for P8s framework introduction
+  ([`008dd00`](https://github.com/Peppe37/p8s/commit/008dd005955f37712d0ad4cb817ae6576ae28d90))
+
+Updated README to reflect new branding and features of P8s framework.
+
 ### Features
 
 - **admin**: Enhance RichTextEditor and fix UI spacing
-  ([`4d25ed4`](https://github.com/Peppe37/p8s/commit/4d25ed4ddc6cb8eb3400a0f7a582c8f6db6498d0))
+  ([`8d0de83`](https://github.com/Peppe37/p8s/commit/8d0de832d12883962715e093e1d487fa43fa1b16))
 
 - Add Font/Color/Size controls to RichTextEditor.
 
@@ -43,185 +136,48 @@
 
 - Rebuild admin UI assets.
 
-
-## v1.4.1 (2026-01-17)
-
-### Bug Fixes
-
-- Linting
-  ([`10f9d28`](https://github.com/Peppe37/p8s/commit/10f9d2826c9deb12543a6870bb524882cebfb866))
-
-
-## v1.4.0 (2026-01-17)
-
-### Chores
-
-- Remove tracked node_modules file
-  ([`eab7846`](https://github.com/Peppe37/p8s/commit/eab7846ccc166ffc2483e65c859f8d436cb303fd))
-
-### Code Style
-
-- Fix linting and formatting issues
-  ([`54ed190`](https://github.com/Peppe37/p8s/commit/54ed1904bd3403380895ac7d59e59ac0ea329d27))
-
-### Continuous Integration
-
-- Add pre-commit hooks and fix linting issues
-  ([`e7478a1`](https://github.com/Peppe37/p8s/commit/e7478a11b0bd14ac436f8a502837cfe305332246))
-
-### Documentation
-
-- Add how-to guides and update navigation
-  ([`696e626`](https://github.com/Peppe37/p8s/commit/696e626a9810790f502a6548adb39e38565c7b00))
-
-### Features
-
 - **admin**: Add advanced field components (richtext, color, tags, code)
-  ([`0e7a880`](https://github.com/Peppe37/p8s/commit/0e7a8808554d4350e6315fd3013696a234c94509))
-
-
-## v1.3.0 (2026-01-17)
-
-### Documentation
-
-- Update roadmap, status reports and core project configuration
-  ([`e2ca422`](https://github.com/Peppe37/p8s/commit/e2ca42270d9323e2fb05f039c571bb9ad0655717))
-
-- Roadmap jenuary 2026
-  ([`b0252c8`](https://github.com/Peppe37/p8s/commit/b0252c89c237ee4ef77dbd7bb58d5bb2bf00e468))
-
-### Features
+  ([`a3e47a3`](https://github.com/Peppe37/p8s/commit/a3e47a34492b94b11da010e04a0c40e1c3573ec1))
 
 - Implement oauth2 social login and advanced model fields
-  ([`5c5baec`](https://github.com/Peppe37/p8s/commit/5c5baecbafc0268767ca3ae23e78ebc5910319ca))
+  ([`5ecb0e9`](https://github.com/Peppe37/p8s/commit/5ecb0e949f806770aab488331519341a0974de4f))
 
 - Add admin enhancements, CLI system checks, command discovery and multi-db support
-  ([`0bc8da6`](https://github.com/Peppe37/p8s/commit/0bc8da6562037d6c0b7a03fa0c11172720c26bf4))
+  ([`c42b72f`](https://github.com/Peppe37/p8s/commit/c42b72fd080f9edf1875129e2feb88c14c574eeb))
 
 - Implement core framework features including CSRF, MFA, i18n, and sessions
-  ([`deecbaa`](https://github.com/Peppe37/p8s/commit/deecbaa4fe94ca0ac0d9dcc12a1375bf7aa1be1d))
+  ([`13e1fda`](https://github.com/Peppe37/p8s/commit/13e1fda04561c55c3ff98e676e694ffa448294ae))
 
 - Add seed/types commands, tailwind v4 template, and setup_context utility
-  ([`842757f`](https://github.com/Peppe37/p8s/commit/842757f2b9ee0ec9716e4c064825f7ce06eca3dc))
-
-
-## v1.2.0 (2026-01-12)
-
-### Bug Fixes
-
-- Author surname
-  ([`3c98bcb`](https://github.com/Peppe37/p8s/commit/3c98bcbe98e8d0f94617873c266d06ff4646f4cb))
-
-### Features
+  ([`4d26441`](https://github.com/Peppe37/p8s/commit/4d26441a8d7ab1c18c2b1480e4ca94a573898361))
 
 - Dynamic version loading and MkDocs customization
-  ([`e4532d0`](https://github.com/Peppe37/p8s/commit/e4532d039b56101c96eb457ee1098a7f0f3af704))
+  ([`0fd562a`](https://github.com/Peppe37/p8s/commit/0fd562a38ba5afc2efe45b3525192116ed235a14))
 
 - Use importlib.metadata for dynamic __version__ from pyproject.toml - Add custom MkDocs theme with
   fire palette colors - Add announcement banner with version display - Add logo, favicon, and social
   links (GitHub + email) - Update PyPI description to be more professional
 
-
-## v1.1.0 (2026-01-12)
-
-### Bug Fixes
-
-- Update project metadata and remove deprecated action
-  ([`68644ff`](https://github.com/Peppe37/p8s/commit/68644ffea8d739f1438fa0797f3f688d3b521094))
-
-### Documentation
-
-- Cleanup and professionalize documentation and usage
-  ([`0726edb`](https://github.com/Peppe37/p8s/commit/0726edb0c26590b7c44c6f08d9c4ba350146faa7))
-
-- Remove emojis from README, CLI, and docs for professional tone - Update README with absolute links
-  and better formatting - Ensure consistent author attribution - Finalize MkDocs configuration setup
-
-### Features
-
 - Setup documentation site with mkdocs-material
-  ([`3fd7ef0`](https://github.com/Peppe37/p8s/commit/3fd7ef025fedd6f982fd77a68a617eb2d408a22c))
-
-
-## v1.0.3 (2026-01-11)
-
-### Bug Fixes
-
-- Use Trusted Publishing instead of API token for PyPI
-  ([`4cc50e3`](https://github.com/Peppe37/p8s/commit/4cc50e3ac3adb7a2e76f907a787bc4d432d4d157))
-
-
-## v1.0.2 (2026-01-11)
-
-### Bug Fixes
-
-- Trigger first PyPI release
-  ([`23a3564`](https://github.com/Peppe37/p8s/commit/23a3564bd28448164dad7102620c99d7c5c221ef))
-
-### Continuous Integration
-
-- Remove duplicate build step (semantic-release handles it)
-  ([`7b057db`](https://github.com/Peppe37/p8s/commit/7b057db94d183ea92a78cfa74328959044dcf181))
-
-
-## v1.0.1 (2026-01-11)
-
-### Bug Fixes
-
-- Clean dist directory before build to avoid permission errors
-  ([`25f0044`](https://github.com/Peppe37/p8s/commit/25f0044887d4a3926acbf0baa9a005ed9c3eb4a4))
-
-
-## v1.0.0 (2026-01-11)
-
-### Bug Fixes
-
-- Linting and build pipeline
-  ([`c337a0a`](https://github.com/Peppe37/p8s/commit/c337a0a0a8bcba5282dd6cdb22be18f4ce1f9edb))
-
-- Updated pyproject.toml to use new ruff lint section syntax - Formatted all 50+ source files with
-  ruff format - Fixed missing model lookup in admin router get_item - Added node_modules exclusion
-  to hatch build config - Updated CI workflow to Python 3.11-3.13 - Added comprehensive lint ignore
-  rules for edge cases
-
-- Test suite
-  ([`e632d79`](https://github.com/Peppe37/p8s/commit/e632d79f903fad8cd8a3b8d4e21eb1552ad37883))
-
-- Routing
-  ([`c12dab1`](https://github.com/Peppe37/p8s/commit/c12dab186028c605c7f2a696ffb1a9eeb776309e))
-
-- Admin update
-  ([`ffec28b`](https://github.com/Peppe37/p8s/commit/ffec28be0354e849cb25c5603022e084b946dd56))
-
-### Documentation
-
-- Documentation and readme update
-  ([`321b44c`](https://github.com/Peppe37/p8s/commit/321b44c45d4578ec54b65885d3d938d0af09be99))
-
-- Revise README for P8s framework introduction
-  ([`4a9df4f`](https://github.com/Peppe37/p8s/commit/4a9df4fe8f58752225c1d88dd530722dbcd75436))
-
-Updated README to reflect new branding and features of P8s framework.
-
-### Features
+  ([`3b19423`](https://github.com/Peppe37/p8s/commit/3b194239488ac6d5149d3a698acaa9e59443243d))
 
 - Middleware and fields
-  ([`79036a9`](https://github.com/Peppe37/p8s/commit/79036a98e2dee1ccd2805eed8b13a2a674dfd83a))
+  ([`05d97a5`](https://github.com/Peppe37/p8s/commit/05d97a5a5a425e01414c60cec97102042212aff9))
 
 - Debug pages
-  ([`c97b698`](https://github.com/Peppe37/p8s/commit/c97b698a40e75ef1c00828a5dcb6b3312dcb8617))
+  ([`6f6e8ef`](https://github.com/Peppe37/p8s/commit/6f6e8efe2ae7440d7d9ea29ddb0a1df44a19cd9a))
 
 - Favicon
-  ([`8521d73`](https://github.com/Peppe37/p8s/commit/8521d733c2c954ba6133ee99ab4cc0be8c0daade))
+  ([`8466f3e`](https://github.com/Peppe37/p8s/commit/8466f3e2d47069de5d8a09895d27a65b7e754205))
 
 - Admin page and models fields
-  ([`217f8ba`](https://github.com/Peppe37/p8s/commit/217f8baa72f2dc350ab615ea659fe3155fc526b8))
+  ([`a831c9f`](https://github.com/Peppe37/p8s/commit/a831c9f9de90ed5cb5367d5c4ac0eb16e899eeb5))
 
 - Update auth and decorators
-  ([`a782ad0`](https://github.com/Peppe37/p8s/commit/a782ad04e9a8e7989c7354eaa47500415d5e3fc9))
+  ([`9ed4032`](https://github.com/Peppe37/p8s/commit/9ed4032c82100e5f89f78cf33cbb12b7eb3827be))
 
 - Docs and refinements
-  ([`fbfc104`](https://github.com/Peppe37/p8s/commit/fbfc104144a73b89e332fc0b2c314e36152f4fd3))
+  ([`41548a9`](https://github.com/Peppe37/p8s/commit/41548a97d25d6293ee3911d324cb4000c1451be0))
 
 - First structure need updates
-  ([`6360458`](https://github.com/Peppe37/p8s/commit/6360458f38b9057ca4f3474ee4b91a1b031383ae))
+  ([`9864902`](https://github.com/Peppe37/p8s/commit/98649028578c76fbc8025d19234a42a600b4a101))
