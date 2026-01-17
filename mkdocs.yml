@@ -74,7 +74,11 @@ nav:
     - Signals: signals.md
     - Permissions: permissions.md
     - Email: email.md
-
+    - i18n/l10n: i18n.md
+    - WebSocket: websocket.md
+    - Class-Based Views: views.md
+    - Templates: templates.md
+    - Sessions: sessions.md
     - Architecture: RnD/architecture.md
 
 

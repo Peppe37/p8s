@@ -8,7 +8,7 @@ import asyncio
 import functools
 import logging
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, TypeVar
 
 logger = logging.getLogger(__name__)
@@ -84,7 +84,7 @@ class TaskDefinition:
         # Calculate defer time
         defer_until = None
         if delay:
-            defer_until = datetime.utcnow() + timedelta(seconds=delay)
+            defer_until = datetime.now(timezone.utc) + timedelta(seconds=delay)
         elif at:
             defer_until = at
 

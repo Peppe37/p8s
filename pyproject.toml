@@ -69,15 +69,16 @@ dependencies = [
     "passlib[bcrypt]>=1.7.4",
     "python-jose[cryptography]>=3.3.0",
     "email-validator>=2.0.0",
-]
 
-[project.optional-dependencies]
-ai = [
+    # AI (Core)
     "litellm>=1.20.0",
     "instructor>=0.5.0",
     "pgvector>=0.2.0",
     "numpy>=1.26.0",
 ]
+
+[project.optional-dependencies]
+ai = []  # Now part of core dependencies
 admin = [
     "jinja2>=3.1.0",
 ]
@@ -103,7 +104,7 @@ all = [
 p8s = "p8s.cli.main:app"
 
 [project.urls]
-Homepage = "https://github.com/Peppe37/p8s"
+About = "https://peppe37.github.io/p8s/about/"
 Documentation = "https://peppe37.github.io/p8s/"
 Repository = "https://github.com/Peppe37/p8s"
 
