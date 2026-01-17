@@ -97,9 +97,9 @@ class AISettings(BaseSettings):
     # Provider configuration
     # =========================================================================
 
-    provider: Literal[
-        "openai", "anthropic", "gemini", "azure", "ollama", "custom"
-    ] = Field(default="openai", description="LLM provider to use")
+    provider: Literal["openai", "anthropic", "gemini", "azure", "ollama", "custom"] = (
+        Field(default="openai", description="LLM provider to use")
+    )
 
     # Default model for text generation (overridable per-field)
     model: str = Field(
