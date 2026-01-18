@@ -214,5 +214,8 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-# P8s Demo project
-# demo_p8s/
+# Docs
+docs/Reserved/
+
+# System
+.DS_Store
