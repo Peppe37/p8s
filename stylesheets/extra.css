@@ -1,0 +1,75 @@
+/* P8s Fire Palette for MkDocs Material */
+
+:root {
+    /* Fire Orange - Primary */
+    --md-primary-fg-color: #ea580c;
+    --md-primary-fg-color--light: #f97316;
+    --md-primary-fg-color--dark: #c2410c;
+    --md-primary-bg-color: #ffffff;
+    --md-primary-bg-color--light: #ffffff;
+
+    /* Accent */
+    --md-accent-fg-color: #f97316;
+    --md-accent-fg-color--transparent: rgba(249, 115, 22, 0.1);
+    --md-accent-bg-color: #ffffff;
+    --md-accent-bg-color--light: #fff7ed;
+}
+
+/* Dark mode overrides */
+[data-md-color-scheme="slate"] {
+    --md-primary-fg-color: #f97316;
+    --md-primary-fg-color--light: #fb923c;
+    --md-primary-fg-color--dark: #ea580c;
+
+    --md-accent-fg-color: #fb923c;
+    --md-accent-fg-color--transparent: rgba(251, 146, 60, 0.1);
+}
+
+/* Custom link colors */
+.md-typeset a {
+    color: var(--md-primary-fg-color);
+}
+
+.md-typeset a:hover {
+    color: var(--md-primary-fg-color--dark);
+}
+
+/* Announcement bar styling - darker orange to differentiate from navbar */
+.md-banner {
+    background-color: #c2410c;
+    /* Orange-700 - darker than navbar */
+    color: white;
+}
+
+.md-banner a {
+    color: white;
+    text-decoration: underline;
+}
+
+/* Code block accent */
+.md-typeset code {
+    background-color: rgba(249, 115, 22, 0.08);
+}
+
+/* Header tabs hover */
+/* Header tabs hover */
+.md-tabs__link:hover {
+    color: rgba(255, 255, 255, 1);
+    opacity: 1;
+}
+
+/* Navigation highlight */
+.md-nav__link--active {
+    color: var(--md-primary-fg-color) !important;
+}
+
+/* Button styling */
+.md-button--primary {
+    background-color: var(--md-primary-fg-color);
+    border-color: var(--md-primary-fg-color);
+}
+
+.md-button--primary:hover {
+    background-color: var(--md-primary-fg-color--dark);
+    border-color: var(--md-primary-fg-color--dark);
+}
