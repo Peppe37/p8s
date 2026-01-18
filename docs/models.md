@@ -43,6 +43,28 @@ DATABASE_URL=postgresql+asyncpg://user:password@localhost/dbname
 DATABASE_URL=postgresql+asyncpg://user:password@localhost/dbname?server_settings=vector.enable=on
 ```
 
+## Field Reference
+
+P8s provides Django-style field helpers in `p8s.db.fields` that wrap SQLModel fields.
+
+### Basic Types
+- `CharField(max_length=255)`: String field.
+- `TextField()`: Unlimited text field.
+- `BooleanField(default=False)`: Boolean field.
+- `IntegerField(default=0)`: Integer field.
+- `FloatField(default=0.0)`: Float field.
+- `DecimalField(max_digits=10, decimal_places=2)`: Decimal field.
+
+### Date & Time
+- `DateField(auto_now=False, auto_now_add=False)`: Date field.
+- `DateTimeField(auto_now=False, auto_now_add=False)`: DateTime field.
+
+### Structured & Validated
+- `JSONField(default=None)`: JSON storage (requires PostgreSQL/SQLite JSON support).
+- `EmailField()`: String field validated as email.
+- `URLField()`: String field for URLs.
+- `ColorField(format="hex")`: Stores color values, renders color picker in Admin.
+
 ## Relationships
 
 ### One-to-Many
@@ -55,7 +77,17 @@ class Author(Model, table=True):
 
 class Book(Model, table=True):
     title: str
-    author_id: UUID = Field(foreign_key="author.id")
+    author_id: UUID = ForeignKey("author.id")
+```
+
+### One-to-One
+
+```python
+from p8s.db.fields import OneToOneField
+
+class UserProfile(Model, table=True):
+    bio: str
+    user_id: UUID = OneToOneField("user.id")
 ```
 
 ### Many-to-Many

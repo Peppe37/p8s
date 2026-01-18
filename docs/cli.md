@@ -31,6 +31,10 @@ pip install -e ".[all]"
 | `p8s collectstatic`      | Collect static files                    |
 | `p8s seed`               | Run seed script                         |
 | `p8s types`              | Generate TypeScript types               |
+| `p8s worker`             | Start background task worker            |
+| `p8s beat`               | Start periodic task scheduler           |
+| `p8s run`                | Run custom management command           |
+| `p8s list-commands`      | List available custom commands          |
 | `p8s version`            | Show P8s version                        |
 
 ---
@@ -207,6 +211,37 @@ p8s loaddata data.yaml
 
 ---
 
+## Background Tasks
+
+### `p8s worker`
+
+Start the background task worker (powered by ARQ).
+
+```bash
+p8s worker
+p8s worker --redis redis://localhost:6379 --queue high --queue default
+```
+
+**Options:**
+
+| Option        | Default                  | Description                       |
+| ------------- | ------------------------ | --------------------------------- |
+| `--redis, -r` | `redis://localhost:6379` | Redis connection URL              |
+| `--queue, -q` | `default`                | Queues to process (repeatable)    |
+| `--max-jobs`  | `10`                     | Max concurrent jobs               |
+| `--burst, -b` | `False`                  | Run in burst mode (exit if empty) |
+
+### `p8s beat`
+
+Start the periodic task scheduler.
+
+```bash
+p8s beat
+```
+*Note: The worker process also handles periodic task execution if configured, this command is for standalone scheduling if needed.*
+
+---
+
 ## Users & Auth
 
 ### `p8s createsuperuser`
@@ -312,7 +347,7 @@ Show the installed P8s version.
 
 ```bash
 p8s version
-# P8s version 0.1.0
+# P8s version 1.5.2
 ```
 
 ---
