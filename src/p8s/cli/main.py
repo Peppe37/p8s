@@ -9,9 +9,14 @@ Usage:
     p8s shell
 """
 
+import os
 import subprocess
 import sys
 from pathlib import Path
+
+# Add current working directory to path to allow importing local modules
+if str(Path.cwd()) not in sys.path:
+    sys.path.insert(0, str(Path.cwd()))
 
 import typer
 from rich.console import Console
@@ -45,7 +50,6 @@ def ensure_settings_module():
     This enables Django-style settings loading where projects can define
     their own AppSettings class that extends Settings.
     """
-    import os
 
     if "P8S_SETTINGS_MODULE" not in os.environ:
         settings_file = Path.cwd() / "backend" / "settings.py"
@@ -574,7 +578,6 @@ def dev(
         p8s dev --port 3000
         p8s dev --no-frontend
     """
-    import os
     import threading
 
     print_banner()
@@ -947,7 +950,6 @@ def dbshell():
     Example:
         p8s dbshell
     """
-    import os
     import shutil
 
     ensure_settings_module()
@@ -1353,7 +1355,6 @@ def seed(
         p8s seed
         p8s seed --script seeds/initial_data.py
     """
-    import os
     import runpy
     import sys
 
@@ -1692,34 +1693,46 @@ def worker(
     """
     ensure_settings_module()
 
-    from p8s.tasks.worker import WorkerSettings, run_worker
+    # Discover task modules from settings or tasks.py
+    from p8s.tasks.worker import WorkerSettings, discover_worker_settings, run_worker
 
-    console.print("[bold]🔧 Starting P8s Worker[/bold]")
-    console.print(f"  Redis: {redis_url}")
-    console.print(f"  Queues: {', '.join(queues)}")
-    console.print(f"  Max Jobs: {max_jobs}")
-    console.print()
+    # Try auto-discovery first (handles tasks.py)
+    discovered_settings = discover_worker_settings()
 
-    # Discover task modules from settings
-    task_modules = []
-    try:
-        from p8s.core.settings import get_settings
+    if discovered_settings:
+        console.print(
+            f"[green]✓[/green] Discovered worker settings from {discovered_settings.task_modules}"
+        )
+        worker_settings = discovered_settings
+        # Override with CLI args if provided (and different from default)
+        if redis_url != "redis://localhost:6379":
+            worker_settings.redis_url = redis_url
+        if queues != ["default"]:
+            worker_settings.queues = queues
+        if max_jobs != 10:
+            worker_settings.max_jobs = max_jobs
 
-        settings = get_settings()
-        if hasattr(settings, "tasks") and hasattr(settings.tasks, "modules"):
-            task_modules = settings.tasks.modules
-        elif hasattr(settings, "installed_apps"):
-            # Auto-discover tasks in installed apps
-            task_modules = [f"{app}.tasks" for app in settings.installed_apps]
-    except Exception:
-        pass
+    else:
+        # Fallback to manual settings from main config
+        task_modules = []
+        try:
+            from p8s.core.settings import get_settings
 
-    worker_settings = WorkerSettings(
-        redis_url=redis_url,
-        task_modules=task_modules,
-        queues=queues,
-        max_jobs=max_jobs,
-    )
+            settings = get_settings()
+            if hasattr(settings, "tasks") and hasattr(settings.tasks, "modules"):
+                task_modules = settings.tasks.modules
+            elif hasattr(settings, "installed_apps"):
+                # Auto-discover tasks in installed apps
+                task_modules = [f"{app}.tasks" for app in settings.installed_apps]
+        except Exception:
+            pass
+
+        worker_settings = WorkerSettings(
+            redis_url=redis_url,
+            task_modules=task_modules,
+            queues=queues,
+            max_jobs=max_jobs,
+        )
 
     try:
         # run_worker is sync - ARQ manages its own event loop
